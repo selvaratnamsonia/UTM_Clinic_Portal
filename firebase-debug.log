@@ -1,0 +1,229 @@
+[debug] [2026-05-13T16:25:54.153Z] ----------------------------------------------------------------------
+[debug] [2026-05-13T16:25:54.156Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\USER\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js init hosting
+[debug] [2026-05-13T16:25:54.156Z] CLI Version:   15.17.0
+[debug] [2026-05-13T16:25:54.156Z] Platform:      win32
+[debug] [2026-05-13T16:25:54.156Z] Node Version:  v24.15.0
+[debug] [2026-05-13T16:25:54.156Z] Time:          Thu May 14 2026 00:25:54 GMT+0800 (Malaysia Time)
+[debug] [2026-05-13T16:25:54.156Z] ----------------------------------------------------------------------
+[debug] 
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  C:\Users\USER\Desktop\UTM_Clinic_Portal\UTM_Clinic_Portal
+
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] 
+[debug] [2026-05-13T16:26:11.766Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-05-13T16:26:11.766Z] > authorizing via signed-in user (siajunyu2903@gmail.com)
+[debug] [2026-05-13T16:26:11.767Z] Checked if tokens are valid: false, expires at: 1778689133539
+[debug] [2026-05-13T16:26:11.767Z] Checked if tokens are valid: false, expires at: 1778689133539
+[debug] [2026-05-13T16:26:11.767Z] > refreshing access token with scopes: []
+[debug] [2026-05-13T16:26:11.768Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-05-13T16:26:11.768Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-05-13T16:26:11.963Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-05-13T16:26:11.963Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-05-13T16:26:11.967Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/utm-clinic-portal-d0bc3 [none]
+[debug] [2026-05-13T16:26:12.395Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/utm-clinic-portal-d0bc3 200
+[debug] [2026-05-13T16:26:12.395Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/utm-clinic-portal-d0bc3 {"projectId":"utm-clinic-portal-d0bc3","projectNumber":"963874164482","displayName":"UTM CLINIC PORTAL","name":"projects/utm-clinic-portal-d0bc3","resources":{"hostingSite":"utm-clinic-portal-d0bc3"},"state":"ACTIVE","etag":"1_36b13099-2c77-41a8-bc5c-50fbf1a6c664"}
+[info] i  Using project utm-clinic-portal-d0bc3 (UTM CLINIC PORTAL) . 
+[info] 
+=== Hosting Setup
+[debug] [2026-05-13T16:26:12.408Z] Checked if tokens are valid: true, expires at: 1778693170963
+[debug] [2026-05-13T16:26:12.408Z] Checked if tokens are valid: true, expires at: 1778693170963
+[debug] [2026-05-13T16:26:12.408Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/utm-clinic-portal-d0bc3 [none]
+[debug] [2026-05-13T16:26:12.728Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/utm-clinic-portal-d0bc3 200
+[debug] [2026-05-13T16:26:12.728Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/utm-clinic-portal-d0bc3 {"projectId":"utm-clinic-portal-d0bc3","projectNumber":"963874164482","displayName":"UTM CLINIC PORTAL","name":"projects/utm-clinic-portal-d0bc3","resources":{"hostingSite":"utm-clinic-portal-d0bc3"},"state":"ACTIVE","etag":"1_36b13099-2c77-41a8-bc5c-50fbf1a6c664"}
+[info] 
+[info] Your public directory is the folder (relative to your project directory) that
+[info] will contain Hosting assets to be uploaded with firebase deploy. If you
+[info] have a build process for your assets, use your build's output directory.
+[info] 
+[debug] [2026-05-13T18:02:48.627Z] ----------------------------------------------------------------------
+[debug] [2026-05-13T18:02:48.629Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\USER\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js init hosting
+[debug] [2026-05-13T18:02:48.629Z] CLI Version:   15.17.0
+[debug] [2026-05-13T18:02:48.629Z] Platform:      win32
+[debug] [2026-05-13T18:02:48.629Z] Node Version:  v24.15.0
+[debug] [2026-05-13T18:02:48.629Z] Time:          Thu May 14 2026 02:02:48 GMT+0800 (Malaysia Time)
+[debug] [2026-05-13T18:02:48.629Z] ----------------------------------------------------------------------
+[debug] 
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  C:\Users\USER\Desktop\UTM_Clinic_Portal\UTM_Clinic_Portal
+
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] 
+[debug] [2026-05-13T18:02:51.405Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-05-13T18:02:51.405Z] > authorizing via signed-in user (siajunyu2903@gmail.com)
+[debug] [2026-05-13T18:02:51.406Z] Checked if tokens are valid: true, expires at: 1778698712786
+[debug] [2026-05-13T18:02:51.406Z] Checked if tokens are valid: true, expires at: 1778698712786
+[debug] [2026-05-13T18:02:51.407Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/utm-clinic-portal-d0bc3 [none]
+[debug] [2026-05-13T18:02:52.372Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/utm-clinic-portal-d0bc3 200
+[debug] [2026-05-13T18:02:52.372Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/utm-clinic-portal-d0bc3 {"projectId":"utm-clinic-portal-d0bc3","projectNumber":"963874164482","displayName":"UTM CLINIC PORTAL","name":"projects/utm-clinic-portal-d0bc3","resources":{"hostingSite":"utm-clinic-portal-d0bc3"},"state":"ACTIVE","etag":"1_36b13099-2c77-41a8-bc5c-50fbf1a6c664"}
+[info] i  Using project utm-clinic-portal-d0bc3 (UTM CLINIC PORTAL) . 
+[info] 
+=== Hosting Setup
+[debug] [2026-05-13T18:02:52.379Z] Checked if tokens are valid: true, expires at: 1778698712786
+[debug] [2026-05-13T18:02:52.379Z] Checked if tokens are valid: true, expires at: 1778698712786
+[debug] [2026-05-13T18:02:52.379Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/utm-clinic-portal-d0bc3 [none]
+[debug] [2026-05-13T18:02:52.697Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/utm-clinic-portal-d0bc3 200
+[debug] [2026-05-13T18:02:52.697Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/utm-clinic-portal-d0bc3 {"projectId":"utm-clinic-portal-d0bc3","projectNumber":"963874164482","displayName":"UTM CLINIC PORTAL","name":"projects/utm-clinic-portal-d0bc3","resources":{"hostingSite":"utm-clinic-portal-d0bc3"},"state":"ACTIVE","etag":"1_36b13099-2c77-41a8-bc5c-50fbf1a6c664"}
+[info] 
+[info] Your public directory is the folder (relative to your project directory) that
+[info] will contain Hosting assets to be uploaded with firebase deploy. If you
+[info] have a build process for your assets, use your build's output directory.
+[info] 
+[info] +  Wrote 404.html 
+[debug] [2026-05-13T18:03:12.114Z] >>> [apiv2][query] GET https://www.gstatic.com/firebasejs/releases.json [none]
+[debug] [2026-05-13T18:03:33.436Z] *** [apiv2] error from fetch(https://www.gstatic.com/firebasejs/releases.json, {"headers":{},"method":"GET"}): FetchError: request to https://www.gstatic.com/firebasejs/releases.json failed, reason: 
+[debug] [2026-05-13T18:03:38.452Z] Error: Timed out.
+    at Timeout._onTimeout (C:\Users\USER\AppData\Roaming\npm\node_modules\firebase-tools\lib\utils.js:309:49)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2026-05-13T18:07:41.181Z] ----------------------------------------------------------------------
+[debug] [2026-05-13T18:07:41.183Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\USER\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js init hosting
+[debug] [2026-05-13T18:07:41.184Z] CLI Version:   15.17.0
+[debug] [2026-05-13T18:07:41.184Z] Platform:      win32
+[debug] [2026-05-13T18:07:41.184Z] Node Version:  v24.15.0
+[debug] [2026-05-13T18:07:41.184Z] Time:          Thu May 14 2026 02:07:41 GMT+0800 (Malaysia Time)
+[debug] [2026-05-13T18:07:41.184Z] ----------------------------------------------------------------------
+[debug] 
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  C:\Users\USER\Desktop\UTM_Clinic_Portal\UTM_Clinic_Portal
+
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] 
+[debug] [2026-05-13T18:08:26.594Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-05-13T18:08:26.594Z] > authorizing via signed-in user (siajunyu2903@gmail.com)
+[debug] [2026-05-13T18:08:26.596Z] Checked if tokens are valid: true, expires at: 1778698712786
+[debug] [2026-05-13T18:08:26.596Z] Checked if tokens are valid: true, expires at: 1778698712786
+[debug] [2026-05-13T18:08:26.597Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/utm-clinic-portal-d0bc3 [none]
+[debug] [2026-05-13T18:08:27.255Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/utm-clinic-portal-d0bc3 200
+[debug] [2026-05-13T18:08:27.255Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/utm-clinic-portal-d0bc3 {"projectId":"utm-clinic-portal-d0bc3","projectNumber":"963874164482","displayName":"UTM CLINIC PORTAL","name":"projects/utm-clinic-portal-d0bc3","resources":{"hostingSite":"utm-clinic-portal-d0bc3"},"state":"ACTIVE","etag":"1_36b13099-2c77-41a8-bc5c-50fbf1a6c664"}
+[info] i  Using project utm-clinic-portal-d0bc3 (UTM CLINIC PORTAL) . 
+[info] 
+=== Hosting Setup
+[debug] [2026-05-13T18:08:27.262Z] Checked if tokens are valid: true, expires at: 1778698712786
+[debug] [2026-05-13T18:08:27.262Z] Checked if tokens are valid: true, expires at: 1778698712786
+[debug] [2026-05-13T18:08:27.262Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/utm-clinic-portal-d0bc3 [none]
+[debug] [2026-05-13T18:08:27.608Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/utm-clinic-portal-d0bc3 200
+[debug] [2026-05-13T18:08:27.608Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/utm-clinic-portal-d0bc3 {"projectId":"utm-clinic-portal-d0bc3","projectNumber":"963874164482","displayName":"UTM CLINIC PORTAL","name":"projects/utm-clinic-portal-d0bc3","resources":{"hostingSite":"utm-clinic-portal-d0bc3"},"state":"ACTIVE","etag":"1_36b13099-2c77-41a8-bc5c-50fbf1a6c664"}
+[info] 
+[info] Your public directory is the folder (relative to your project directory) that
+[info] will contain Hosting assets to be uploaded with firebase deploy. If you
+[info] have a build process for your assets, use your build's output directory.
+[info] 
+[info] i  404.html is unchanged 
+[debug] [2026-05-13T18:08:39.847Z] >>> [apiv2][query] GET https://www.gstatic.com/firebasejs/releases.json [none]
+[debug] [2026-05-13T18:09:01.203Z] *** [apiv2] error from fetch(https://www.gstatic.com/firebasejs/releases.json, {"headers":{},"method":"GET"}): FetchError: request to https://www.gstatic.com/firebasejs/releases.json failed, reason: 
+[debug] [2026-05-13T18:09:06.217Z] Error: Timed out.
+    at Timeout._onTimeout (C:\Users\USER\AppData\Roaming\npm\node_modules\firebase-tools\lib\utils.js:309:49)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2026-05-13T18:09:11.197Z] ----------------------------------------------------------------------
+[debug] [2026-05-13T18:09:11.199Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\USER\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js serve
+[debug] [2026-05-13T18:09:11.199Z] CLI Version:   15.17.0
+[debug] [2026-05-13T18:09:11.199Z] Platform:      win32
+[debug] [2026-05-13T18:09:11.199Z] Node Version:  v24.15.0
+[debug] [2026-05-13T18:09:11.199Z] Time:          Thu May 14 2026 02:09:11 GMT+0800 (Malaysia Time)
+[debug] [2026-05-13T18:09:11.199Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-05-13T18:09:16.921Z] Error: Timed out.
+    at Timeout._onTimeout (C:\Users\USER\AppData\Roaming\npm\node_modules\firebase-tools\lib\utils.js:309:49)
+    at listOnTimeout (node:internal/timers:605:17)
+    at process.processTimers (node:internal/timers:541:7)
+[error] 
+[error] Error: An unexpected error has occurred.
+[debug] [2026-05-13T18:11:43.647Z] ----------------------------------------------------------------------
+[debug] [2026-05-13T18:11:43.649Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\USER\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js serve
+[debug] [2026-05-13T18:11:43.649Z] CLI Version:   15.17.0
+[debug] [2026-05-13T18:11:43.649Z] Platform:      win32
+[debug] [2026-05-13T18:11:43.649Z] Node Version:  v24.15.0
+[debug] [2026-05-13T18:11:43.649Z] Time:          Thu May 14 2026 02:11:43 GMT+0800 (Malaysia Time)
+[debug] [2026-05-13T18:11:43.649Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-05-13T18:11:44.485Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-05-13T18:11:44.485Z] > authorizing via signed-in user (siajunyu2903@gmail.com)
+[debug] [2026-05-13T18:11:44.485Z] [iam] checking project utm-clinic-portal-d0bc3 for permissions ["firebase.projects.get"]
+[debug] [2026-05-13T18:11:44.485Z] Checked if tokens are valid: true, expires at: 1778698712786
+[debug] [2026-05-13T18:11:44.485Z] Checked if tokens are valid: true, expires at: 1778698712786
+[debug] [2026-05-13T18:11:44.486Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/utm-clinic-portal-d0bc3:testIamPermissions [none]
+[debug] [2026-05-13T18:11:44.486Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/utm-clinic-portal-d0bc3:testIamPermissions  x-goog-user-project=utm-clinic-portal-d0bc3
+[debug] [2026-05-13T18:11:44.486Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/utm-clinic-portal-d0bc3:testIamPermissions {"permissions":["firebase.projects.get"]}
+[debug] [2026-05-13T18:11:55.567Z] *** [apiv2] error from fetch(https://cloudresourcemanager.googleapis.com/v1/projects/utm-clinic-portal-d0bc3:testIamPermissions, {"headers":{},"method":"POST","body":"{\"permissions\":[\"firebase.projects.get\"]}"}): FetchError: request to https://cloudresourcemanager.googleapis.com/v1/projects/utm-clinic-portal-d0bc3:testIamPermissions failed, reason: getaddrinfo ENOTFOUND cloudresourcemanager.googleapis.com
+[debug] [2026-05-13T18:11:55.568Z] [iam] error while checking permissions, command may fail: Failed to make request to https://cloudresourcemanager.googleapis.com/v1/projects/utm-clinic-portal-d0bc3:testIamPermissions
+[debug] [2026-05-13T18:11:55.568Z] Checked if tokens are valid: true, expires at: 1778698712786
+[debug] [2026-05-13T18:11:55.568Z] Checked if tokens are valid: true, expires at: 1778698712786
+[debug] [2026-05-13T18:11:55.568Z] >>> [apiv2][query] GET https://serviceusage.googleapis.com/v1/projects/utm-clinic-portal-d0bc3/services/cloudresourcemanager.googleapis.com [none]
+[debug] [2026-05-13T18:11:55.568Z] >>> [apiv2][(partial)header] GET https://serviceusage.googleapis.com/v1/projects/utm-clinic-portal-d0bc3/services/cloudresourcemanager.googleapis.com  x-goog-user-project=utm-clinic-portal-d0bc3
+[debug] [2026-05-13T18:12:28.491Z] *** [apiv2] error from fetch(https://serviceusage.googleapis.com/v1/projects/utm-clinic-portal-d0bc3/services/cloudresourcemanager.googleapis.com, {"headers":{},"method":"GET"}): FetchError: request to https://serviceusage.googleapis.com/v1/projects/utm-clinic-portal-d0bc3/services/cloudresourcemanager.googleapis.com failed, reason: 
+[debug] [2026-05-13T18:12:28.491Z] Unable to check that https://cloudresourcemanager.googleapis.com is enabled on utm-clinic-portal-d0bc3. Calls to it will fail if it is not enabled
+[debug] [2026-05-13T18:12:28.492Z] Checked if tokens are valid: true, expires at: 1778698712786
+[debug] [2026-05-13T18:12:28.492Z] Checked if tokens are valid: true, expires at: 1778698712786
+[debug] [2026-05-13T18:12:28.492Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/utm-clinic-portal-d0bc3 [none]
+[debug] [2026-05-13T18:12:42.560Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/utm-clinic-portal-d0bc3 200
+[debug] [2026-05-13T18:12:42.560Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/utm-clinic-portal-d0bc3 {"projectNumber":"963874164482","projectId":"utm-clinic-portal-d0bc3","lifecycleState":"ACTIVE","name":"UTM CLINIC PORTAL","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2026-05-13T15:29:19.253Z"}
+[info] 
+[info] === Serving from 'C:\Users\USER\Desktop\UTM_Clinic_Portal\UTM_Clinic_Portal'...
+[info] 
+[debug] [2026-05-13T18:12:42.566Z] Checked if tokens are valid: true, expires at: 1778698712786
+[debug] [2026-05-13T18:12:42.567Z] Checked if tokens are valid: true, expires at: 1778698712786
+[debug] [2026-05-13T18:12:42.567Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/utm-clinic-portal-d0bc3/sites 
+[debug] [2026-05-13T18:12:55.498Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/utm-clinic-portal-d0bc3/sites 200
+[debug] [2026-05-13T18:12:55.498Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/utm-clinic-portal-d0bc3/sites {"sites":[{"name":"projects/utm-clinic-portal-d0bc3/sites/utm-clinic-portal-d0bc3","defaultUrl":"https://utm-clinic-portal-d0bc3.web.app","type":"DEFAULT_SITE"}]}
+[debug] [2026-05-13T18:12:55.498Z] Checked if tokens are valid: true, expires at: 1778698712786
+[debug] [2026-05-13T18:12:55.498Z] Checked if tokens are valid: true, expires at: 1778698712786
+[debug] [2026-05-13T18:12:55.498Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/utm-clinic-portal-d0bc3/webApps/-/config [none]
+[debug] [2026-05-13T18:12:57.418Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/utm-clinic-portal-d0bc3/webApps/-/config 200
+[debug] [2026-05-13T18:12:57.418Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/utm-clinic-portal-d0bc3/webApps/-/config {"projectId":"utm-clinic-portal-d0bc3","storageBucket":"utm-clinic-portal-d0bc3.firebasestorage.app","apiKey":"AIzaSyBFkrIMTB1PiY8NOmIEC0EWnEOnW8yK174","authDomain":"utm-clinic-portal-d0bc3.firebaseapp.com","messagingSenderId":"963874164482","projectNumber":"963874164482","version":"2"}
+[debug] [2026-05-13T18:12:57.422Z] Checked if tokens are valid: true, expires at: 1778698712786
+[debug] [2026-05-13T18:12:57.422Z] Checked if tokens are valid: true, expires at: 1778698712786
+[debug] [2026-05-13T18:12:57.422Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/utm-clinic-portal-d0bc3 [none]
+[debug] [2026-05-13T18:12:57.931Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/utm-clinic-portal-d0bc3 200
+[debug] [2026-05-13T18:12:57.931Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/utm-clinic-portal-d0bc3 {"projectId":"utm-clinic-portal-d0bc3","projectNumber":"963874164482","displayName":"UTM CLINIC PORTAL","name":"projects/utm-clinic-portal-d0bc3","resources":{"hostingSite":"utm-clinic-portal-d0bc3"},"state":"ACTIVE","etag":"1_36b13099-2c77-41a8-bc5c-50fbf1a6c664"}
+[info] +  hosting[utm-clinic-portal-d0bc3]: Local server: http://localhost:5000 {"metadata":{"emulator":{"name":"hosting"},"message":"Local server: \u001b[4m\u001b[1mhttp://localhost:5000\u001b[22m\u001b[24m"}}
+[info] i  hosting: ::1 - - [13/May/2026:18:13:18 +0000] "GET / HTTP/1.1" 200 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"::1 - - [13/May/2026:18:13:18 +0000] \"GET / HTTP/1.1\" 200 - \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36\""}}
+[info] i  hosting: ::1 - - [13/May/2026:18:13:18 +0000] "GET /assets/LOGOUTM.png HTTP/1.1" 404 - "http://localhost:5000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"::1 - - [13/May/2026:18:13:18 +0000] \"GET /assets/LOGOUTM.png HTTP/1.1\" 404 - \"http://localhost:5000/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36\""}}
+[info] i  hosting: ::1 - - [13/May/2026:18:13:18 +0000] "GET /assets/UTM.png HTTP/1.1" 404 - "http://localhost:5000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"::1 - - [13/May/2026:18:13:18 +0000] \"GET /assets/UTM.png HTTP/1.1\" 404 - \"http://localhost:5000/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36\""}}
+[info] i  hosting: ::1 - - [13/May/2026:18:15:16 +0000] "GET /js/firebase-config.js HTTP/1.1" 404 - "http://localhost:5000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"::1 - - [13/May/2026:18:15:16 +0000] \"GET /js/firebase-config.js HTTP/1.1\" 404 - \"http://localhost:5000/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36\""}}
+[info] i  hosting: ::1 - - [13/May/2026:18:15:16 +0000] "GET /favicon.ico HTTP/1.1" 404 - "http://localhost:5000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"::1 - - [13/May/2026:18:15:16 +0000] \"GET /favicon.ico HTTP/1.1\" 404 - \"http://localhost:5000/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36\""}}
+[info] i  hosting: ::1 - - [13/May/2026:18:17:33 +0000] "GET / HTTP/1.1" 200 - "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"::1 - - [13/May/2026:18:17:33 +0000] \"GET / HTTP/1.1\" 200 - \"-\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36\""}}
+[info] i  hosting: ::1 - - [13/May/2026:18:17:33 +0000] "GET /assets/LOGOUTM.png HTTP/1.1" 404 - "http://localhost:5000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"::1 - - [13/May/2026:18:17:33 +0000] \"GET /assets/LOGOUTM.png HTTP/1.1\" 404 - \"http://localhost:5000/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36\""}}
+[info] i  hosting: ::1 - - [13/May/2026:18:17:33 +0000] "GET /assets/UTM.png HTTP/1.1" 404 - "http://localhost:5000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"::1 - - [13/May/2026:18:17:33 +0000] \"GET /assets/UTM.png HTTP/1.1\" 404 - \"http://localhost:5000/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36\""}}
+[info] i  hosting: ::1 - - [13/May/2026:18:19:03 +0000] "GET /js/firebase-config.js HTTP/1.1" 404 - "http://localhost:5000/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36" {"metadata":{"emulator":{"name":"hosting"},"message":"::1 - - [13/May/2026:18:19:03 +0000] \"GET /js/firebase-config.js HTTP/1.1\" 404 - \"http://localhost:5000/\" \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36\""}}
