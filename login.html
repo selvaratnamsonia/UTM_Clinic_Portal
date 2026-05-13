@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - UTM Clinic Portal</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { display: flex; height: 100vh; overflow: hidden; }
+
+        .login-container { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 40px; background-color: #ffffff; }
+        .login-box { width: 100%; max-width: 400px; }
+        
+        .utm-logo-top { height: 80px; width: auto; margin: 0 auto 20px; display: block; }
+        h2 { text-align: center; color: #333; font-size: 28px; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #777; margin-bottom: 30px; font-size: 14px; }
+
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-weight: 600; margin-bottom: 8px; color: #333; font-size: 14px; }
+
+        input[type="email"], input[type="password"], select {
+            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;
+            background-color: #f9f9f9; font-size: 14px; outline-color: #802c44;
+        }
+
+        .form-options { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; font-size: 13px; }
+        .remember-me { display: flex; align-items: center; gap: 5px; color: #333; }
+        .forgot-pass { color: #802c44; text-decoration: none; font-weight: 600; cursor: pointer; }
+
+        .btn-sign-in {
+            width: 100%; padding: 14px; background-color: #802c44; color: white;
+            border: none; border-radius: 8px; font-size: 16px; font-weight: 600;
+            cursor: pointer; transition: background 0.3s;
+        }
+        .btn-sign-in:hover { background-color: #612134; }
+
+        .register-link { text-align: center; margin-top: 25px; font-size: 14px; color: #555; }
+        .register-link a { color: #802c44; text-decoration: none; font-weight: 600; margin-left: 5px; }
+
+        .brand-container { flex: 1.2; background-color: #802c44; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; padding: 60px; text-align: center; }
+        .white-box { width: 100px; height: 100px; background: white; margin-bottom: 30px; border-radius: 12px; display: flex; justify-content: center; align-items: center; }
+        .brand-logo { height: 60px; width: auto; }
+        .brand-description { max-width: 450px; line-height: 1.6; font-size: 14px; opacity: 0.8; }
+
+        .error-message { 
+            background-color: #fee2e2; color: #b91c1c; padding: 10px; 
+            border-radius: 8px; margin-bottom: 20px; font-size: 13px; text-align: center; display: none; 
+        }
+
+        @media (max-width: 768px) { .brand-container { display: none; } }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <div class="login-box">
+            <img src="assets/LOGOUTM.png" alt="UTM Logo" class="utm-logo-top">
+            <h2>Welcome Back</h2>
+            <p class="subtitle">Sign in to access your clinic portal</p>
+
+            <div id="errorMessage" class="error-message"></div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="email" placeholder="your.email@utm.my" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="password" placeholder="Enter your password" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Login As</label>
+                    <select id="role">
+                        <option value="patient">Patient</option>
+                        <option value="doctor">Doctor</option>
+                        <option value="staff">Staff</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+
+                <div class="form-options">
+                    <label class="remember-me">
+                        <input type="checkbox" id="remember"> Remember me
+                    </label>
+                    <a href="forgot-password.html" class="forgot-pass">Forgot Password?</a>
+                </div>
+
+                <button type="submit" class="btn-sign-in">Sign In</button>
+            </form>
+
+            <div class="register-link">
+                Don't have an account? 
+                <a href="register.html">Register Now</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="brand-container">
+        <div class="white-box">
+            <img src="assets/UTM.png" alt="Clinic Logo" class="brand-logo">
+        </div>
+        <h1>UTM Clinic Portal</h1>
+        <p style="font-size: 18px; margin-bottom: 30px; opacity: 0.9;">Universiti Teknologi Malaysia</p>
+        <p class="brand-description">
+            Centralized appointment booking, patient record management, and communication between students and healthcare staff.
+        </p>
+    </div>
+
+    <script type="module">
+        import { auth, db } from './js/firebase-config.js';
+        import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+        const loginForm = document.getElementById('loginForm');
+        const errorDiv = document.getElementById('errorMessage');
+
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errorDiv.style.display = 'none';
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const selectedRole = document.getElementById('role').value;
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                const userRef = doc(db, "users", user.uid);
+                const userSnap = await getDoc(userRef);
+
+                if (userSnap.exists()) {
+                    const userData = userSnap.data();
+                    if (userData.role === selectedRole) {
+                        window.location.href = `${selectedRole}/${selectedRole}.html`;
+                    } else {
+                        throw new Error(`Access Denied: You are not registered as a ${selectedRole}.`);
+                    }
+                } else {
+                    throw new Error("User profile not found.");
+                }
+            } catch (error) {
+                errorDiv.textContent = error.message;
+                errorDiv.style.display = 'block';
+                await auth.signOut();
+            }
+        });
+    </script>
+</body>
+</html>
