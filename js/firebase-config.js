@@ -1,5 +1,4 @@
-// js/firebase-config.js (by Sonia Selvaratnam 13/5/2026)
-
+// js/firebase-config.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
@@ -11,10 +10,9 @@ const firebaseConfig = {
   storageBucket: "utm-clinic-portal.firebasestorage.app",
   messagingSenderId: "579361367162",
   appId: "1:579361367162:web:4e45c841ec63756aff07c3",
-  measurementId: "G-W1LNRL2VVY"  // optional
+  measurementId: "G-W1LNRL2VVY"   // optional, you can keep it or remove it
 };
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-// Sonia Selvaratnam 13/5/2026
