@@ -1,0 +1,258 @@
+//Sonia Selvaratnam 13/5/2026
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Dashboard - UTM Clinic</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .bg-primary { background-color: #802c44; }
+        .text-primary { color: #802c44; }
+        .hover\:bg-primary\/90:hover { background-color: #612134; }
+        .focus\:ring-primary:focus { --tw-ring-color: #802c44; }
+        .sidebar-transition { transition: width 0.3s ease; }
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="font-sans antialiased bg-gray-50">
+
+<div class="flex min-h-screen" id="app">
+    <!-- Sidebar -->
+    <aside :class="sidebarExpanded ? 'w-64' : 'w-20'" class="sidebar-transition bg-white border-r border-gray-200 flex flex-col">
+        <div class="p-6 border-b border-gray-200 flex items-center justify-between">
+            <img v-if="sidebarExpanded" src="assets/LOGOUTM.png" alt="UTM Clinic" class="h-16 w-auto mx-auto">
+            <button @click="sidebarExpanded = !sidebarExpanded" class="p-2 hover:bg-gray-100 rounded-lg ml-auto">
+                <i class="fas fa-sliders-h"></i>
+            </button>
+        </div>
+        <nav class="flex-1 p-4">
+            <a href="patient.html" class="flex items-center gap-3 px-4 py-3 rounded-lg mb-2 bg-primary text-white">
+                <i class="fas fa-home w-5"></i>
+                <span v-show="sidebarExpanded">Dashboard</span>
+            </a>
+            <a href="#" @click.prevent="showBookModal = true" class="flex items-center gap-3 px-4 py-3 rounded-lg mb-2 text-gray-700 hover:bg-gray-100">
+                <i class="fas fa-calendar-plus w-5"></i>
+                <span v-show="sidebarExpanded">Book Appointment</span>
+            </a>
+            <a href="#" @click.prevent="showAppointmentsModal = true" class="flex items-center gap-3 px-4 py-3 rounded-lg mb-2 text-gray-700 hover:bg-gray-100">
+                <i class="fas fa-list w-5"></i>
+                <span v-show="sidebarExpanded">My Appointments</span>
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg mb-2 text-gray-700 hover:bg-gray-100">
+                <i class="fas fa-user w-5"></i>
+                <span v-show="sidebarExpanded">Profile</span>
+            </a>
+        </nav>
+        <div class="p-4 border-t border-gray-200">
+            <button @click="logout" class="flex items-center gap-3 px-4 py-3 rounded-lg w-full text-gray-700 hover:bg-gray-100">
+                <i class="fas fa-sign-out-alt w-5"></i>
+                <span v-show="sidebarExpanded">Logout</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="flex-1 p-8">
+        <!-- Welcome -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold mb-2">Welcome, {{ userName }}</h1>
+            <p class="text-gray-500">All consultations are FREE for UTM students and staff</p>
+        </div>
+
+        <!-- Stats cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-lg border shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="p-3 bg-blue-100 rounded-lg">
+                        <i class="fas fa-calendar text-blue-600 text-xl"></i>
+                    </div>
+                </div>
+                <h3 class="text-2xl font-bold mb-1">{{ upcomingCount }}</h3>
+                <p class="text-sm text-gray-500">Upcoming Appointments</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg border shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="p-3 bg-gray-100 rounded-lg">
+                        <i class="fas fa-clock text-gray-600 text-xl"></i>
+                    </div>
+                </div>
+                <h3 class="text-2xl font-bold mb-1">{{ totalVisits }}</h3>
+                <p class="text-sm text-gray-500">Total Visits</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg border shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="p-3 bg-green-100 rounded-lg">
+                        <i class="fas fa-file-alt text-green-600 text-xl"></i>
+                    </div>
+                </div>
+                <h3 class="text-2xl font-bold mb-1">{{ mcCount }}</h3>
+                <p class="text-sm text-gray-500">Medical Certificates</p>
+            </div>
+            <button @click="showBookModal = true" class="bg-primary text-white p-6 rounded-lg hover:bg-primary/90 transition-colors flex flex-col items-center justify-center text-center">
+                <i class="fas fa-calendar-plus text-2xl mb-2"></i>
+                <span>Book New Appointment</span>
+            </button>
+        </div>
+
+        <!-- Upcoming appointments list -->
+        <div class="bg-white p-6 rounded-lg border shadow-sm mb-8">
+            <h2 class="text-xl font-bold mb-4">Upcoming Appointments</h2>
+            <div class="space-y-4">
+                <div v-for="apt in upcomingAppointments" :key="apt.id" class="p-4 bg-gray-50 rounded-lg flex items-center justify-between">
+                    <div>
+                        <p class="font-medium">{{ apt.doctorName || 'Doctor assigned soon' }}</p>
+                        <p class="text-sm text-gray-500">{{ apt.date }} at {{ apt.time || '10:00 AM' }}</p>
+                    </div>
+                    <span :class="{'bg-green-100 text-green-700': apt.status === 'confirmed', 'bg-yellow-100 text-yellow-700': apt.status === 'pending'}" class="px-3 py-1 rounded-full text-xs">
+                        {{ apt.status }}
+                    </span>
+                </div>
+                <div v-if="upcomingAppointments.length === 0" class="text-gray-500">No upcoming appointments.</div>
+            </div>
+            <a href="#" @click.prevent="showAppointmentsModal = true" class="block mt-4 text-center text-primary hover:underline">View All Appointments</a>
+        </div>
+    </main>
+
+    <!-- Book Appointment Modal -->
+    <div v-if="showBookModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" @click.self="showBookModal = false">
+        <div class="bg-white rounded-lg max-w-md w-full p-6">
+            <h2 class="text-xl font-bold mb-4">Book Appointment</h2>
+            <form @submit.prevent="bookAppointment">
+                <div class="mb-4">
+                    <label class="block mb-2">Preferred Date</label>
+                    <input type="date" v-model="newAppointment.date" :min="today" class="w-full p-2 border rounded" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block mb-2">Reason for Visit</label>
+                    <textarea v-model="newAppointment.reason" rows="3" class="w-full p-2 border rounded" required></textarea>
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" class="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90">Submit</button>
+                    <button type="button" @click="showBookModal = false" class="px-4 py-2 border rounded hover:bg-gray-100">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- My Appointments Modal -->
+    <div v-if="showAppointmentsModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" @click.self="showAppointmentsModal = false">
+        <div class="bg-white rounded-lg max-w-2xl w-full p-6 max-h-[80vh] overflow-auto">
+            <h2 class="text-xl font-bold mb-4">All Appointments</h2>
+            <table class="w-full text-left">
+                <thead class="bg-gray-100">
+                    <tr><th class="p-2">Date</th><th>Doctor</th><th>Reason</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                    <tr v-for="apt in allAppointments" :key="apt.id">
+                        <td class="p-2">{{ apt.date }}</td>
+                        <td>{{ apt.doctorName || '—' }}</td>
+                        <td>{{ apt.reason }}</td>
+                        <td><span :class="{'text-green-600': apt.status === 'confirmed', 'text-yellow-600': apt.status === 'pending'}">{{ apt.status }}</span></td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="mt-4 text-right">
+                <button @click="showAppointmentsModal = false" class="px-4 py-2 border rounded hover:bg-gray-100">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.js"></script>
+<script type="module">
+    import { auth, db } from './js/firebase-config.js';
+    import { signOut } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+    import { collection, query, where, getDocs, addDoc, orderBy, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+    new Vue({
+        el: '#app',
+        data: {
+            sidebarExpanded: true,
+            userName: '',
+            upcomingCount: 0,
+            totalVisits: 0,
+            mcCount: 0,
+            upcomingAppointments: [],
+            allAppointments: [],
+            showBookModal: false,
+            showAppointmentsModal: false,
+            newAppointment: { date: '', reason: '' },
+            today: new Date().toISOString().split('T')[0]
+        },
+        async mounted() {
+            // Check auth state
+            auth.onAuthStateChanged(async (user) => {
+                if (!user) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+                // Get user name from Firestore
+                const userRef = doc(db, "users", user.uid);
+                const userSnap = await getDoc(userRef);
+                this.userName = userSnap.exists() && userSnap.data().name ? userSnap.data().name : user.email.split('@')[0];
+                this.loadData(user.uid);
+            });
+        },
+        methods: {
+            async loadData(userId) {
+                // upcoming appointments
+                const aptQuery = query(
+                    collection(db, "appointments"),
+                    where("userId", "==", userId),
+                    where("date", ">=", this.today),
+                    where("status", "in", ["pending", "confirmed"]),
+                    orderBy("date", "asc")
+                );
+                const snap = await getDocs(aptQuery);
+                this.upcomingAppointments = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                this.upcomingCount = this.upcomingAppointments.length;
+
+                // total visits (completed)
+                const completedQuery = query(
+                    collection(db, "appointments"),
+                    where("userId", "==", userId),
+                    where("status", "==", "completed")
+                );
+                const completedSnap = await getDocs(completedQuery);
+                this.totalVisits = completedSnap.size;
+
+                // MC count (placeholder - you can count separate collection)
+                this.mcCount = 0;
+
+                // all appointments for modal
+                const allQuery = query(collection(db, "appointments"), where("userId", "==", userId), orderBy("date", "desc"));
+                const allSnap = await getDocs(allQuery);
+                this.allAppointments = allSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            },
+            async bookAppointment() {
+                const user = auth.currentUser;
+                if (!user) return;
+                try {
+                    await addDoc(collection(db, "appointments"), {
+                        userId: user.uid,
+                        date: this.newAppointment.date,
+                        reason: this.newAppointment.reason,
+                        status: "pending",
+                        doctorName: "",
+                        createdAt: new Date().toISOString()
+                    });
+                    alert("Appointment booked successfully!");
+                    this.showBookModal = false;
+                    this.newAppointment = { date: '', reason: '' };
+                    this.loadData(user.uid);
+                } catch (error) {
+                    alert("Error: " + error.message);
+                }
+            },
+            async logout() {
+                await signOut(auth);
+                window.location.href = 'index.html';
+            }
+        }
+    });
+</script>
+</body>
+</html>
+// Sonia Selvaratnam 13/5/2026
