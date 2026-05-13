@@ -1,4 +1,4 @@
-// js/firebase-config.js (by Sonia Selvaratnam 13/5/2026)
+// js/firebase-config.js <!-- (by Sonia Selvaratnam 13/5/2026)-->
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
