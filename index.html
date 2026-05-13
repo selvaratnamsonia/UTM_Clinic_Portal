@@ -1,0 +1,169 @@
+// Sonia Selvaratnam 13/5/2026
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - UTM Clinic Portal</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* Custom color overrides */
+        .bg-primary { background-color: #802c44; }
+        .text-primary { color: #802c44; }
+        .hover\:bg-primary\/90:hover { background-color: #612134; }
+        .focus\:ring-primary:focus { --tw-ring-color: #802c44; }
+        /* Smooth transitions */
+        .transition-all { transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 300ms; }
+    </style>
+</head>
+<body class="font-sans antialiased">
+    <div class="min-h-screen flex">
+        <!-- Left side: Form -->
+        <div class="flex-1 flex items-center justify-center bg-white p-8">
+            <div class="w-full max-w-md">
+                <div class="text-center mb-8">
+                    <img src="assets/LOGOUTM.png" alt="UTM Clinic" class="h-24 w-auto mx-auto mb-4">
+                    <h1 class="text-3xl font-bold mb-2">Welcome Back</h1>
+                    <p class="text-gray-500">Sign in to access your clinic portal</p>
+                </div>
+
+                <form id="loginForm" class="space-y-6">
+                    <div>
+                        <label for="email" class="block mb-2 font-medium">Email Address</label>
+                        <input type="email" id="email" name="email" placeholder="your.email@utm.my"
+                               class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
+                               required>
+                    </div>
+                    <div>
+                        <label for="password" class="block mb-2 font-medium">Password</label>
+                        <input type="password" id="password" name="password" placeholder="Enter your password"
+                               class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary"
+                               required>
+                    </div>
+                    <div>
+                        <label for="role" class="block mb-2 font-medium">Login As</label>
+                        <select id="role" name="role"
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary">
+                            <option value="patient">Patient</option>
+                            <option value="doctor">Doctor</option>
+                            <option value="staff">Staff</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" class="rounded border-gray-300">
+                            <span class="text-sm">Remember me</span>
+                        </label>
+                        <a href="#" class="text-sm text-primary hover:underline">Forgot Password?</a>
+                    </div>
+
+                    <button type="submit"
+                            class="w-full bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors">
+                        Sign In
+                    </button>
+                </form>
+
+                <div id="roleMessage" class="text-center mt-6 text-sm text-gray-500">
+                    <!-- dynamic message will appear here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Right side: Branding -->
+        <div class="hidden lg:flex flex-1 bg-primary items-center justify-center p-12">
+            <div class="text-center text-white">
+                <img src="assets/UTM.png" alt="UTM" class="h-32 w-auto mx-auto mb-8 brightness-0 invert">
+                <h2 class="text-4xl font-bold mb-4">UTM Clinic Portal</h2>
+                <p class="text-xl opacity-90 mb-8">Universiti Teknologi Malaysia</p>
+                <p class="text-lg opacity-75 max-w-md">
+                    Centralized appointment booking, patient record management, and communication between students and healthcare staff.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { auth } from './js/firebase-config.js';
+        import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+        import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+        import { db } from './js/firebase-config.js';
+
+        const form = document.getElementById('loginForm');
+        const roleSelect = document.getElementById('role');
+        const roleMessageDiv = document.getElementById('roleMessage');
+
+        // Update message based on role selection
+        function updateRoleMessage() {
+            const role = roleSelect.value;
+            if (role === 'patient') {
+                roleMessageDiv.innerHTML = `Don't have an account? <a href="#" id="registerLink" class="text-primary hover:underline">Register here</a>`;
+                const registerLink = document.getElementById('registerLink');
+                if (registerLink) {
+                    registerLink.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        // Simple registration: redirect to register page or show modal
+                        const email = prompt("Enter your email for registration:");
+                        const password = prompt("Enter a password:");
+                        if (email && password) {
+                            import("https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js").then(({ createUserWithEmailAndPassword }) => {
+                                createUserWithEmailAndPassword(auth, email, password)
+                                    .then(async (userCredential) => {
+                                        // Save role as 'patient' in Firestore
+                                        const userRef = doc(db, "users", userCredential.user.uid);
+                                        await setDoc(userRef, { email: email, role: 'patient', name: '' });
+                                        alert("Registration successful! Please login.");
+                                    })
+                                    .catch(error => alert(error.message));
+                            });
+                        }
+                    });
+                }
+            } else {
+                roleMessageDiv.innerHTML = `Account credentials are provided by the clinic administrator`;
+            }
+        }
+        roleSelect.addEventListener('change', updateRoleMessage);
+        updateRoleMessage();
+
+        // Login handler
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const role = roleSelect.value;
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                // Get user role from Firestore
+                const userRef = doc(db, "users", user.uid);
+                const userSnap = await getDoc(userRef);
+                let userRole = userSnap.exists() ? userSnap.data().role : null;
+                
+                // If no role assigned yet, assign based on login selection (for first login)
+                if (!userRole) {
+                    await setDoc(userRef, { email: email, role: role, name: '' }, { merge: true });
+                    userRole = role;
+                }
+                
+                // Check if selected role matches stored role
+                if (userRole !== role) {
+                    alert(`You are registered as ${userRole}. Please select the correct role.`);
+                    return;
+                }
+                
+                // Redirect to role-specific dashboard
+                window.location.href = `${userRole}.html`;
+            } catch (error) {
+                alert("Login failed: " + error.message);
+            }
+        });
+    </script>
+</body>
+</html>
+// Sonia Selvaratnam 13/5/2026
