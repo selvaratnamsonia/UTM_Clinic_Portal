@@ -19,7 +19,6 @@
             background: #F7F8FA;
         }
 
-        /* ================= SIDEBAR ================= */
         .sidebar {
             width: 260px;
             background: white;
@@ -57,7 +56,6 @@
             color: white;
         }
 
-        /* ================= MAIN ================= */
         .main {
             flex: 1;
             padding: 40px;
@@ -122,12 +120,26 @@
             border-color: #802c44;
         }
 
-        .readonly-field {
-            background-color: #f5f5f5;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid #e0e0e0;
-            color: #333;
+        input.input-error, textarea.input-error {
+            border-color: #dc3545;
+            background-color: #fff8f8;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .helper-text {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 5px;
         }
 
         .text-muted {
@@ -211,11 +223,8 @@
 </head>
 <body>
 
-<!-- ================= SIDEBAR ================= -->
 <div class="sidebar">
-    <div class="logo">
-        UTM Clinic
-    </div>
+    <div class="logo">UTM Clinic</div>
     <div class="nav-links">
         <a href="patient_dashboard.html" class="nav-link">Dashboard</a>
         <a href="appointments.html" class="nav-link">Appointments</a>
@@ -225,19 +234,16 @@
     </div>
 </div>
 
-<!-- ================= MAIN ================= -->
 <div class="main">
     <h1>My Profile</h1>
     <p class="subtitle">View and manage your personal information</p>
 
-    <!-- Alert messages -->
     <div id="alertSuccess" class="alert alert-success"></div>
     <div id="alertError" class="alert alert-error"></div>
 
-    <!-- ================= PERSONAL INFO ================= -->
+    <!-- Personal Information Card -->
     <div class="card">
         <h2>👤 Personal Information</h2>
-
         <form id="profileForm">
             <div class="form-group">
                 <label>Full Name</label>
@@ -259,11 +265,15 @@
             <div class="form-group">
                 <label>Phone Number</label>
                 <input type="tel" id="phone" disabled>
+                <div id="phoneError" class="error-message"></div>
+                <div class="helper-text">Format: 012-3456789 or 0123456789 (Malaysian number)</div>
             </div>
 
             <div class="form-group">
                 <label>Address</label>
                 <textarea id="address" rows="3" disabled></textarea>
+                <div id="addressError" class="error-message"></div>
+                <div class="helper-text">Enter your full address OR UTM College (e.g., K9, UTM; KLG, UTM; KTF, UTM; KTHO, UTM; KRP, UTM; KTC, UTM; K12, UTM)</div>
             </div>
 
             <div class="action-buttons">
@@ -274,7 +284,7 @@
         </form>
     </div>
 
-    <!-- ================= PASSWORD CHANGE ================= -->
+    <!-- Password Change Card -->
     <div class="card">
         <h2>🔒 Change Password</h2>
         <form id="passwordForm">
@@ -285,11 +295,12 @@
             <div class="form-group">
                 <label>New Password</label>
                 <input type="password" id="newPassword" required minlength="8">
-                <div class="text-muted">Minimum 8 characters</div>
+                <div class="text-muted">Minimum 8 characters required</div>
             </div>
             <div class="form-group">
                 <label>Confirm New Password</label>
                 <input type="password" id="confirmPassword" required>
+                <div id="passwordMatchError" class="error-message"></div>
             </div>
             <button type="submit" class="btn btn-primary">Update Password</button>
         </form>
@@ -300,6 +311,62 @@
     import { auth, db } from './js/firebase-config.js';
     import { signOut, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
     import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+    // Validation functions
+    function validatePhoneNumber(phone) {
+        // Malaysian phone number format: 
+        // 01X-XXXXXXX or 01XXXXXXXX or 011-XXXXXXXX or 011XXXXXXXX
+        const phoneRegex = /^(01[0-9]-?[0-9]{7,8}$)|(01[0-9][0-9]{7,8}$)/;
+        if (!phone || phone.trim() === '') {
+            return { valid: false, message: 'Phone number is required' };
+        }
+        if (!phoneRegex.test(phone)) {
+            return { valid: false, message: 'Please enter a valid Malaysian phone number (e.g., 012-3456789 or 0123456789)' };
+        }
+        return { valid: true, message: '' };
+    }
+
+    function validateAddress(address) {
+        if (!address || address.trim() === '') {
+            return { valid: false, message: 'Address is required' };
+        }
+        
+        const trimmedAddress = address.trim().toUpperCase();
+        
+        // List of valid UTM colleges
+        const utmColleges = [
+            'K9', 'K10', 'K11', 'K12', 'K13', 'K14', 'K15', 'K16', 'K17',
+            'KLG', 'KTF', 'KTHO', 'KRP', 'KTC', 'KPZ', 'KDO', 'KMP', 'KX'
+        ];
+        
+        // Check if it matches UTM college format (e.g., "K9, UTM" or "K9,UTM" or "K9 UTM")
+        const utmPattern = new RegExp(`^(${utmColleges.join('|')})\\s*[,]?\\s*UTM$`, 'i');
+        
+        if (utmPattern.test(trimmedAddress)) {
+            return { valid: true, message: '' };
+        }
+        
+        // If not UTM college, check if it's a reasonable address (at least 10 characters)
+        if (trimmedAddress.length >= 10) {
+            return { valid: true, message: '' };
+        }
+        
+        return { valid: false, message: 'Please enter a valid address (full address or UTM College format like "K9, UTM")' };
+    }
+
+    function showFieldError(fieldId, errorId, message) {
+        const field = document.getElementById(fieldId);
+        const errorDiv = document.getElementById(errorId);
+        if (message) {
+            field.classList.add('input-error');
+            errorDiv.textContent = message;
+            errorDiv.classList.add('show');
+        } else {
+            field.classList.remove('input-error');
+            errorDiv.textContent = '';
+            errorDiv.classList.remove('show');
+        }
+    }
 
     // Auth check
     auth.onAuthStateChanged(async (user) => {
@@ -330,11 +397,14 @@
     
     document.getElementById('editBtn').addEventListener('click', () => {
         isEditMode = true;
-        // Enable form fields
         document.getElementById('name').disabled = false;
         document.getElementById('phone').disabled = false;
         document.getElementById('address').disabled = false;
-        // Show/hide buttons
+        
+        // Clear any existing errors
+        showFieldError('phone', 'phoneError', '');
+        showFieldError('address', 'addressError', '');
+        
         document.getElementById('editBtn').style.display = 'none';
         document.getElementById('saveBtn').style.display = 'inline-block';
         document.getElementById('cancelBtn').style.display = 'inline-block';
@@ -342,30 +412,51 @@
 
     document.getElementById('cancelBtn').addEventListener('click', () => {
         isEditMode = false;
-        // Reload original data
         loadUserData(auth.currentUser.uid);
-        // Disable fields again
+        
         document.getElementById('name').disabled = true;
         document.getElementById('phone').disabled = true;
         document.getElementById('address').disabled = true;
-        // Show/hide buttons
+        
+        showFieldError('phone', 'phoneError', '');
+        showFieldError('address', 'addressError', '');
+        
         document.getElementById('editBtn').style.display = 'inline-block';
         document.getElementById('saveBtn').style.display = 'none';
         document.getElementById('cancelBtn').style.display = 'none';
         hideAlerts();
     });
 
-    // Save profile changes
+    // Save profile changes with validation
     document.getElementById('profileForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         
         const user = auth.currentUser;
         if (!user) return;
 
+        const phone = document.getElementById('phone').value;
+        const address = document.getElementById('address').value;
+
+        // Validate phone
+        const phoneValidation = validatePhoneNumber(phone);
+        if (!phoneValidation.valid) {
+            showFieldError('phone', 'phoneError', phoneValidation.message);
+            return;
+        }
+        showFieldError('phone', 'phoneError', '');
+
+        // Validate address
+        const addressValidation = validateAddress(address);
+        if (!addressValidation.valid) {
+            showFieldError('address', 'addressError', addressValidation.message);
+            return;
+        }
+        showFieldError('address', 'addressError', '');
+
         const updatedData = {
             name: document.getElementById('name').value,
-            phone: document.getElementById('phone').value,
-            address: document.getElementById('address').value
+            phone: phone,
+            address: address
         };
 
         try {
@@ -374,7 +465,6 @@
             
             showAlert('Profile updated successfully!', 'success');
             
-            // Exit edit mode
             isEditMode = false;
             document.getElementById('name').disabled = true;
             document.getElementById('phone').disabled = true;
@@ -383,7 +473,6 @@
             document.getElementById('saveBtn').style.display = 'none';
             document.getElementById('cancelBtn').style.display = 'none';
             
-            // Reload data to confirm
             await loadUserData(user.uid);
             
             setTimeout(() => hideAlerts(), 3000);
@@ -392,7 +481,7 @@
         }
     });
 
-    // Change password
+    // Change password with validation
     document.getElementById('passwordForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         
@@ -401,8 +490,14 @@
         const newPassword = document.getElementById('newPassword').value;
         const confirmPassword = document.getElementById('confirmPassword').value;
 
+        // Clear previous password match error
+        const passwordMatchError = document.getElementById('passwordMatchError');
+        passwordMatchError.classList.remove('show');
+        passwordMatchError.textContent = '';
+
         if (newPassword !== confirmPassword) {
-            showAlert('New passwords do not match', 'error');
+            passwordMatchError.textContent = 'New passwords do not match';
+            passwordMatchError.classList.add('show');
             return;
         }
 
@@ -412,7 +507,6 @@
         }
 
         try {
-            // Re-authenticate user before changing password
             const credential = EmailAuthProvider.credential(user.email, currentPassword);
             await reauthenticateWithCredential(user, credential);
             await updatePassword(user, newPassword);
@@ -436,7 +530,6 @@
         window.location.href = 'login.html';
     });
 
-    // Helper functions for alerts
     function showAlert(message, type) {
         const alertDiv = document.getElementById(`alert${type === 'success' ? 'Success' : 'Error'}`);
         alertDiv.textContent = message;
