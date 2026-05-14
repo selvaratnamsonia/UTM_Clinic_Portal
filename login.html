@@ -23,7 +23,7 @@
             background-color: #f9f9f9; font-size: 14px; outline-color: #802c44;
         }
 
-        .form-options { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; font-size: 13px; }
+        .form-options { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; font-size: 13px; flex-wrap: wrap; gap: 10px; }
         .remember-me { display: flex; align-items: center; gap: 5px; color: #333; }
         .forgot-pass { color: #802c44; text-decoration: none; font-weight: 600; cursor: pointer; }
 
@@ -46,6 +46,11 @@
             background-color: #fee2e2; color: #b91c1c; padding: 10px; 
             border-radius: 8px; margin-bottom: 20px; font-size: 13px; text-align: center; display: none; 
         }
+        
+        .verification-info {
+            background-color: #fff3cd; color: #856404; padding: 10px;
+            border-radius: 8px; margin-bottom: 20px; font-size: 13px; text-align: center;
+        }
 
         @media (max-width: 768px) { .brand-container { display: none; } }
     </style>
@@ -59,6 +64,10 @@
             <p class="subtitle">Sign in to access your clinic portal</p>
 
             <div id="errorMessage" class="error-message"></div>
+            <div id="verificationMessage" class="verification-info" style="display: none;">
+                <i class="fas fa-envelope"></i> Please verify your email before logging in. Check your inbox for the verification link.
+                <a href="#" id="resendLink" style="color: #802c44; display: block; margin-top: 8px;">Click here to resend verification email</a>
+            </div>
 
             <form id="loginForm">
                 <div class="form-group">
@@ -85,7 +94,10 @@
                     <label class="remember-me">
                         <input type="checkbox" id="remember"> Remember me
                     </label>
-                    <a href="forgot-password.html" class="forgot-pass">Forgot Password?</a>
+                    <div style="display: flex; gap: 15px;">
+                        <a href="forgot-password.html" class="forgot-pass">Forgot Password?</a>
+                        <a href="#" id="resendFromLogin" class="forgot-pass" style="display: none;">Resend Verification</a>
+                    </div>
                 </div>
 
                 <button type="submit" class="btn-sign-in">Sign In</button>
@@ -110,45 +122,98 @@
     </div>
 
     <script type="module">
-    import { auth, db } from './js/firebase-config.js';
-    import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+        import { auth, db } from './js/firebase-config.js';
+        import { signInWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
-    const loginForm = document.getElementById('loginForm');
-    const errorDiv = document.getElementById('errorMessage');
+        const loginForm = document.getElementById('loginForm');
+        const errorDiv = document.getElementById('errorMessage');
+        const verificationDiv = document.getElementById('verificationMessage');
+        let lastAttemptedEmail = '';
 
-    loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        errorDiv.style.display = 'none';
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            errorDiv.style.display = 'none';
+            verificationDiv.style.display = 'none';
 
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-        const selectedRole = document.getElementById('role').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const selectedRole = document.getElementById('role').value;
+            lastAttemptedEmail = email;
 
-        try {
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
-
-            const userRef = doc(db, "users", user.uid);
-            const userSnap = await getDoc(userRef);
-
-            if (userSnap.exists()) {
-                const userData = userSnap.data();
-                if (userData.role === selectedRole) {
-                    // redirect to the correct dashboard file
-                    window.location.href = `${selectedRole}_dashboard.html`;
-                } else {
-                    throw new Error(`Access Denied: You are not registered as a ${selectedRole}.`);
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                
+                // Check if email is verified
+                if (!user.emailVerified) {
+                    verificationDiv.style.display = 'block';
+                    errorDiv.style.display = 'none';
+                    await auth.signOut();
+                    return;
                 }
-            } else {
-                throw new Error("User profile not found. Please register first.");
+                
+                const userRef = doc(db, "users", user.uid);
+                const userSnap = await getDoc(userRef);
+
+                if (userSnap.exists()) {
+                    const userData = userSnap.data();
+                    if (userData.role === selectedRole) {
+                        window.location.href = `${selectedRole}_dashboard.html`;
+                    } else {
+                        throw new Error(`Access Denied: You are not registered as a ${selectedRole}.`);
+                    }
+                } else {
+                    throw new Error("User profile not found. Please register first.");
+                }
+            } catch (error) {
+                if (error.code === 'auth/user-not-found') {
+                    errorDiv.textContent = "No account found with this email. Please register first.";
+                } else if (error.code === 'auth/wrong-password') {
+                    errorDiv.textContent = "Incorrect password. Please try again.";
+                } else if (error.message.includes("verify")) {
+                    verificationDiv.style.display = 'block';
+                    errorDiv.style.display = 'none';
+                } else {
+                    errorDiv.textContent = error.message;
+                }
+                errorDiv.style.display = 'block';
+                await auth.signOut();
             }
-        } catch (error) {
-            errorDiv.textContent = error.message;
-            errorDiv.style.display = 'block';
-            await auth.signOut();
+        });
+
+        // Resend verification email
+        async function resendVerification(email) {
+            try {
+                // Sign in temporarily to get user object
+                const password = prompt("Please enter your password to confirm your identity:");
+                if (!password) return;
+                
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+                
+                if (user.emailVerified) {
+                    alert("Your email is already verified! You can log in now.");
+                    verificationDiv.style.display = 'none';
+                } else {
+                    await sendEmailVerification(user);
+                    alert("Verification email resent! Please check your inbox.");
+                }
+                await auth.signOut();
+            } catch (error) {
+                alert("Error: " + error.message);
+            }
         }
-    });
-</script>
+
+        document.getElementById('resendLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            if (lastAttemptedEmail) {
+                resendVerification(lastAttemptedEmail);
+            } else {
+                const email = prompt("Enter your email address to receive a verification link:");
+                if (email) resendVerification(email);
+            }
+        });
+    </script>
 </body>
 </html>
