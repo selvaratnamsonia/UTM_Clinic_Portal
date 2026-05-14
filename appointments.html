@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointment History - UTM Clinic Portal</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            background: #f7f8fa;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* ================= SIDEBAR ================= */
+
+        .sidebar {
+            width: 260px;
+            background: white;
+            border-right: 1px solid #e5e7eb;
+            padding: 20px 0;
+        }
+
+        .logo {
+            padding: 0 20px 30px;
+            font-size: 22px;
+            font-weight: bold;
+            color: #7c1d3b;
+        }
+
+        .nav-links {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav-link {
+            padding: 14px 20px;
+            color: #555;
+            transition: 0.2s;
+        }
+
+        .nav-link:hover {
+            background: #f3f4f6;
+        }
+
+        .nav-link.active {
+            background: #7c1d3b;
+            color: white;
+        }
+
+        /* ================= MAIN ================= */
+
+        .main {
+            flex: 1;
+            padding: 40px;
+        }
+
+        .page-title {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #777;
+            margin-bottom: 30px;
+        }
+
+        /* ================= CARD ================= */
+
+        .card {
+            background: white;
+            border-radius: 14px;
+            padding: 25px;
+            border: 1px solid #e5e7eb;
+        }
+
+        /* ================= FILTER BUTTONS ================= */
+
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        .filter-btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            background: #e5e7eb;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .filter-btn.active {
+            background: #7c1d3b;
+            color: white;
+        }
+
+        /* ================= APPOINTMENT ================= */
+
+        .appointment {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 16px;
+            transition: 0.2s;
+        }
+
+        .appointment:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .appointment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .doctor-name {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .status {
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: capitalize;
+        }
+
+        .confirmed {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .pending {
+            background: #fef9c3;
+            color: #a16207;
+        }
+
+        .completed {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .cancelled {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .appointment-info {
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .reason {
+            margin-bottom: 15px;
+        }
+
+        /* ================= BUTTONS ================= */
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        .btn-mc {
+            background: #0ea5e9;
+            color: white;
+        }
+
+        .btn-mc:hover {
+            background: #0284c7;
+        }
+
+        .btn-cancel {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .btn-cancel:hover {
+            background: #fecaca;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #777;
+        }
+
+    </style>
+</head>
+
+<body>
+
+
+
+<!-- ================= SIDEBAR ================= -->
+
+<div class="sidebar">
+
+    <div class="logo">
+        UTM Clinic
+    </div>
+
+    <div class="nav-links">
+        <a href="patient-dashboard.html" class="nav-link">Dashboard</a>
+        <a href="book-appointment.html" class="nav-link">Book Appointment</a>
+        <a href="appointment-history.html" class="nav-link active">Appointments</a>
+        <a href="patient-profile.html" class="nav-link">Profile</a>
+        <a href="logout.html" class="nav-link">Logout</a>
+    </div>
+
+</div>
+
+<!-- ================= MAIN ================= -->
+
+<div class="main">
+
+    <h1 class="page-title">Appointment History</h1>
+    <p class="subtitle">View and manage your clinic appointments</p>
+
+    <div class="card">
+
+        <!-- ================= FILTERS ================= -->
+
+        <div class="filters">
+
+           
+                    <a href='?filter=$status'>
+                        <button class='filter-btn $active'>
+                           
+                        </button>
+                    </a>
+               
+
+        </div>
+
+        <!-- ================= APPOINTMENTS ================= -->
+
+
+        <div class="appointment">
+
+            <div class="appointment-header">
+
+                <div class="doctor-name">
+                  
+                </div>
+
+                <div class="status <?php echo $appointment['status']; ?>">
+                   
+                </div>
+
+            </div>
+
+            <div class="appointment-info">
+                
+            </div>
+
+            <div class="reason">
+                
+            </div>
+
+            <div class="actions">
+
+          
+                    <a href="view-mc.php?id=<?php echo $appointment['id']; ?>">
+                        <button class="btn btn-mc">
+                            View MC
+                        </button>
+                    </a>   
+              
+
+                    <a href="cancel-appointment.php?id=<?php echo $appointment['id']; ?>">
+                        <button
+                            class="btn btn-cancel"
+                            onclick="return confirm('Are you sure you want to cancel this appointment?')"
+                        >
+                            Cancel Appointment
+                        </button>
+                    </a>
+
+            </div>
+
+        </div>
+
+      
+            <div class="empty">
+                No appointments found.
+            </div>
+
+    
+    </div>
+
+</div>
+
+</body>
+</html>
