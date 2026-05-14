@@ -7,48 +7,29 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #f8f9fa; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-
-        .register-card { 
-            background: white; padding: 40px; border-radius: 12px; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08); width: 100%; max-width: 650px; text-align: center; 
-        }
-
+        .register-card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); width: 100%; max-width: 650px; text-align: center; }
         .utm-logo { height: 70px; margin-bottom: 20px; }
         h2 { color: #333; font-size: 24px; margin-bottom: 5px; }
         .subtitle { color: #777; font-size: 14px; margin-bottom: 30px; }
-
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: left; }
         .form-group { margin-bottom: 15px; }
         .full-width { grid-column: span 2; }
-
         label { display: block; font-weight: 600; margin-bottom: 8px; color: #333; font-size: 13px; }
-        input, textarea { 
-            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; 
-            background-color: #f9f9f9; font-size: 14px; outline-color: #802c44; 
-        }
+        input, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; background-color: #f9f9f9; font-size: 14px; outline-color: #802c44; }
         textarea { resize: none; }
-
-        .btn-register {
-            width: 100%; padding: 14px; background-color: #802c44; color: white;
-            border: none; border-radius: 8px; font-size: 16px; font-weight: 600;
-            cursor: pointer; margin-top: 20px; transition: 0.3s;
-        }
-        .btn-register:hover { background-color: #612134; }
-
+        .btn-register { width: 100%; padding: 14px; background-color: #802c44; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 20px; transition: 0.3s; }
+        .btn-register:disabled { background-color: #ccc; cursor: not-allowed; }
+        .btn-register:hover:not(:disabled) { background-color: #612134; }
         .login-link { margin-top: 20px; font-size: 13px; color: #555; }
         .login-link a { color: #802c44; text-decoration: none; font-weight: 600; }
-
-        .error-message { 
-            background-color: #fee2e2; color: #b91c1c; padding: 10px; 
-            border-radius: 8px; margin-bottom: 20px; font-size: 13px; display: none;
-        }
-
+        .error-message { background-color: #fee2e2; color: #b91c1c; padding: 10px; border-radius: 8px; margin-bottom: 20px; font-size: 13px; display: none; }
         @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } .full-width { grid-column: span 1; } }
     </style>
 </head>
 <body>
 
     <div class="register-card">
+        <!-- Logo path matches your structure -->
         <img src="images/utm-logo.png" alt="UTM Logo" class="utm-logo">
         <h2>Create Account</h2>
         <p class="subtitle">Register to book appointments at UTM Clinic</p>
@@ -65,7 +46,6 @@
                     <label>Email Address</label>
                     <input type="email" id="email" placeholder="ahmad@graduate.utm.my" required>
                 </div>
-
                 <div class="form-group">
                     <label>Matric Number</label>
                     <input type="text" id="matric" placeholder="A21EC0001" required>
@@ -74,12 +54,10 @@
                     <label>Phone Number</label>
                     <input type="text" id="phone" placeholder="012-3456789" required>
                 </div>
-
                 <div class="form-group full-width">
                     <label>Address</label>
                     <textarea id="address" rows="3" placeholder="Residential College, UTM"></textarea>
                 </div>
-
                 <div class="form-group">
                     <label>Password</label>
                     <input type="password" id="password" placeholder="Minimum 8 characters" required>
@@ -89,8 +67,7 @@
                     <input type="password" id="confirmPassword" placeholder="Re-enter password" required>
                 </div>
             </div>
-
-            <button type="submit" class="btn-register">Create Account</button>
+                <button type="submit" id="submitBtn" class="btn-register">Create Account</button>
         </form>
 
         <p class="login-link">Already have an account? <a href="login.html">Sign in here</a></p>
@@ -98,16 +75,17 @@
 
     <script type="module">
         import { auth, db } from './js/firebase-config.js';
-        import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
-        import { doc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+        import { createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+        import { doc, setDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
         const registerForm = document.getElementById('registerForm');
         const errorDiv = document.getElementById('errorMessage');
+        const submitBtn = document.getElementById('submitBtn');
 
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             errorDiv.style.display = 'none';
-
+        
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
@@ -122,13 +100,13 @@
                 return;
             }
 
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Creating Account...";
+
             try {
-                // 1. Create user in Auth
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCredential.user;
 
-                // 2. Save additional data to Firestore
-                // We default new registrations to 'patient' role
                 await setDoc(doc(db, "users", user.uid), {
                     name: name,
                     email: email,
@@ -139,12 +117,15 @@
                     createdAt: new Date().toISOString()
                 });
 
-                alert("Account created successfully!");
+                alert("Registration successful! You can now log in.");
                 window.location.href = 'login.html';
 
             } catch (error) {
+                console.error("Error during registration:", error);
                 errorDiv.textContent = error.message;
                 errorDiv.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Create Account";
             }
         });
     </script>
