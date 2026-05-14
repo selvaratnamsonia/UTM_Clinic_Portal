@@ -1,272 +1,111 @@
+<!-- Patient Profile page by Sonia Selvaratnam 14/5/2026 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Patient Profile - UTM Clinic Portal</title>
-
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            display: flex;
-            min-height: 100vh;
-            background: #F7F8FA;
-        }
-
-        a {
-            text-decoration: none;
-            color: inherit;
-        }
-
-        /* ================= SIDEBAR ================= */
-
-        .sidebar {
-            width: 260px;
-            background: white;
-            border-right: 1px solid #EAEAEA;
-            padding: 20px 0;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .logo {
-            padding: 0 20px 40px;
-            font-size: 20px;
-            font-weight: bold;
-            color: #802c44;
-        }
-
-        .nav-links {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .nav-link {
-            padding: 14px 20px;
-            color: #555;
-        }
-
-        .nav-link:hover {
-            background: #f5f5f5;
-        }
-
-        .nav-link.active {
-            background: #802c44;
-            color: white;
-        }
-
-        /* ================= MAIN ================= */
-
-        .main {
-            flex: 1;
-            padding: 40px;
-            max-width: 900px;
-        }
-
-        h1 {
-            font-size: 32px;
-            margin-bottom: 5px;
-        }
-
-        .subtitle {
-            color: #777;
-            margin-bottom: 30px;
-        }
-
-        .card {
-            background: white;
-            padding: 30px;
-            border-radius: 14px;
-            border: 1px solid #EAEAEA;
-            margin-bottom: 25px;
-        }
-
-        h2 {
-            font-size: 20px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        label {
-            display: block;
-            margin: 12px 0 6px;
-            font-size: 14px;
-        }
-
-        input, textarea {
-            width: 100%;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid #ddd;
-            outline: none;
-        }
-
-        input:disabled, textarea:disabled {
-            background: #f3f3f3;
-            color: #888;
-        }
-
-        .text-muted {
-            font-size: 12px;
-            color: #777;
-            margin-top: 5px;
-        }
-
-        .btn {
-            padding: 12px 18px;
-            border-radius: 10px;
-            border: none;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .btn-primary {
-            background: #802c44;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            opacity: 0.9;
-        }
-
-        .btn-outline {
-            border: 1px solid #ddd;
-            background: white;
-        }
-
-        .btn-outline:hover {
-            background: #f5f5f5;
-        }
-
-        .row {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-
-        .row .btn {
-            flex: 1;
-        }
-
-    </style>
+    <title>My Profile - UTM Clinic</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
-
-<body>
-
-
-
-<!-- ================= SIDEBAR ================= -->
-
-<div class="sidebar">
-
-    <div class="logo">
-        UTM Clinic
+<body class="bg-gray-100">
+    <div class="max-w-2xl mx-auto p-6">
+        <h1 class="text-3xl font-bold mb-2">My Profile</h1>
+        <p class="text-gray-500 mb-6">Manage your personal information</p>
+        <div class="bg-white rounded shadow p-6">
+            <form id="profileForm">
+                <div class="mb-4">
+                    <label class="block mb-1">Full Name</label>
+                    <input type="text" id="name" class="w-full p-2 border rounded" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block mb-1">Email</label>
+                    <input type="email" id="email" class="w-full p-2 border rounded bg-gray-100" disabled>
+                </div>
+                <div class="mb-4">
+                    <label class="block mb-1">Matric Number</label>
+                    <input type="text" id="matric" class="w-full p-2 border rounded bg-gray-100" disabled>
+                </div>
+                <div class="mb-4">
+                    <label class="block mb-1">Phone</label>
+                    <input type="tel" id="phone" class="w-full p-2 border rounded" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block mb-1">Address</label>
+                    <textarea id="address" rows="3" class="w-full p-2 border rounded"></textarea>
+                </div>
+                <button type="submit" class="bg-primary text-white px-6 py-2 rounded hover:opacity-90">Save Changes</button>
+            </form>
+            <hr class="my-6">
+            <h2 class="text-xl font-bold mb-4">Change Password</h2>
+            <form id="passwordForm">
+                <div class="mb-4">
+                    <label class="block mb-1">Current Password</label>
+                    <input type="password" id="currentPwd" class="w-full p-2 border rounded" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block mb-1">New Password</label>
+                    <input type="password" id="newPwd" class="w-full p-2 border rounded" required minlength="8">
+                </div>
+                <div class="mb-4">
+                    <label class="block mb-1">Confirm Password</label>
+                    <input type="password" id="confirmPwd" class="w-full p-2 border rounded" required>
+                </div>
+                <button type="submit" class="bg-primary text-white px-6 py-2 rounded hover:opacity-90">Update Password</button>
+            </form>
+        </div>
     </div>
+    <script type="module">
+        import { auth, db } from './js/firebase-config.js';
+        import { updatePassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+        import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
-    <div class="nav-links">
-        <a href="patient-dashboard.html" class="nav-link active">Dashboard</a>
-        <a href="appointments.html" class="nav-link">Appointments</a>
-        <a href="book-appointment.html" class="nav-link">Book Appointment</a>
-        <a href="patient-profile.html" class="nav-link">Profile</a>
-        <a href="logout.html" class="nav-link">Logout</a>
-    </div>
+        const user = auth.currentUser;
+        if (!user) window.location.href = 'login.html';
 
-</div>
+        // Load profile
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+            const data = userSnap.data();
+            document.getElementById('name').value = data.name || '';
+            document.getElementById('email').value = user.email;
+            document.getElementById('matric').value = data.matricNumber || '';
+            document.getElementById('phone').value = data.phone || '';
+            document.getElementById('address').value = data.address || '';
+        }
 
-<!-- ================= MAIN ================= -->
+        // Save profile
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await updateDoc(userRef, {
+                name: document.getElementById('name').value,
+                phone: document.getElementById('phone').value,
+                address: document.getElementById('address').value
+            });
+            alert("Profile updated!");
+        });
 
-<div class="main">
-
-    <h1>My Profile</h1>
-    <p class="subtitle">Manage your personal information</p>
-
-    <!-- ================= PERSONAL INFO ================= -->
-
-    <div class="card">
-
-        <h2>👤 Personal Information</h2>
-
-        <form method="POST" action="update-profile.html">
-
-            <label>Full Name</label>
-            <input type="text" name="name"
-                   value="">
-
-            <label>Email Address</label>
-            <input type="email"
-                   value=""
-                   disabled>
-            <div class="text-muted">Email cannot be changed</div>
-
-            <label>Matric Number</label>
-            <input type="text"
-                   value=""
-                   disabled>
-            <div class="text-muted">Matric number cannot be changed</div>
-
-            <label>Phone Number</label>
-            <input type="text" name="phone"
-                   value="">
-
-            <label>Address</label>
-            <textarea name="address" rows="3"></textarea>
-
-            <div class="row">
-                <button class="btn btn-primary" type="submit">
-                    Save Changes
-                </button>
-
-                <button class="btn btn-outline" type="button"
-                        onclick="location.reload()">
-                    Cancel
-                </button>
-            </div>
-
-        </form>
-    </div>
-
-    <!-- ================= PASSWORD ================= -->
-
-    <div class="card">
-
-        <h2>🔒 Change Password</h2>
-
-        <form method="POST" action="change-password.php">
-
-            <label>Current Password</label>
-            <input type="password" name="current" required>
-
-            <label>New Password</label>
-            <input type="password" name="new" required minlength="8">
-            <div class="text-muted">Minimum 8 characters</div>
-
-            <label>Confirm New Password</label>
-            <input type="password" name="confirm" required minlength="8">
-
-            <div class="row">
-                <button class="btn btn-primary" type="submit">
-                    Update Password
-                </button>
-
-                <button class="btn btn-outline" type="button"
-                        onclick="document.querySelectorAll('input[type=password]').forEach(i => i.value='')">
-                    Cancel
-                </button>
-            </div>
-
-        </form>
-
-    </div>
-
-</div>
-
+        // Change password
+        document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const current = document.getElementById('currentPwd').value;
+            const newPwd = document.getElementById('newPwd').value;
+            const confirm = document.getElementById('confirmPwd').value;
+            if (newPwd !== confirm) {
+                alert("New passwords do not match");
+                return;
+            }
+            try {
+                // Re-authenticate user
+                const credential = await signInWithEmailAndPassword(auth, user.email, current);
+                await updatePassword(credential.user, newPwd);
+                alert("Password changed successfully");
+                document.getElementById('passwordForm').reset();
+            } catch (error) {
+                alert("Failed to change password: " + error.message);
+            }
+        });
+    </script>
 </body>
 </html>
+<!-- Patient Profile page by Sonia Selvaratnam 14/5/2026 -->

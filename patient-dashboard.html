@@ -249,8 +249,17 @@
 </head>
 
 <body>
+    <!-- Sonia Selvaratnam 14/5/2026 -->
+<script type="module">
+    import { auth } from './js/firebase-config.js';
 
-
+    auth.onAuthStateChanged((user) => {
+        if (!user) {
+            window.location.href = 'login.html';
+        }
+    });
+</script>
+<!-- Sonia Selvaratnam 14/5/2026 -->
 
 <!-- ================= SIDEBAR ================= -->
 

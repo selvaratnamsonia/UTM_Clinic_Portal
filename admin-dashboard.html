@@ -1,314 +1,79 @@
+<!-- Admin Dashboard by Sonia Selvaratnam 14/5/2026 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - UTM Clinic</title>
-
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            display: flex;
-            min-height: 100vh;
-            background: #F7F8FA;
-        }
-
-        a {
-            text-decoration: none;
-            color: inherit;
-        }
-
-        /* ================= SIDEBAR ================= */
-
-        .sidebar {
-            width: 260px;
-            background: white;
-            border-right: 1px solid #EAEAEA;
-            padding: 20px 0;
-        }
-
-        .logo {
-            padding: 0 20px 40px;
-            font-size: 22px;
-            font-weight: bold;
-            color: #802c44;
-        }
-
-        .nav-links {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .nav-link {
-            padding: 14px 20px;
-            color: #555;
-            transition: 0.2s;
-        }
-
-        .nav-link:hover {
-            background: #f5f5f5;
-        }
-
-        .nav-link.active {
-            background: #802c44;
-            color: white;
-        }
-
-        /* ================= MAIN ================= */
-
-        .main {
-            flex: 1;
-            padding: 40px;
-        }
-
-        h1 {
-            font-size: 32px;
-            margin-bottom: 5px;
-        }
-
-        .subtitle {
-            color: #777;
-            margin-bottom: 30px;
-        }
-
-        /* ================= STATS ================= */
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .card {
-            background: white;
-            border: 1px solid #eee;
-            border-radius: 14px;
-            padding: 25px;
-        }
-
-        .card-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
-            margin-bottom: 15px;
-        }
-
-        .purple { background: #f3e8ff; }
-        .blue { background: #dbeafe; }
-        .green { background: #dcfce7; }
-        .yellow { background: #fef9c3; }
-        .red { background: #fee2e2; }
-
-        .card h3 {
-            font-size: 28px;
-            margin-bottom: 5px;
-        }
-
-        .card p {
-            color: #777;
-            font-size: 14px;
-        }
-
-        /* ================= ACTIONS ================= */
-
-        .action-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .action-card {
-            padding: 30px;
-            border-radius: 14px;
-            color: white;
-            text-align: center;
-            transition: 0.2s;
-        }
-
-        .action-card:hover {
-            opacity: 0.92;
-        }
-
-        .action-card h3 {
-            margin: 15px 0 10px;
-            font-size: 22px;
-        }
-
-        .primary {
-            background: #802c44;
-        }
-
-        .accent {
-            background: #0f766e;
-        }
-
-        .success {
-            background: #16a34a;
-        }
-
-        /* ================= ACTIVITY ================= */
-
-        .activity-card {
-            background: white;
-            border-radius: 14px;
-            border: 1px solid #eee;
-            padding: 25px;
-        }
-
-        .activity-title {
-            font-size: 22px;
-            margin-bottom: 20px;
-        }
-
-        .activity-item {
-            display: flex;
-            gap: 15px;
-            padding: 15px;
-            border-radius: 10px;
-            background: #f8f8f8;
-            margin-bottom: 12px;
-        }
-
-        .dot {
-            width: 10px;
-            height: 10px;
-            background: #802c44;
-            border-radius: 50%;
-            margin-top: 6px;
-        }
-
-        .activity-item p {
-            margin-bottom: 4px;
-        }
-
-        .date {
-            font-size: 12px;
-            color: #777;
-        }
-
+        .bg-primary { background-color: #802c44; }
+        .text-primary { color: #802c44; }
     </style>
 </head>
-
-<body>
-
-
-
-<!-- ================= SIDEBAR ================= -->
-
-<div class="sidebar">
-
-    <div class="logo">
-        UTM Clinic
-    </div>
-
-    <div class="nav-links">
-        <a href="admin-dashboard.html" class="nav-link active">Dashboard</a>
-        <a href="manage-doctors.html" class="nav-link">Manage Doctors</a>
-        <a href="manage-staff.html" class="nav-link">Manage Staff</a>
-        <a href="sales-reports.html" class="nav-link">Sales Reports</a>
-        <a href="login.html" class="nav-link">Logout</a>
-    </div>
-
-</div>
-
-<!-- ================= MAIN ================= -->
-
-<div class="main">
-
-    <h1>Admin Dashboard</h1>
-    <p class="subtitle">Clinic management and overview</p>
-
-    <!-- ================= STATS ================= -->
-
-    <div class="stats-grid">
-
-        <div class="card">
-            <div class="card-icon purple"></div>
-            <h3><?php echo $stats['totalDoctors']; ?></h3>
-            <p>Total Doctors</p>
-        </div>
-
-        <div class="card">
-            <div class="card-icon blue"></div>
-            <h3><?php echo $stats['totalStaff']; ?></h3>
-            <p>Total Staff</p>
-        </div>
-
-        <div class="card">
-            <div class="card-icon yellow"></div>
-            <h3><?php echo $stats['totalPatients']; ?></h3>
-            <p>Total Patients</p>
-        </div>
-
-        <div class="card">
-            <div class="card-icon green"></div>
-            <h3><?php echo $stats['appointmentsToday']; ?></h3>
-            <p>Today's Appointments</p>
-        </div>
-
-        <div class="card">
-            <div class="card-icon red"></div>
-            <h3>RM <?php echo number_format($stats['monthlyRevenue'], 0); ?></h3>
-            <p>Monthly Sales</p>
-        </div>
-
-    </div>
-
-    <!-- ================= QUICK ACTIONS ================= -->
-
-    <div class="action-grid">
-
-        <a href="manage-doctors.php" class="action-card primary">
-            <h3>Manage Doctors</h3>
-            <p>Add, edit, or remove doctor accounts</p>
-        </a>
-
-        <a href="manage-staff.php" class="action-card accent">
-            <h3>Manage Staff</h3>
-            <p>Add, edit, or remove staff accounts</p>
-        </a>
-
-        <a href="sales-reports.php" class="action-card success">
-            <h3>Sales Reports</h3>
-            <p>Revenue from wellness items</p>
-        </a>
-
-    </div>
-
-    <!-- ================= RECENT ACTIVITY ================= -->
-
-    <div class="activity-card">
-
-        <h2 class="activity-title">Recent Activity</h2>
-
-        <?php foreach ($recentActivity as $activity): ?>
-
-            <div class="activity-item">
-
-                <div class="dot"></div>
-
-                <div>
-                    <p><?php echo htmlspecialchars($activity['text']); ?></p>
-                    <div class="date">
-                        <?php echo htmlspecialchars($activity['date']); ?>
-                    </div>
+<body class="bg-gray-50">
+    <div class="flex min-h-screen">
+        <aside class="w-64 bg-white border-r p-4">
+            <div class="font-bold text-xl mb-8">UTM Clinic</div>
+            <nav class="space-y-2">
+                <a href="admin-dashboard.html" class="block p-2 bg-primary text-white rounded">Dashboard</a>
+                <a href="manage-doctors.html" class="block p-2 hover:bg-gray-100 rounded">Manage Doctors</a>
+                <a href="manage-staff.html" class="block p-2 hover:bg-gray-100 rounded">Manage Staff</a>
+                <button id="logoutBtn" class="w-full text-left p-2 hover:bg-gray-100 rounded">Logout</button>
+            </nav>
+        </aside>
+        <main class="flex-1 p-8">
+            <h1 class="text-3xl font-bold">Admin Dashboard</h1>
+            <p class="text-gray-500 mb-8">Welcome, <span id="adminName">Admin</span></p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded shadow">
+                    <i class="fas fa-users text-2xl text-primary mb-2"></i>
+                    <h3 class="text-2xl font-bold" id="totalPatients">0</h3>
+                    <p>Total Patients</p>
                 </div>
-
+                <div class="bg-white p-6 rounded shadow">
+                    <i class="fas fa-user-md text-2xl text-primary mb-2"></i>
+                    <h3 class="text-2xl font-bold" id="totalDoctors">0</h3>
+                    <p>Doctors</p>
+                </div>
+                <div class="bg-white p-6 rounded shadow">
+                    <i class="fas fa-calendar text-2xl text-primary mb-2"></i>
+                    <h3 class="text-2xl font-bold" id="todayAppointments">0</h3>
+                    <p>Today's Appointments</p>
+                </div>
             </div>
-
-        <?php endforeach; ?>
-
+        </main>
     </div>
+    <script type="module">
+        import { auth, db } from './js/firebase-config.js';
+        import { signOut } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+        import { collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
-</div>
-
+        auth.onAuthStateChanged(async (user) => {
+            if (!user) { window.location.href = 'login.html'; return; }
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            if (userDoc.exists()) document.getElementById('adminName').innerText = userDoc.data().name || 'Admin';
+            
+            // Count patients (role = patient)
+            const patientsQuery = query(collection(db, "users"), where("role", "==", "patient"));
+            const patientsSnap = await getDocs(patientsQuery);
+            document.getElementById('totalPatients').innerText = patientsSnap.size;
+            
+            const doctorsQuery = query(collection(db, "users"), where("role", "==", "doctor"));
+            const doctorsSnap = await getDocs(doctorsQuery);
+            document.getElementById('totalDoctors').innerText = doctorsSnap.size;
+            
+            const today = new Date().toISOString().slice(0,10);
+            const aptQuery = query(collection(db, "appointments"), where("date", "==", today));
+            const aptSnap = await getDocs(aptQuery);
+            document.getElementById('todayAppointments').innerText = aptSnap.size;
+        });
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await signOut(auth);
+            window.location.href = 'login.html';
+        });
+    </script>
 </body>
 </html>
+<!-- Admin Dashboard by Sonia Selvaratnam 14/5/2026 -->

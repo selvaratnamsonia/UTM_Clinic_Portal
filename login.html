@@ -110,44 +110,45 @@
     </div>
 
     <script type="module">
-        import { auth, db } from './js/firebase-config.js';
-        import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
-        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+    import { auth, db } from './js/firebase-config.js';
+    import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
-        const loginForm = document.getElementById('loginForm');
-        const errorDiv = document.getElementById('errorMessage');
+    const loginForm = document.getElementById('loginForm');
+    const errorDiv = document.getElementById('errorMessage');
 
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            errorDiv.style.display = 'none';
-            
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const selectedRole = document.getElementById('role').value;
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorDiv.style.display = 'none';
 
-            try {
-                const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const selectedRole = document.getElementById('role').value;
 
-                const userRef = doc(db, "users", user.uid);
-                const userSnap = await getDoc(userRef);
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
 
-                if (userSnap.exists()) {
-                    const userData = userSnap.data();
-                    if (userData.role === selectedRole) {
-                        window.location.href = `${selectedRole}/${selectedRole}.html`;
-                    } else {
-                        throw new Error(`Access Denied: You are not registered as a ${selectedRole}.`);
-                    }
+            const userRef = doc(db, "users", user.uid);
+            const userSnap = await getDoc(userRef);
+
+            if (userSnap.exists()) {
+                const userData = userSnap.data();
+                if (userData.role === selectedRole) {
+                    // redirect to the correct dashboard file
+                    window.location.href = `${selectedRole}_dashboard.html`;
                 } else {
-                    throw new Error("User profile not found.");
+                    throw new Error(`Access Denied: You are not registered as a ${selectedRole}.`);
                 }
-            } catch (error) {
-                errorDiv.textContent = error.message;
-                errorDiv.style.display = 'block';
-                await auth.signOut();
+            } else {
+                throw new Error("User profile not found. Please register first.");
             }
-        });
-    </script>
+        } catch (error) {
+            errorDiv.textContent = error.message;
+            errorDiv.style.display = 'block';
+            await auth.signOut();
+        }
+    });
+</script>
 </body>
 </html>
