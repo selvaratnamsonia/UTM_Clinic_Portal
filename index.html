@@ -104,6 +104,39 @@
                         </div>
                     </div>
                 </div>
+                <form id="loginForm">
+  <!-- your existing email, password, role fields -->
+  <button type="submit">Sign In</button>
+</form>
+
+<script type="module">
+  import { auth } from './js/firebase-config.js';
+  import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+  import { getDoc, doc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+  import { db } from './js/firebase-config.js';
+
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const role = document.getElementById('role').value;
+    
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      
+      // Check user's role from Firestore
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (userDoc.exists() && userDoc.data().role === role) {
+        window.location.href = `${role}_dashboard.html`;
+      } else {
+        alert("Role mismatch. Please select the correct role.");
+      }
+    } catch (error) {
+      alert("Login failed: " + error.message);
+    }
+  });
+</script>
 
                 <!-- Hero Image -->
                 <div class="relative">
