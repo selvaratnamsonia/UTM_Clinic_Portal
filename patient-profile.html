@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Profile - UTM Clinic Portal</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            background: #F7F8FA;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* ================= SIDEBAR ================= */
+
+        .sidebar {
+            width: 260px;
+            background: white;
+            border-right: 1px solid #EAEAEA;
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo {
+            padding: 0 20px 40px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #802c44;
+        }
+
+        .nav-links {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav-link {
+            padding: 14px 20px;
+            color: #555;
+        }
+
+        .nav-link:hover {
+            background: #f5f5f5;
+        }
+
+        .nav-link.active {
+            background: #802c44;
+            color: white;
+        }
+
+        /* ================= MAIN ================= */
+
+        .main {
+            flex: 1;
+            padding: 40px;
+            max-width: 900px;
+        }
+
+        h1 {
+            font-size: 32px;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #777;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 14px;
+            border: 1px solid #EAEAEA;
+            margin-bottom: 25px;
+        }
+
+        h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        label {
+            display: block;
+            margin: 12px 0 6px;
+            font-size: 14px;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            outline: none;
+        }
+
+        input:disabled, textarea:disabled {
+            background: #f3f3f3;
+            color: #888;
+        }
+
+        .text-muted {
+            font-size: 12px;
+            color: #777;
+            margin-top: 5px;
+        }
+
+        .btn {
+            padding: 12px 18px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-primary {
+            background: #802c44;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-outline {
+            border: 1px solid #ddd;
+            background: white;
+        }
+
+        .btn-outline:hover {
+            background: #f5f5f5;
+        }
+
+        .row {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .row .btn {
+            flex: 1;
+        }
+
+    </style>
+</head>
+
+<body>
+
+
+
+<!-- ================= SIDEBAR ================= -->
+
+<div class="sidebar">
+
+    <div class="logo">
+        UTM Clinic
+    </div>
+
+    <div class="nav-links">
+        <a href="patient-dashboard.html" class="nav-link active">Dashboard</a>
+        <a href="appointments.html" class="nav-link">Appointments</a>
+        <a href="book-appointment.html" class="nav-link">Book Appointment</a>
+        <a href="patient-profile.html" class="nav-link">Profile</a>
+        <a href="logout.html" class="nav-link">Logout</a>
+    </div>
+
+</div>
+
+<!-- ================= MAIN ================= -->
+
+<div class="main">
+
+    <h1>My Profile</h1>
+    <p class="subtitle">Manage your personal information</p>
+
+    <!-- ================= PERSONAL INFO ================= -->
+
+    <div class="card">
+
+        <h2>👤 Personal Information</h2>
+
+        <form method="POST" action="update-profile.html">
+
+            <label>Full Name</label>
+            <input type="text" name="name"
+                   value="">
+
+            <label>Email Address</label>
+            <input type="email"
+                   value=""
+                   disabled>
+            <div class="text-muted">Email cannot be changed</div>
+
+            <label>Matric Number</label>
+            <input type="text"
+                   value=""
+                   disabled>
+            <div class="text-muted">Matric number cannot be changed</div>
+
+            <label>Phone Number</label>
+            <input type="text" name="phone"
+                   value="">
+
+            <label>Address</label>
+            <textarea name="address" rows="3"></textarea>
+
+            <div class="row">
+                <button class="btn btn-primary" type="submit">
+                    Save Changes
+                </button>
+
+                <button class="btn btn-outline" type="button"
+                        onclick="location.reload()">
+                    Cancel
+                </button>
+            </div>
+
+        </form>
+    </div>
+
+    <!-- ================= PASSWORD ================= -->
+
+    <div class="card">
+
+        <h2>🔒 Change Password</h2>
+
+        <form method="POST" action="change-password.php">
+
+            <label>Current Password</label>
+            <input type="password" name="current" required>
+
+            <label>New Password</label>
+            <input type="password" name="new" required minlength="8">
+            <div class="text-muted">Minimum 8 characters</div>
+
+            <label>Confirm New Password</label>
+            <input type="password" name="confirm" required minlength="8">
+
+            <div class="row">
+                <button class="btn btn-primary" type="submit">
+                    Update Password
+                </button>
+
+                <button class="btn btn-outline" type="button"
+                        onclick="document.querySelectorAll('input[type=password]').forEach(i => i.value='')">
+                    Cancel
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+</body>
+</html>
