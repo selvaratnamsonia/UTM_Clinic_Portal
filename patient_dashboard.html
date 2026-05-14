@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patient Dashboard - UTM Clinic Portal</title>
-
     <style>
         * {
             box-sizing: border-box;
@@ -23,8 +22,6 @@
             text-decoration: none;
             color: inherit;
         }
-
-        /* ================= SIDEBAR ================= */
 
         .sidebar {
             width: 260px;
@@ -51,6 +48,8 @@
             padding: 14px 20px;
             color: #555;
             transition: 0.2s;
+            text-decoration: none;
+            display: block;
         }
 
         .nav-link:hover {
@@ -61,8 +60,6 @@
             background: #802c44;
             color: white;
         }
-
-        /* ================= MAIN ================= */
 
         .main {
             flex: 1;
@@ -78,8 +75,6 @@
             color: #777;
             margin-bottom: 35px;
         }
-
-        /* ================= STATS ================= */
 
         .stats-grid {
             display: grid;
@@ -106,20 +101,9 @@
             font-size: 22px;
         }
 
-        .primary-bg {
-            background: #f4e8ec;
-            color: #802c44;
-        }
-
-        .blue-bg {
-            background: #e8f0ff;
-            color: #3366cc;
-        }
-
-        .green-bg {
-            background: #e8f7ed;
-            color: #1f9254;
-        }
+        .primary-bg { background: #f4e8ec; color: #802c44; }
+        .blue-bg { background: #e8f0ff; color: #3366cc; }
+        .green-bg { background: #e8f7ed; color: #1f9254; }
 
         .card h3 {
             font-size: 30px;
@@ -140,13 +124,12 @@
             align-items: center;
             cursor: pointer;
             transition: 0.2s;
+            text-decoration: none;
         }
 
         .book-card:hover {
             opacity: 0.9;
         }
-
-        /* ================= CONTENT ================= */
 
         .content-grid {
             display: grid;
@@ -159,8 +142,7 @@
             margin-bottom: 20px;
         }
 
-        .appointment-item,
-        .activity-item {
+        .appointment-item {
             background: #f8f8f8;
             border-radius: 10px;
             padding: 15px;
@@ -173,11 +155,11 @@
             align-items: center;
         }
 
-        .doctor {
+        .doctor-name {
             font-weight: 600;
         }
 
-        .appointment-time {
+        .appointment-date {
             font-size: 14px;
             color: #666;
             margin-top: 5px;
@@ -190,12 +172,12 @@
             font-weight: 500;
         }
 
-        .confirmed {
+        .status-confirmed {
             background: #dff5e7;
             color: #1f9254;
         }
 
-        .pending {
+        .status-pending {
             background: #fff3d6;
             color: #c78a00;
         }
@@ -206,190 +188,162 @@
             text-align: center;
             color: #802c44;
             font-weight: 500;
+            text-decoration: none;
         }
 
-        .activity-item {
-            display: flex;
-            gap: 12px;
-            align-items: flex-start;
-        }
-
-        .activity-dot {
-            width: 10px;
-            height: 10px;
-            background: #802c44;
-            border-radius: 50%;
-            margin-top: 6px;
-        }
-
-        .activity-text {
-            font-size: 14px;
-        }
-
-        .activity-date {
-            font-size: 12px;
-            color: #777;
-            margin-top: 4px;
+        .empty-message {
+            text-align: center;
+            color: #999;
+            padding: 20px;
         }
 
         @media (max-width: 900px) {
             .content-grid {
                 grid-template-columns: 1fr;
             }
-
             .sidebar {
-                display: none;
+                width: 80px;
             }
-
-            .main {
-                padding: 20px;
+            .sidebar .logo, .sidebar .nav-link {
+                font-size: 12px;
+                text-align: center;
             }
         }
     </style>
 </head>
-
 <body>
-    <!-- Sonia Selvaratnam 14/5/2026 -->
-<script type="module">
-    import { auth } from './js/firebase-config.js';
-    import { signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-    
-    document.getElementById('logoutLink')?.addEventListener('click', async (e) => {
-        e.preventDefault();
-        await signOut(auth);
-        window.location.href = 'login.html';
-    });
-</script>
-<!-- Sonia Selvaratnam 14/5/2026 -->
-
-<!-- ================= SIDEBAR ================= -->
 
 <div class="sidebar">
-
-    <div class="logo">
-        UTM Clinic
-    </div>
-
+    <div class="logo">UTM Clinic</div>
     <div class="nav-links">
         <a href="patient_dashboard.html" class="nav-link active">Dashboard</a>
         <a href="appointments.html" class="nav-link">Appointments</a>
         <a href="book-appointment.html" class="nav-link">Book Appointment</a>
         <a href="patient-profile.html" class="nav-link">Profile</a>
-        <a href="login.html" class="nav-link">Logout</a>
+        <a href="#" id="logoutLink" class="nav-link">Logout</a>
     </div>
-
 </div>
 
-<!-- ================= MAIN CONTENT ================= -->
-
 <div class="main">
-
-    <h1>Welcome, Ahmad</h1>
-    <p class="subtitle">
-        All consultations are FREE for UTM students and staff
-    </p>
-
-    <!-- ================= STATS ================= -->
+    <h1 id="welcomeMessage">Welcome, Patient</h1>
+    <p class="subtitle">All consultations are FREE for UTM students and staff</p>
 
     <div class="stats-grid">
-
         <div class="card">
             <div class="card-icon primary-bg">📅</div>
-            <h3>2</h3>
+            <h3 id="upcomingCount">0</h3>
             <p>Upcoming Appointments</p>
         </div>
-
         <div class="card">
             <div class="card-icon blue-bg">⏰</div>
-            <h3>5</h3>
+            <h3 id="totalVisits">0</h3>
             <p>Total Visits</p>
         </div>
-
         <div class="card">
             <div class="card-icon green-bg">📄</div>
-            <h3>3</h3>
+            <h3 id="mcCount">0</h3>
             <p>Medical Certificates</p>
         </div>
-
         <a href="book-appointment.html" class="card book-card">
             <div style="font-size: 35px; margin-bottom: 10px;">📅</div>
             <p style="color:white;">Book New Appointment</p>
         </a>
-
     </div>
-
-    <!-- ================= CONTENT ================= -->
 
     <div class="content-grid">
-
-        <!-- Upcoming Appointments -->
-
         <div class="card">
-
             <h2 class="section-title">Upcoming Appointments</h2>
-
-          
-
-                <div class="appointment-item">
-
-                    <div class="appointment-top">
-
-                        <div>
-                            <div class="doctor">
-                               
-                            </div>
-
-                            <div class="appointment-time">
-                               
-                            </div>
-                        </div>
-
-                        <div class="status <?php echo $appointment['status']; ?>">
-                           
-                        </div>
-
-                    </div>
-
-                </div>
-
-         
-
-            <a href="appointments.html" class="view-link">
-                View All Appointments
-            </a>
-
+            <div id="upcomingAppointmentsList"></div>
+            <a href="appointments.html" class="view-link">View All Appointments</a>
         </div>
-
-        <!-- Recent Activities -->
-
         <div class="card">
-
             <h2 class="section-title">Recent Activity</h2>
-
-          
-
-                <div class="activity-item">
-
-                    <div class="activity-dot"></div>
-
-                    <div>
-                        <div class="activity-text">
-                            
-                        </div>
-
-                        <div class="activity-date">
-                           
-                        </div>
-                    </div>
-
-                </div>
-
-         
+            <div id="recentActivityList"></div>
         </div>
-
     </div>
-
 </div>
 
+<script type="module">
+    import { auth, db } from './js/firebase-config.js';
+    import { signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+    import { collection, query, where, getDocs, orderBy, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+    // Auth check
+    auth.onAuthStateChanged(async (user) => {
+        if (!user) {
+            window.location.href = 'login.html';
+            return;
+        }
+        
+        // Load user name
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+            const userName = userSnap.data().name || 'Patient';
+            document.getElementById('welcomeMessage').innerHTML = `Welcome, ${userName}`;
+        }
+        
+        // Load dashboard data
+        await loadDashboardData(user.uid);
+    });
+
+    async function loadDashboardData(userId) {
+        const today = new Date().toISOString().split('T')[0];
+        
+        // Upcoming appointments
+        const upcomingQuery = query(
+            collection(db, "appointments"),
+            where("userId", "==", userId),
+            where("date", ">=", today),
+            where("status", "in", ["pending", "confirmed"]),
+            orderBy("date", "asc")
+        );
+        
+        const upcomingSnap = await getDocs(upcomingQuery);
+        const upcomingAppointments = upcomingSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        document.getElementById('upcomingCount').innerHTML = upcomingAppointments.length;
+        
+        // Display upcoming appointments
+        const upcomingContainer = document.getElementById('upcomingAppointmentsList');
+        if (upcomingAppointments.length === 0) {
+            upcomingContainer.innerHTML = '<div class="empty-message">No upcoming appointments</div>';
+        } else {
+            upcomingContainer.innerHTML = upcomingAppointments.map(apt => `
+                <div class="appointment-item">
+                    <div class="appointment-top">
+                        <div>
+                            <div class="doctor-name">${apt.doctorId ? 'Dr. Assigned' : 'Awaiting doctor'}</div>
+                            <div class="appointment-date">${apt.date}</div>
+                        </div>
+                        <div class="status status-${apt.status}">${apt.status}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Total visits (completed)
+        const completedQuery = query(
+            collection(db, "appointments"),
+            where("userId", "==", userId),
+            where("status", "==", "completed")
+        );
+        const completedSnap = await getDocs(completedQuery);
+        document.getElementById('totalVisits').innerHTML = completedSnap.size;
+        
+        // MC count (placeholder - implement later)
+        document.getElementById('mcCount').innerHTML = '0';
+        
+        // Recent activity - simple placeholder
+        const recentContainer = document.getElementById('recentActivityList');
+        recentContainer.innerHTML = '<div class="empty-message">No recent activity</div>';
+    }
+
+    // Logout
+    document.getElementById('logoutLink').addEventListener('click', async (e) => {
+        e.preventDefault();
+        await signOut(auth);
+        window.location.href = 'login.html';
+    });
+</script>
 </body>
 </html>
