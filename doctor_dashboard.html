@@ -274,7 +274,7 @@
 
 <div class="main">
 
-    <h1>Welcome, Dr. Sarah Ahmad</h1>
+   <h1 id="welcomeMessage">Welcome, Loading...</h1>
     <p class="subtitle">General Practitioner</p>
 
     <!-- ================= STATS ================= -->
@@ -301,7 +301,7 @@
 
         <div class="card">
             <div class="icon-box blue-bg"></div>
-            <h3><?php echo $currentTime; ?></h3>
+            <h3 id="currentTime"></h3>
             <p>Current Time</p>
         </div>
 
@@ -309,11 +309,7 @@
 
     <!-- ================= CURRENT PATIENT ================= -->
 
-    <div class="current-patient">
-
-        <h2 class="current-header">Current Patient</h2>
-
-       <div class="current-patient">
+  <div class="current-patient">
 
     <h2 class="current-header">Current Patient</h2>
 
@@ -323,7 +319,8 @@
             <h3 id="patientName">Loading...</h3>
 
             <p>Matric: <span id="patientMatric"></span></p>
-           
+            <p>Phone: <span id="patientPhone"></span></p>
+            <p>Address: <span id="patientAddress"></span></p>
 
             <p>Reason: <span id="appointmentReason"></span></p>
             <p>Time: <span id="appointmentTime"></span></p>
@@ -334,6 +331,8 @@
         </a>
 
     </div>
+
+</div>
 
 </div>
 
@@ -397,36 +396,91 @@
 
 </div>
 <script type="module">
-    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+import { db } from "./js/firebase-config.js";
+// Added Auth imports
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+import { 
+    collection, 
+    query, 
+    orderBy, 
+    limit, 
+    getDocs, 
+    doc, 
+    getDoc 
+} from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
-    const appointmentId = "YOUR_APPOINTMENT_ID";
+const auth = getAuth();
 
-    async function loadCurrentPatient() {
-        const apptRef = doc(db, "appointments", appointmentId);
-        const apptSnap = await getDoc(apptRef);
-
-        const appt = apptSnap.data();
-
-        const userRef = doc(db, "users", appt.patientId);
-        const userSnap = await getDoc(userRef);
-
-        const user = userSnap.data();
-
-        document.getElementById("patientName").innerText = user.name;
-        document.getElementById("patientMatric").innerText = user.matric;
-        document.getElementById("patientPhone").innerText = user.phone;
-        document.getElementById("patientAddress").innerText = user.address;
-
-        document.getElementById("appointmentReason").innerText = appt.reason;
-
-        document.getElementById("appointmentTime").innerText =
-            new Date(appt.appointmentTime.seconds * 1000).toLocaleString();
-
-        document.getElementById("historyLink").href =
-            `patient-history.php?id=${appt.patientId}`;
+// --- PART 1: Handle Logged-in Doctor Name ---
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        try {
+            // Get the logged-in user's data from the "users" collection using their UID
+            const docSnap = await getDoc(doc(db, "user", user.uid));
+            if (docSnap.exists()) {
+                const userData = docSnap.data();
+                // Update the welcome message with the name from Firestore
+                document.getElementById("welcomeName").innerText = `Welcome, Dr. ${userData.name || "user"}`;
+            }
+            
+            // After identifying the doctor, load the newest appointment
+            loadLatestAppointment();
+            
+        } catch (error) {
+            console.error("Error fetching doctor profile:", error);
+        }
+    } else {
+        // Redirect to login if no one is signed in
+        window.location.href = "login.html";
     }
+});
 
-    loadCurrentPatient();
+// --- PART 2: Handle Newest Appointment ---
+async function loadLatestAppointment() {
+    try {
+        // Reference "appointment" (singular)
+        const appointmentCol = collection(db, "appointment");
+
+        // Query: Sort by time descending and limit to 1 to get the newest input
+        const latestQuery = query(appointmentCol, orderBy("appointmentTime", "desc"), limit(1));
+        
+        const querySnapshot = await getDocs(latestQuery);
+
+        if (querySnapshot.empty) {
+            document.getElementById("patientName").innerText = "No Appointments Found";
+            return;
+        }
+
+        const apptDoc = querySnapshot.docs[0];
+        const appt = apptDoc.data();
+
+        // Use the patientId from the appointment to find that specific user
+        const userSnap = await getDoc(doc(db, "users", appt.patientId));
+
+        if (userSnap.exists()) {
+            const user = userSnap.data();
+
+            // Update UI with Patient Data
+            document.getElementById("patientName").innerText = user.name || "-";
+            document.getElementById("patientMatric").innerText = user.matric || "-";
+            document.getElementById("patientPhone").innerText = user.phone || "-";
+            document.getElementById("patientAddress").innerText = user.address || "-";
+            
+            // Update UI with Appointment Data
+            document.getElementById("appointmentReason").innerText = appt.reason || "-";
+
+            if (appt.appointmentTime) {
+                const date = new Date(appt.appointmentTime.seconds * 1000);
+                document.getElementById("appointmentTime").innerText = date.toLocaleString();
+            }
+
+            document.getElementById("historyLink").href = `patient-history.html?id=${appt.patientId}`;
+        }
+
+    } catch (err) {
+        console.error("Error loading data:", err);
+    }
+}
 </script>
 
 </body>
