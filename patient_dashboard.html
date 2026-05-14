@@ -252,11 +252,12 @@
     <!-- Sonia Selvaratnam 14/5/2026 -->
 <script type="module">
     import { auth } from './js/firebase-config.js';
-
-    auth.onAuthStateChanged((user) => {
-        if (!user) {
-            window.location.href = 'login.html';
-        }
+    import { signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+    
+    document.getElementById('logoutLink')?.addEventListener('click', async (e) => {
+        e.preventDefault();
+        await signOut(auth);
+        window.location.href = 'login.html';
     });
 </script>
 <!-- Sonia Selvaratnam 14/5/2026 -->
@@ -270,7 +271,7 @@
     </div>
 
     <div class="nav-links">
-        <a href="patient-dashboard.html" class="nav-link active">Dashboard</a>
+        <a href="patient_dashboard.html" class="nav-link active">Dashboard</a>
         <a href="appointments.html" class="nav-link">Appointments</a>
         <a href="book-appointment.html" class="nav-link">Book Appointment</a>
         <a href="patient-profile.html" class="nav-link">Profile</a>
