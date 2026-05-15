@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn More - UTM Clinic Portal</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: #f8f9fa; color: #333; line-height: 1.6; }
+        
+        /* Header/Nav */
+        .navbar {
+            background: white;
+            padding: 15px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .utm-logo { height: 50px; }
+        .btn-back {
+            text-decoration: none;
+            color: #802c44;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        /* Hero Section */
+        .hero {
+            /* Path fixed to match your images folder */
+            background: linear-gradient(rgba(128, 44, 68, 0.9), rgba(128, 44, 68, 0.9)), 
+                        url('images/pku-utm.jpg'); 
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 80px 20px;
+            text-align: center;
+        }
+        .hero h1 { font-size: 36px; margin-bottom: 10px; }
+
+        /* Content Section */
+        .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .info-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-top: 4px solid #802c44;
+        }
+
+        .info-card h3 { color: #802c44; margin-bottom: 15px; }
+        
+        .footer {
+            text-align: center;
+            padding: 40px;
+            color: #777;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <img src="images/utm-logo.png" alt="UTM Logo" class="utm-logo">
+        <a href="Mainpage.html" class="btn-back">← Back to Home</a>
+    </nav>
+
+    <header class="hero">
+        <h1>About UTM Clinic Portal</h1>
+        <p>Providing accessible healthcare for the UTM community.</p>
+    </header>
+
+    <div class="container">
+        <div class="info-card">
+            <h3>Our Mission</h3>
+            <p>The UTM Clinic Portal is designed to streamline healthcare services for students and staff. Our goal is to reduce waiting times and provide a digital-first approach to medical appointments and records.</p>
+        </div>
+
+        <div class="grid">
+            <div class="info-card">
+                <h3>Online Booking</h3>
+                <p>Skip the queue by scheduling your visit in advance. Choose your preferred doctor and time slot with just a few clicks.</p>
+            </div>
+            <div class="info-card">
+                <h3>Digital MC</h3>
+                <p>Access your Medical Certificates and consultation history directly from your dashboard anytime, anywhere.</p>
+            </div>
+            <div class="info-card">
+                <h3>Emergency Info</h3>
+                <p>Find quick contact details for UTM emergency response and local hospitals in Skudai and Batu Pahat.</p>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        &copy; 2026 UTM Clinic Portal. All Rights Reserved.
+    </footer>
+
+</body>
+</html>
