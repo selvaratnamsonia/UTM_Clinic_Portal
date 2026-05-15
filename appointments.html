@@ -3,17 +3,341 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>My Appointments - UTM Clinic</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointment History - UTM Clinic</title>
+
+    <!-- Modern Font and Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #802c44;
+            --primary-light: #f4e8ec;
+            --primary-hover: #6a2438;
+            --bg-body: #f8fafc;
+            --white: #ffffff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --radius: 16px;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            background: var(--bg-body);
+            color: var(--text-dark);
+        }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 280px;
+            background: var(--white);
+            border-right: 1px solid var(--border-color);
+            padding: 30px 0;
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 25px 40px;
+        }
+
+        .logo-box {
+            width: 42px;
+            height: 42px;
+            background: var(--primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-img { width: 80%; height: 80%; object-fit: contain; }
+        .logo-text { font-size: 22px; font-weight: 700; color: var(--primary); }
+
+        .nav-links { display: flex; flex-direction: column; gap: 5px; padding: 0 15px; }
+
+        .nav-link {
+            padding: 12px 18px;
+            color: var(--text-muted);
+            border-radius: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .nav-link:hover { background: var(--primary-light); color: var(--primary); }
+        .nav-link.active { background: var(--primary); color: white; }
+
+        /* --- Main Content --- */
+        .main {
+            flex: 1;
+            padding: 40px 60px;
+            max-width: 1200px;
+        }
+
+        header { margin-bottom: 35px; }
+        h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+        .subtitle { color: var(--text-muted); }
+
+        /* --- Table Card --- */
+        .table-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .table-controls {
+            padding: 25px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .search-wrapper {
+            position: relative;
+            flex: 1;
+            max-width: 400px;
+        }
+
+        .search-wrapper i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .search-wrapper input {
+            width: 100%;
+            padding: 12px 16px 12px 40px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: #fcfcfc;
+            outline: none;
+            transition: 0.2s;
+        }
+
+        .search-wrapper input:focus { border-color: var(--primary); background: #fff; }
+
+        .filter-select {
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: #fff;
+            color: var(--text-dark);
+            font-weight: 500;
+            outline: none;
+            cursor: pointer;
+        }
+
+        /* --- Table Styling --- */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead { background: #f8fafc; }
+
+        th {
+            text-align: left;
+            padding: 16px 25px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 20px 25px;
+            border-top: 1px solid #f1f5f9;
+            font-size: 15px;
+        }
+
+        tr:hover { background: #fcfcfc; }
+
+        .doctor-info { font-weight: 600; color: var(--text-dark); }
+        .date-cell { color: var(--text-muted); font-size: 14px; }
+
+        /* --- Badges --- */
+        .badge {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-block;
+        }
+
+        .confirmed { background: #dcfce7; color: #15803d; }
+        .pending { background: #fef3c7; color: #b45309; }
+        .completed { background: #e0f2fe; color: #0369a1; }
+        .cancelled { background: #fee2e2; color: #dc2626; }
+
+        /* --- Action Button --- */
+        .btn-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background: white;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-icon:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 1024px) {
+            .sidebar { width: 80px; }
+            .logo-text, .nav-link span { display: none; }
+            .main { padding: 30px; }
+        }
+
+        @media (max-width: 768px) {
+            .table-card { overflow-x: auto; }
+            table { min-width: 800px; }
+        }
+    </style>
 </head>
-<body class="bg-gray-100">
-    <div class="max-w-4xl mx-auto p-6">
-        <h1 class="text-3xl font-bold mb-2">Appointment History</h1>
-        <p class="text-gray-500 mb-6">View all your clinic visits</p>
-        <div id="appointmentsList" class="space-y-4"></div>
-        <a href="patient_dashboard.html" class="inline-block mt-4 text-primary">&larr; Back to Dashboard</a>
+<body>
+
+<aside class="sidebar">
+    <div class="logo-container">
+        <div class="logo-box">
+            <img src="images/Clinic-logo.png" alt="Logo" class="logo-img">
+        </div>
+        <div class="logo-text">UTM Clinic</div>
     </div>
+
+   <nav class="nav-links">
+        <a href="#" class="nav-link">
+            <i class="fas fa-columns"></i> <span>Dashboard</span>
+        </a>
+        <a href="appointments.html" class="nav-link">
+            <i class="fas fa-calendar-alt"></i> <span>My Appointments</span>
+        </a>
+        <a href="book-appointment.html" class="nav-link">
+            <i class="fas fa-plus-circle"></i> <span>Book Appointment</span>
+        </a>
+       
+        <a href="patient-profile.html" class="nav-link">
+            <i class="fas fa-user-circle"></i> <span>Profile</span>
+        </a>
+        <a href="login.html" id="logoutLink" class="nav-link" style="margin-top: auto; color: #ef4444;">
+            <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+        </a>
+    </nav>
+</aside>
+
+<main class="main">
+    <header>
+        <h1>Appointment History</h1>
+        <p class="subtitle">Track and manage your visits to the UTM Health Centre.</p>
+    </header>
+
+    <div class="table-card">
+        <div class="table-controls">
+            <div class="search-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search by doctor or reason...">
+            </div>
+            
+            <select class="filter-select">
+                <option value="all">All Statuses</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="completed">Completed</option>
+                <option value="pending">Pending</option>
+                <option value="cancelled">Cancelled</option>
+            </select>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Doctor Name</th>
+                    <th>Date & Time</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th style="text-align: center;">Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="doctor-info">Dr. Sarah Ahmad</td>
+                    <td class="date-cell">May 08, 2026 <br> <small>10:00 AM</small></td>
+                    <td>General Checkup</td>
+                    <td><span class="badge confirmed">Confirmed</span></td>
+                    <td align="center">
+                        <button class="btn-icon" title="View Details"><i class="fas fa-eye"></i></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="doctor-info">Dr. Ahmad Hassan</td>
+                    <td class="date-cell">May 15, 2026 <br> <small>02:00 PM</small></td>
+                    <td>Fever Consultation</td>
+                    <td><span class="badge pending">Pending</span></td>
+                    <td align="center">
+                        <button class="btn-icon" title="View Details"><i class="fas fa-eye"></i></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="doctor-info">Dr. Nurul Aisyah</td>
+                    <td class="date-cell">May 03, 2026 <br> <small>11:30 AM</small></td>
+                    <td>Medical Certificate</td>
+                    <td><span class="badge completed">Completed</span></td>
+                    <td align="center">
+                        <button class="btn-icon" title="View Details"><i class="fas fa-eye"></i></button>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="doctor-info">Dr. Hafiz Rahman</td>
+                    <td class="date-cell">April 25, 2026 <br> <small>09:00 AM</small></td>
+                    <td>Dental Checkup</td>
+                    <td><span class="badge cancelled">Cancelled</span></td>
+                    <td align="center">
+                        <button class="btn-icon" title="View Details"><i class="fas fa-eye"></i></button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</main>
+
+</body>
+</html>
     <script type="module">
         import { auth, db } from './js/firebase-config.js';
         import { collection, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";

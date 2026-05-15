@@ -1,4 +1,4 @@
-<!-- Book Appointment page by Sonia Selvaratnam 14/5/2026 -->
+<!-- Book Appointment page - Enhanced UI -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,219 +6,217 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book Appointment - UTM Clinic</title>
 
+    <!-- Modern Font and Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        :root {
+            --primary: #802c44;
+            --primary-light: #f4e8ec;
+            --primary-hover: #6a2438;
+            --bg-body: #f8fafc;
+            --white: #ffffff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --radius: 16px;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
         }
 
-        body {
-            background: #f4f5f7;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            padding: 30px;
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        body { display: flex; min-height: 100vh; background: var(--bg-body); color: var(--text-dark); }
+
+        /* --- Sidebar --- */
+        .sidebar {
+            width: 280px; background: var(--white); border-right: 1px solid var(--border-color);
+            padding: 30px 0; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh;
         }
 
-        .container {
-            width: 100%;
-            max-width: 800px;
-        }
+        .logo-container { display: flex; align-items: center; gap: 12px; padding: 0 25px 40px; }
+        .logo-box { width: 42px; height: 42px; background: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+        .logo-img { width: 80%; height: 80%; object-fit: contain; }
+        .logo-text { font-size: 22px; font-weight: 700; color: var(--primary); }
 
-        h1 {
-            font-size: 30px;
-            margin-bottom: 8px;
+        .nav-links { display: flex; flex-direction: column; gap: 5px; padding: 0 15px; }
+        .nav-link {
+            padding: 12px 18px; color: var(--text-muted); border-radius: 12px; font-weight: 500;
+            transition: all 0.3s ease; display: flex; align-items: center; gap: 12px; text-decoration: none;
         }
+        .nav-link:hover { background: var(--primary-light); color: var(--primary); }
+        .nav-link.active { background: var(--primary); color: white; }
 
-        .subtitle {
-            color: #777;
-            margin-bottom: 25px;
-        }
+        /* --- Main Content --- */
+        .main { flex: 1; padding: 40px 60px; max-width: 1000px; }
+        header { margin-bottom: 35px; }
+        h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+        .subtitle { color: var(--text-muted); }
 
+        /* --- Booking Card --- */
         .card {
-            background: white;
-            padding: 30px;
-            border-radius: 14px;
-            border: 1px solid #eaeaea;
+            background: var(--white); padding: 40px; border-radius: var(--radius);
+            border: 1px solid var(--border-color); box-shadow: var(--shadow);
         }
 
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-size: 14px;
+        .form-group { margin-bottom: 25px; position: relative; }
+        
+        label { display: block; font-size: 14px; font-weight: 600; color: var(--text-dark); margin-bottom: 10px; }
+
+        .input-wrapper { position: relative; }
+        .input-wrapper i {
+            position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
+            color: var(--text-muted); pointer-events: none;
         }
 
         input, textarea {
-            width: 100%;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid #ddd;
-            outline: none;
+            width: 100%; padding: 14px 16px 14px 45px; border-radius: 12px;
+            border: 1px solid var(--border-color); font-size: 15px; background: #fcfcfc;
+            transition: all 0.2s; outline: none;
         }
 
-        textarea {
-            resize: none;
+        textarea { padding-top: 14px; resize: none; }
+
+        input:focus, textarea:focus {
+            border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px var(--primary-light);
         }
 
-        .row {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 500;
-        }
-
-        .btn-primary {
-            background: #802c44;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            opacity: 0.9;
-        }
-
-        .btn-outline {
-            background: white;
-            border: 1px solid #ddd;
-        }
-
-        .btn-outline:hover {
-            background: #f5f5f5;
-        }
-
+        /* --- Info Box --- */
         .info-box {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 10px;
-            background: #eef5ff;
-            border: 1px solid #cfe2ff;
+            background: #fdf2f2; border: 1px solid #f9d5d5;
+            padding: 20px; border-radius: 12px; margin-top: 30px;
         }
-
-        .info-box h4 {
-            margin-bottom: 10px;
-            color: #1d4ed8;
-        }
-
-        .info-box ul {
-            padding-left: 18px;
-            color: #1e40af;
-            font-size: 14px;
-        }
-
+        .info-box h4 { color: var(--primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .info-box ul { list-style: none; }
         .info-box li {
-            margin-bottom: 5px;
+            font-size: 14px; color: #7a3e4e; margin-bottom: 8px;
+            display: flex; align-items: flex-start; gap: 10px;
         }
+        .info-box li::before { content: "•"; color: var(--primary); font-weight: bold; }
 
+        /* --- Buttons --- */
+        .btn-group { display: flex; gap: 15px; margin-top: 10px; }
+        .btn {
+            flex: 1; padding: 14px; border-radius: 12px; font-weight: 600; font-size: 16px;
+            cursor: pointer; transition: 0.2s; border: none; text-align: center;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+        .btn-outline { background: #f1f5f9; color: var(--text-dark); }
+        .btn-outline:hover { background: #e2e8f0; }
+
+        @media (max-width: 1024px) {
+            .sidebar { width: 80px; }
+            .logo-text, .nav-link span { display: none; }
+            .main { padding: 30px; }
+        }
     </style>
 </head>
-
 <body>
 
+<aside class="sidebar">
+    <div class="logo-container">
+        <div class="logo-box">
+            <img src="images/Clinic-logo.png" alt="Logo" class="logo-img">
+        </div>
+        <div class="logo-text">UTM Clinic</div>
+    </div>
+    <nav class="nav-links">
+        <a href="patient_dashboard.html" class="nav-link"><i class="fas fa-columns"></i> <span>Dashboard</span></a>
+        <a href="appointments.html" class="nav-link"><i class="fas fa-calendar-alt"></i> <span>My Appointments</span></a>
+        <a href="book-appointment.html" class="nav-link"><i class="fas fa-plus-circle"></i> <span>Book New</span></a>
+        <a href="patient-profile.html" class="nav-link"><i class="fas fa-user-circle"></i> <span>Profile</span></a>
+        <a href="#" id="logoutLink" class="nav-link" style="margin-top: auto; color: #ef4444;"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
+    </nav>
+</aside>
 
-
-<div class="container">
-
-    <h1>Book Appointment</h1>
-    <p class="subtitle">Request a consultation at the clinic</p>
+<main class="main">
+    <header>
+        <h1>Book Appointment</h1>
+        <p class="subtitle">Request a consultation with our medical professionals.</p>
+    </header>
 
     <div class="card">
-
-        <form method="POST">
-
-            <div style="margin-bottom:15px;">
+        <form id="appointmentForm">
+            <div class="form-group">
                 <label>Preferred Appointment Date</label>
-                <input type="date"
-                       name="date"
-                       min="<?php echo date('Y-m-d'); ?>"
-                       required>
+                <div class="input-wrapper">
+                    <i class="fas fa-calendar-day"></i>
+                    <input type="date" id="date" required>
+                </div>
             </div>
 
-            <div>
+            <div class="form-group">
                 <label>Reason for Visit</label>
-                <textarea name="reason" rows="4"
-                          placeholder="Describe your symptoms or reason for consultation..."
-                          required></textarea>
+                <div class="input-wrapper">
+                    <i class="fas fa-comment-medical" style="top: 20px; transform: none;"></i>
+                    <textarea id="reason" rows="4" placeholder="Describe your symptoms or reason for consultation..." required></textarea>
+                </div>
             </div>
 
-            <div class="row">
-
-                <button type="submit" class="btn btn-primary">
-                    Book Appointment
-                </button>
-
-                <button type="button" class="btn btn-outline"
-                        onclick="window.location='patient-dashboard.php'">
-                    Cancel
-                </button>
-
+            <div class="btn-group">
+                <button type="submit" class="btn btn-primary">Confirm Booking</button>
+                <button type="button" id="cancelBtn" class="btn btn-outline">Cancel</button>
             </div>
-
         </form>
 
-        <!-- ================= GUIDELINES ================= -->
-
         <div class="info-box">
-
-            <h4>Booking Guidelines</h4>
-
+            <h4><i class="fas fa-info-circle"></i> Booking Guidelines</h4>
             <ul>
-                <li>Submit your request and a doctor will be assigned to your appointment</li>
-                <li>You will receive confirmation once a doctor is assigned</li>
-                <li>All consultations are free for UTM students and staff</li>
-                <li>Please arrive 10 minutes before your scheduled time</li>
-                <li>Bring your student/staff ID card</li>
+                <li>Free for all active UTM students and staff.</li>
+                <li>You will be notified via the dashboard once a doctor is assigned.</li>
+                <li>Please bring your UTM ID card for verification.</li>
+                <li>Arrive at least 10 minutes early to the Health Centre.</li>
             </ul>
-
         </div>
-
     </div>
+</main>
 
-</div>
+<script type="module">
+    import { auth, db } from './js/firebase-config.js';
+    import { addDoc, collection } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+    import { signOut } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
 
-</body>
-</html>>
-    <script type="module">
-        import { auth, db } from './js/firebase-config.js';
-        import { addDoc, collection } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+    // Prevent past dates in the calendar
+    const dateInput = document.getElementById('date');
+    const today = new Date().toISOString().split('T')[0];
+    dateInput.setAttribute('min', today);
 
-        auth.onAuthStateChanged((user) => {
-            if (!user) window.location.href = 'login.html';
-        });
+    // Auth Guard
+    auth.onAuthStateChanged((user) => {
+        if (!user) window.location.href = 'login.html';
+    });
 
-        const form = document.getElementById('appointmentForm');
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const date = document.getElementById('date').value;
-            const reason = document.getElementById('reason').value;
-            const user = auth.currentUser;
-            if (!user) return;
+    // Form Submission
+    const form = document.getElementById('appointmentForm');
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const date = document.getElementById('date').value;
+        const reason = document.getElementById('reason').value;
+        const user = auth.currentUser;
 
-            try {
-                await addDoc(collection(db, "appointments"), {
-                    userId: user.uid,
-                    date: date,
-                    reason: reason,
-                    status: "pending",
-                    doctorId: "",
-                    createdAt: new Date().toISOString()
-                });
-                alert("Appointment booked successfully!");
-                window.location.href = "patient_dashboard.html";
-            } catch (error) {
-                alert("Error: " + error.message);
-            }
-        });
-        document.getElementById('cancelBtn').onclick = () => window.location.href = "patient_dashboard.html";
-    </script>
+        if (!user) return;
+
+        try {
+            await addDoc(collection(db, "appointments"), {
+                userId: user.uid,
+                date: date,
+                reason: reason,
+                status: "pending",
+                doctorId: "",
+                doctorName: "Pending Assignment",
+                createdAt: new Date().toISOString()
+            });
+            alert("Success! Your appointment request has been submitted.");
+            window.location.href = "patient_dashboard.html";
+        } catch (error) {
+            alert("Booking Error: " + error.message);
+        }
+    });
+
+    document.getElementById('cancelBtn').onclick = () => window.location.href = "patient_dashboard.html";
+    document.getElementById('logoutLink').onclick = () => signOut(auth).then(() => window.location.href = 'login.html');
+</script>
+
 </body>
 </html>
-<!-- Book Appointment page by Sonia Selvaratnam 14/5/2026 -->

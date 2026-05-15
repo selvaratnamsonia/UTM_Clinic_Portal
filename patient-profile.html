@@ -1,357 +1,234 @@
-<!-- Patient Profile page by Sonia Selvaratnam 14/5/2026 -->
+<!-- Patient Profile page - Optimized & Fixed -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Profile - UTM Clinic Portal</title>
+    <!-- Modern Font and Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        :root {
+            --primary: #802c44;
+            --primary-light: #f4e8ec;
+            --primary-hover: #6a2438;
+            --bg-body: #f8fafc;
+            --white: #ffffff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --danger: #ef4444;
+            --success: #10b981;
+            --radius: 16px;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
         }
 
-        body {
-            display: flex;
-            min-height: 100vh;
-            background: #F7F8FA;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
 
+        body { display: flex; min-height: 100vh; background: var(--bg-body); color: var(--text-dark); }
+
+        /* --- Sidebar --- */
         .sidebar {
-            width: 260px;
-            background: white;
-            border-right: 1px solid #EAEAEA;
-            padding: 20px 0;
-            display: flex;
-            flex-direction: column;
+            width: 280px; background: var(--white); border-right: 1px solid var(--border-color);
+            padding: 30px 0; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh;
         }
 
-        .logo {
-            padding: 0 20px 40px;
-            font-size: 20px;
-            font-weight: bold;
-            color: #802c44;
-        }
+        .logo-container { display: flex; align-items: center; gap: 12px; padding: 0 25px 40px; }
+        .logo-box { width: 42px; height: 42px; background: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .logo-img { width: 80%; height: 80%; object-fit: contain; }
+        .logo-text { font-size: 22px; font-weight: 700; color: var(--primary); }
 
-        .nav-links {
-            display: flex;
-            flex-direction: column;
-        }
-
+        .nav-links { display: flex; flex-direction: column; gap: 5px; padding: 0 15px; }
         .nav-link {
-            padding: 14px 20px;
-            color: #555;
-            transition: 0.2s;
-            text-decoration: none;
+            padding: 12px 18px; color: var(--text-muted); border-radius: 12px; font-weight: 500;
+            transition: all 0.3s ease; display: flex; align-items: center; gap: 12px; text-decoration: none;
         }
+        .nav-link:hover { background: var(--primary-light); color: var(--primary); }
+        .nav-link.active { background: var(--primary); color: white; }
 
-        .nav-link:hover {
-            background: #f5f5f5;
+        /* --- Main Content --- */
+        .main { flex: 1; padding: 40px 60px; max-width: 1100px; }
+        header { margin-bottom: 35px; }
+        h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+        .subtitle { color: var(--text-muted); }
+
+        /* --- Alerts --- */
+        .alert {
+            padding: 15px; border-radius: 10px; margin-bottom: 20px; display: none;
+            font-size: 14px; font-weight: 600;
         }
+        .alert-success { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        .alert-error { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
 
-        .nav-link.active {
-            background: #802c44;
-            color: white;
-        }
-
-        .main {
-            flex: 1;
-            padding: 40px;
-            max-width: 900px;
-        }
-
-        h1 {
-            font-size: 32px;
-            margin-bottom: 5px;
-        }
-
-        .subtitle {
-            color: #777;
-            margin-bottom: 30px;
-        }
-
+        /* --- Form Cards --- */
         .card {
-            background: white;
-            padding: 30px;
-            border-radius: 14px;
-            border: 1px solid #EAEAEA;
-            margin-bottom: 25px;
+            background: var(--white); padding: 32px; border-radius: var(--radius);
+            border: 1px solid var(--border-color); box-shadow: var(--shadow); margin-bottom: 30px;
         }
+        .card-header {
+            display: flex; align-items: center; gap: 12px; margin-bottom: 25px;
+            padding-bottom: 15px; border-bottom: 1px solid #f1f5f9;
+        }
+        .card-header i { color: var(--primary); font-size: 20px; }
+        .card-header h2 { font-size: 20px; font-weight: 700; }
 
-        h2 {
-            font-size: 20px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .full-width { grid-column: span 2; }
 
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            font-size: 14px;
-            color: #333;
-        }
+        .form-group { display: flex; flex-direction: column; gap: 8px; }
+        label { font-size: 14px; font-weight: 600; color: var(--text-dark); }
 
         input, textarea {
-            width: 100%;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid #ddd;
-            font-size: 14px;
-            background-color: #f9f9f9;
+            width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid var(--border-color);
+            font-size: 14px; background-color: #fcfcfc; transition: all 0.2s;
         }
-
-        input:disabled, textarea:disabled {
-            background-color: #f0f0f0;
-            color: #666;
-            cursor: not-allowed;
-        }
-
         input:focus, textarea:focus {
-            outline: none;
-            border-color: #802c44;
+            outline: none; border-color: var(--primary); background-color: #fff;
+            box-shadow: 0 0 0 4px var(--primary-light);
         }
+        input:disabled, textarea:disabled { background-color: #f1f5f9; color: var(--text-muted); cursor: not-allowed; }
 
-        input.input-error, textarea.input-error {
-            border-color: #dc3545;
-            background-color: #fff8f8;
-        }
+        .input-error { border-color: var(--danger) !important; }
+        .error-text { color: var(--danger); font-size: 12px; display: none; margin-top: 4px; }
+        .error-text.show { display: block; }
 
-        .error-message {
-            color: #dc3545;
-            font-size: 12px;
-            margin-top: 5px;
-            display: none;
-        }
+        .helper-text { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
 
-        .error-message.show {
-            display: block;
-        }
-
-        .helper-text {
-            font-size: 12px;
-            color: #6c757d;
-            margin-top: 5px;
-        }
-
-        .text-muted {
-            font-size: 12px;
-            color: #777;
-            margin-top: 5px;
-        }
-
+        /* --- Buttons --- */
+        .action-buttons { margin-top: 30px; display: flex; gap: 12px; }
         .btn {
-            padding: 12px 24px;
-            border-radius: 10px;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            transition: 0.2s;
-            margin-right: 10px;
+            padding: 12px 24px; border-radius: 10px; border: none; font-weight: 600;
+            cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 8px;
         }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-secondary { background: #f1f5f9; color: var(--text-dark); }
+        .btn-success { background: var(--success); color: white; }
 
-        .btn-primary {
-            background: #802c44;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #612134;
-        }
-
-        .btn-secondary {
-            background: #e0e0e0;
-            color: #333;
-        }
-
-        .btn-secondary:hover {
-            background: #ccc;
-        }
-
-        .btn-success {
-            background: #28a745;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #218838;
-        }
-
-        .alert {
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: none;
-        }
-
-        .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .alert-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .action-buttons {
-            margin-top: 20px;
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 80px;
-            }
-            .sidebar .logo, .sidebar .nav-link span {
-                display: none;
-            }
-            .main {
-                padding: 20px;
-            }
+        @media (max-width: 850px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .full-width { grid-column: span 1; }
+            .main { padding: 30px; }
+            .sidebar { width: 80px; }
+            .logo-text, .nav-link span { display: none; }
         }
     </style>
 </head>
 <body>
 
-<div class="sidebar">
-    <div class="logo">UTM Clinic</div>
-    <div class="nav-links">
-        <a href="patient_dashboard.html" class="nav-link">Dashboard</a>
-        <a href="appointments.html" class="nav-link">Appointments</a>
-        <a href="book-appointment.html" class="nav-link">Book Appointment</a>
-        <a href="patient-profile.html" class="nav-link active">Profile</a>
-        <a href="#" id="logoutLink" class="nav-link">Logout</a>
+<aside class="sidebar">
+    <div class="logo-container">
+        <div class="logo-box">
+            <img src="images/Clinic-logo.png" alt="Logo" class="logo-img">
+        </div>
+        <div class="logo-text">UTM Clinic</div>
     </div>
-</div>
+    <nav class="nav-links">
+        <a href="patient_dashboard.html" class="nav-link"><i class="fas fa-columns"></i> <span>Dashboard</span></a>
+        <a href="appointments.html" class="nav-link"><i class="fas fa-calendar-alt"></i> <span>My Appointments</span></a>
+        <a href="book-appointment.html" class="nav-link"><i class="fas fa-plus-circle"></i> <span>Book Appointment</span></a>
+        <a href="patient-profile.html" class="nav-link"><i class="fas fa-user-circle"></i> <span>Profile</span></a>
+        <a href="login.html" id="logoutLink" class="nav-link" style="margin-top: auto; color: #ef4444;"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
+    </nav>
+</aside>
 
-<div class="main">
-    <h1>My Profile</h1>
-    <p class="subtitle">View and manage your personal information</p>
+<main class="main">
+    <header>
+        <h1>Profile Settings</h1>
+        <p class="subtitle">Keep your information up to date to ensure seamless clinic visits.</p>
+    </header>
 
+    <!-- Global Alerts -->
     <div id="alertSuccess" class="alert alert-success"></div>
     <div id="alertError" class="alert alert-error"></div>
 
-    <!-- Personal Information Card -->
     <div class="card">
-        <h2>👤 Personal Information</h2>
+        <div class="card-header">
+            <i class="fas fa-id-card"></i>
+            <h2>Personal Information</h2>
+        </div>
         <form id="profileForm">
-            <div class="form-group">
-                <label>Full Name</label>
-                <input type="text" id="name" disabled>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="name" value="Sarah Abdullah" disabled>
+                </div>
+                <div class="form-group">
+                    <label>Matric Number</label>
+                    <input type="text" id="matricNumber" value="A21EC0000" disabled>
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="email" value="sarah@graduate.utm.my" disabled>
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" id="phone" value="012-3456789" disabled>
+                    <span id="phoneError" class="error-text"></span>
+                    <span class="helper-text">Format: 01X-XXXXXXX</span>
+                </div>
+                <div class="form-group full-width">
+                    <label>Residential Address / College</label>
+                    <textarea id="address" rows="3" disabled>Kolej Tun Dr. Ismail (KTDI), UTM Skudai</textarea>
+                    <span id="addressError" class="error-text"></span>
+                    <span class="helper-text">e.g., K9, UTM or full off-campus address.</span>
+                </div>
             </div>
-
-            <div class="form-group">
-                <label>Email Address</label>
-                <input type="email" id="email" disabled>
-                <div class="text-muted">Email cannot be changed</div>
-            </div>
-
-            <div class="form-group">
-                <label>Matric Number</label>
-                <input type="text" id="matricNumber" disabled>
-                <div class="text-muted">Matric number cannot be changed</div>
-            </div>
-
-            <div class="form-group">
-                <label>Phone Number</label>
-                <input type="tel" id="phone" disabled>
-                <div id="phoneError" class="error-message"></div>
-                <div class="helper-text">Format: 012-3456789 or 0123456789 (Malaysian number)</div>
-            </div>
-
-            <div class="form-group">
-                <label>Address</label>
-                <textarea id="address" rows="3" disabled></textarea>
-                <div id="addressError" class="error-message"></div>
-                <div class="helper-text">Enter your full address OR UTM College (e.g., K9, UTM; KLG, UTM; KTF, UTM; KTHO, UTM; KRP, UTM; KTC, UTM; K12, UTM)</div>
-            </div>
-
             <div class="action-buttons">
-                <button type="button" id="editBtn" class="btn btn-primary">Edit Profile</button>
-                <button type="submit" id="saveBtn" class="btn btn-success" style="display: none;">Save Changes</button>
+                <button type="button" id="editBtn" class="btn btn-primary"><i class="fas fa-edit"></i> Edit Profile</button>
+                <button type="submit" id="saveBtn" class="btn btn-success" style="display: none;"><i class="fas fa-check"></i> Save Changes</button>
                 <button type="button" id="cancelBtn" class="btn btn-secondary" style="display: none;">Cancel</button>
             </div>
         </form>
     </div>
 
-    <!-- Password Change Card -->
     <div class="card">
-        <h2>🔒 Change Password</h2>
+        <div class="card-header">
+            <i class="fas fa-shield-alt"></i>
+            <h2>Security & Password</h2>
+        </div>
         <form id="passwordForm">
-            <div class="form-group">
-                <label>Current Password</label>
-                <input type="password" id="currentPassword" required>
+            <div class="form-grid">
+                <div class="form-group full-width">
+                    <label>Current Password</label>
+                    <input type="password" id="currentPassword" placeholder="••••••••" required>
+                </div>
+                <div class="form-group">
+                    <label>New Password</label>
+                    <input type="password" id="newPassword" placeholder="Min. 8 characters" required>
+                </div>
+                <div class="form-group">
+                    <label>Confirm New Password</label>
+                    <input type="password" id="confirmPassword" placeholder="Repeat new password" required>
+                    <span id="passwordMatchError" class="error-text"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label>New Password</label>
-                <input type="password" id="newPassword" required minlength="8">
-                <div class="text-muted">Minimum 8 characters required</div>
+            <div class="action-buttons">
+                <button type="submit" class="btn btn-primary">Update Password</button>
             </div>
-            <div class="form-group">
-                <label>Confirm New Password</label>
-                <input type="password" id="confirmPassword" required>
-                <div id="passwordMatchError" class="error-message"></div>
-            </div>
-            <button type="submit" class="btn btn-primary">Update Password</button>
         </form>
     </div>
-</div>
+</main>
 
 <script type="module">
     import { auth, db } from './js/firebase-config.js';
     import { signOut, updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
     import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
-    // Validation functions
-    function validatePhoneNumber(phone) {
-        // Malaysian phone number format: 
-        // 01X-XXXXXXX or 01XXXXXXXX or 011-XXXXXXXX or 011XXXXXXXX
-        const phoneRegex = /^(01[0-9]-?[0-9]{7,8}$)|(01[0-9][0-9]{7,8}$)/;
-        if (!phone || phone.trim() === '') {
-            return { valid: false, message: 'Phone number is required' };
-        }
-        if (!phoneRegex.test(phone)) {
-            return { valid: false, message: 'Please enter a valid Malaysian phone number (e.g., 012-3456789 or 0123456789)' };
-        }
-        return { valid: true, message: '' };
-    }
+    // Reusable Alert Function
+    function showAlert(message, type) {
+        const successDiv = document.getElementById('alertSuccess');
+        const errorDiv = document.getElementById('alertError');
+        
+        successDiv.style.display = 'none';
+        errorDiv.style.display = 'none';
 
-    function validateAddress(address) {
-        if (!address || address.trim() === '') {
-            return { valid: false, message: 'Address is required' };
-        }
+        const activeDiv = type === 'success' ? successDiv : errorDiv;
+        activeDiv.textContent = message;
+        activeDiv.style.display = 'block';
         
-        const trimmedAddress = address.trim().toUpperCase();
-        
-        // List of valid UTM colleges
-        const utmColleges = [
-            'K9', 'K10', 'K11', 'K12', 'K13', 'K14', 'K15', 'K16', 'K17',
-            'KLG', 'KTF', 'KTHO', 'KRP', 'KTC', 'KPZ', 'KDO', 'KMP', 'KX'
-        ];
-        
-        // Check if it matches UTM college format (e.g., "K9, UTM" or "K9,UTM" or "K9 UTM")
-        const utmPattern = new RegExp(`^(${utmColleges.join('|')})\\s*[,]?\\s*UTM$`, 'i');
-        
-        if (utmPattern.test(trimmedAddress)) {
-            return { valid: true, message: '' };
-        }
-        
-        // If not UTM college, check if it's a reasonable address (at least 10 characters)
-        if (trimmedAddress.length >= 10) {
-            return { valid: true, message: '' };
-        }
-        
-        return { valid: false, message: 'Please enter a valid address (full address or UTM College format like "K9, UTM")' };
+        setTimeout(() => { activeDiv.style.display = 'none'; }, 5000);
     }
 
     function showFieldError(fieldId, errorId, message) {
@@ -363,187 +240,93 @@
             errorDiv.classList.add('show');
         } else {
             field.classList.remove('input-error');
-            errorDiv.textContent = '';
             errorDiv.classList.remove('show');
         }
     }
 
-    // Auth check
-    auth.onAuthStateChanged(async (user) => {
-        if (!user) {
-            window.location.href = 'login.html';
-            return;
-        }
-        loadUserData(user.uid);
-    });
+    // Validation Logic
+    const validatePhoneNumber = (phone) => {
+        const phoneRegex = /^(01[0-9]-?[0-9]{7,8}$)|(01[0-9][0-9]{7,8}$)/;
+        if (!phone || phone.trim() === '') return { valid: false, message: 'Phone number is required' };
+        if (!phoneRegex.test(phone)) return { valid: false, message: 'Invalid Malaysian format (e.g. 012-3456789)' };
+        return { valid: true };
+    };
 
-    // Load user data from Firestore
-    async function loadUserData(userId) {
-        const userRef = doc(db, "users", userId);
+    const validateAddress = (address) => {
+        if (!address || address.trim().length < 5) return { valid: false, message: 'Please enter a valid address' };
+        return { valid: true };
+    };
+
+    // Load Data
+    auth.onAuthStateChanged(async (user) => {
+        if (!user) { window.location.href = 'login.html'; return; }
+        const userRef = doc(db, "users", user.uid);
         const userSnap = await getDoc(userRef);
-        
         if (userSnap.exists()) {
             const data = userSnap.data();
             document.getElementById('name').value = data.name || '';
-            document.getElementById('email').value = auth.currentUser?.email || '';
+            document.getElementById('email').value = user.email || '';
             document.getElementById('matricNumber').value = data.matricNumber || '';
             document.getElementById('phone').value = data.phone || '';
             document.getElementById('address').value = data.address || '';
         }
-    }
+    });
 
-    // Toggle edit mode
-    let isEditMode = false;
-    
+    // Profile Edit Toggle
     document.getElementById('editBtn').addEventListener('click', () => {
-        isEditMode = true;
-        document.getElementById('name').disabled = false;
-        document.getElementById('phone').disabled = false;
-        document.getElementById('address').disabled = false;
-        
-        // Clear any existing errors
-        showFieldError('phone', 'phoneError', '');
-        showFieldError('address', 'addressError', '');
-        
+        ['name', 'phone', 'address'].forEach(id => document.getElementById(id).disabled = false);
         document.getElementById('editBtn').style.display = 'none';
         document.getElementById('saveBtn').style.display = 'inline-block';
         document.getElementById('cancelBtn').style.display = 'inline-block';
     });
 
-    document.getElementById('cancelBtn').addEventListener('click', () => {
-        isEditMode = false;
-        loadUserData(auth.currentUser.uid);
-        
-        document.getElementById('name').disabled = true;
-        document.getElementById('phone').disabled = true;
-        document.getElementById('address').disabled = true;
-        
-        showFieldError('phone', 'phoneError', '');
-        showFieldError('address', 'addressError', '');
-        
-        document.getElementById('editBtn').style.display = 'inline-block';
-        document.getElementById('saveBtn').style.display = 'none';
-        document.getElementById('cancelBtn').style.display = 'none';
-        hideAlerts();
-    });
+    document.getElementById('cancelBtn').addEventListener('click', () => location.reload());
 
-    // Save profile changes with validation
+    // Submit Profile
     document.getElementById('profileForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        
-        const user = auth.currentUser;
-        if (!user) return;
-
         const phone = document.getElementById('phone').value;
         const address = document.getElementById('address').value;
 
-        // Validate phone
-        const phoneValidation = validatePhoneNumber(phone);
-        if (!phoneValidation.valid) {
-            showFieldError('phone', 'phoneError', phoneValidation.message);
-            return;
-        }
-        showFieldError('phone', 'phoneError', '');
+        const pVal = validatePhoneNumber(phone);
+        const aVal = validateAddress(address);
 
-        // Validate address
-        const addressValidation = validateAddress(address);
-        if (!addressValidation.valid) {
-            showFieldError('address', 'addressError', addressValidation.message);
-            return;
-        }
-        showFieldError('address', 'addressError', '');
+        showFieldError('phone', 'phoneError', pVal.message);
+        showFieldError('address', 'addressError', aVal.message);
 
-        const updatedData = {
-            name: document.getElementById('name').value,
-            phone: phone,
-            address: address
-        };
-
-        try {
-            const userRef = doc(db, "users", user.uid);
-            await updateDoc(userRef, updatedData);
-            
-            showAlert('Profile updated successfully!', 'success');
-            
-            isEditMode = false;
-            document.getElementById('name').disabled = true;
-            document.getElementById('phone').disabled = true;
-            document.getElementById('address').disabled = true;
-            document.getElementById('editBtn').style.display = 'inline-block';
-            document.getElementById('saveBtn').style.display = 'none';
-            document.getElementById('cancelBtn').style.display = 'none';
-            
-            await loadUserData(user.uid);
-            
-            setTimeout(() => hideAlerts(), 3000);
-        } catch (error) {
-            showAlert('Error updating profile: ' + error.message, 'error');
+        if (pVal.valid && aVal.valid) {
+            try {
+                const userRef = doc(db, "users", auth.currentUser.uid);
+                await updateDoc(userRef, { name: document.getElementById('name').value, phone, address });
+                showAlert('Profile updated successfully!', 'success');
+                setTimeout(() => location.reload(), 2000);
+            } catch (err) { showAlert(err.message, 'error'); }
         }
     });
 
-    // Change password with validation
+    // Password Update
     document.getElementById('passwordForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        
         const user = auth.currentUser;
-        const currentPassword = document.getElementById('currentPassword').value;
-        const newPassword = document.getElementById('newPassword').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
+        const currPass = document.getElementById('currentPassword').value;
+        const newPass = document.getElementById('newPassword').value;
+        const confPass = document.getElementById('confirmPassword').value;
 
-        // Clear previous password match error
-        const passwordMatchError = document.getElementById('passwordMatchError');
-        passwordMatchError.classList.remove('show');
-        passwordMatchError.textContent = '';
-
-        if (newPassword !== confirmPassword) {
-            passwordMatchError.textContent = 'New passwords do not match';
-            passwordMatchError.classList.add('show');
-            return;
-        }
-
-        if (newPassword.length < 8) {
-            showAlert('Password must be at least 8 characters', 'error');
+        if (newPass !== confPass) {
+            showFieldError('confirmPassword', 'passwordMatchError', 'Passwords do not match');
             return;
         }
 
         try {
-            const credential = EmailAuthProvider.credential(user.email, currentPassword);
+            const credential = EmailAuthProvider.credential(user.email, currPass);
             await reauthenticateWithCredential(user, credential);
-            await updatePassword(user, newPassword);
-            
-            showAlert('Password changed successfully!', 'success');
-            document.getElementById('passwordForm').reset();
-            setTimeout(() => hideAlerts(), 3000);
-        } catch (error) {
-            if (error.code === 'auth/wrong-password') {
-                showAlert('Current password is incorrect', 'error');
-            } else {
-                showAlert('Error changing password: ' + error.message, 'error');
-            }
-        }
+            await updatePassword(user, newPass);
+            showAlert('Password updated!', 'success');
+            e.target.reset();
+        } catch (err) { showAlert(err.message, 'error'); }
     });
 
-    // Logout
-    document.getElementById('logoutLink').addEventListener('click', async (e) => {
-        e.preventDefault();
-        await signOut(auth);
-        window.location.href = 'login.html';
-    });
-
-    function showAlert(message, type) {
-        const alertDiv = document.getElementById(`alert${type === 'success' ? 'Success' : 'Error'}`);
-        alertDiv.textContent = message;
-        alertDiv.style.display = 'block';
-        setTimeout(() => {
-            alertDiv.style.display = 'none';
-        }, 5000);
-    }
-
-    function hideAlerts() {
-        document.getElementById('alertSuccess').style.display = 'none';
-        document.getElementById('alertError').style.display = 'none';
-    }
+    document.getElementById('logoutLink').addEventListener('click', () => signOut(auth).then(() => window.location.href = 'login.html'));
 </script>
 </body>
 </html>
-<!-- Patient Profile page by Sonia Selvaratnam 14/5/2026 -->
