@@ -222,94 +222,285 @@
         </div>
     </div>
 
-    <div class="section-title"><i class="fas fa-list-ul"></i> Today's Schedule</div>
-    <div class="schedule-card" id="scheduleContainer">
-        <!-- Static placeholder for UI reference - you'll populate this with JS -->
-        <div class="appt-item">
-            <div class="appt-info">
-                <div class="appt-time">09:00 AM</div>
-                <div class="appt-details">
-                    <h4>Upcoming Patient</h4>
-                    <p>Details will load automatically</p>
-                </div>
-            </div>
-            <div class="actions">
-               <a href="patient-records.html">
-  <button class="btn-sm btn-outline">Record</button>
-</a>
-                <a href="write-diagnosis.html">
-                <button class="btn-sm btn-fill">Consult</button>
-                </a>
+   <div class="section-title">
+    <i class="fas fa-list-ul"></i>
+    Today's Schedule
+</div>
+
+<div class="schedule-card" id="scheduleContainer">
+
+    <div class="appt-item">
+        <div class="appt-info">
+            <div class="appt-time">--:--</div>
+
+            <div class="appt-details">
+                <h4>Loading appointments...</h4>
+                <p>Please wait</p>
             </div>
         </div>
     </div>
+
+</div>
 </main>
 
 <script type="module">
     import { db } from "./js/firebase-config.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-    import { collection, query, orderBy, limit, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+    import {
+        getAuth,
+        onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+
+    import {
+        collection,
+        query,
+        orderBy,
+        limit,
+        getDocs,
+        doc,
+        getDoc
+    } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
     const auth = getAuth();
 
-    // Live Clock
+    // =========================
+    // LIVE CLOCK
+    // =========================
     function updateClock() {
         const now = new Date();
-        document.getElementById('liveClock').innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        document.getElementById("liveClock").innerText =
+            now.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit"
+            });
     }
+
     setInterval(updateClock, 1000);
     updateClock();
 
+    // =========================
+    // AUTH CHECK
+    // =========================
     onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            try {
-                // Fixed: The collection name is usually "users" or "doctors"
-                const docSnap = await getDoc(doc(db, "user", user.uid));
-                if (docSnap.exists()) {
-                    const userData = docSnap.data();
-                    document.getElementById("welcomeName").innerText = `Welcome, Dr. ${userData.name || "User"}`;
-                }
-                loadLatestAppointment();
-            } catch (error) {
-                console.error("Error:", error);
-            }
-        } else {
+
+        if (!user) {
             window.location.href = "login.html";
+            return;
         }
+
+        try {
+
+            // Load doctor info
+            const doctorSnap = await getDoc(doc(db, "users", user.uid));
+
+            if (doctorSnap.exists()) {
+
+                const doctorData = doctorSnap.data();
+
+                document.getElementById("welcomeName").innerText =
+                    `Welcome, Dr. ${doctorData.name || "Doctor"}`;
+            }
+
+            // Load latest appointment
+            // Load dashboard data
+loadLatestAppointment();
+loadSchedule();
+
+
+        } catch (error) {
+
+            console.error("Authentication Error:", error);
+
+        }
+
     });
 
+    // =========================
+    // LOAD LATEST APPOINTMENT
+    // =========================
     async function loadLatestAppointment() {
+
         try {
-            const appointmentCol = collection(db, "appointment");
-            const latestQuery = query(appointmentCol, orderBy("appointmentTime", "desc"), limit(1));
+
+            const appointmentCol = collection(db, "appointments");
+
+            const latestQuery = query(
+                appointmentCol,
+                orderBy("createdAt", "desc"),
+                limit(1)
+            );
+
             const querySnapshot = await getDocs(latestQuery);
 
+            // No appointments found
             if (querySnapshot.empty) {
-                document.getElementById("patientName").innerText = "No Pending Appointments";
+
+                document.getElementById("patientName").innerText =
+                    "No Pending Appointments";
+
                 return;
             }
 
-            const appt = querySnapshot.docs[0].data();
-            const userSnap = await getDoc(doc(db, "users", appt.patientId));
+            // Get latest appointment
+            const apptDoc = querySnapshot.docs[0];
+
+            const appt = apptDoc.data();
+
+            // Load patient details
+            const userSnap = await getDoc(
+                doc(db, "users", appt.userId)
+            );
+
+            let patientData = {};
 
             if (userSnap.exists()) {
-                const user = userSnap.data();
-                document.getElementById("patientName").innerText = user.name || "Unknown Patient";
-                document.getElementById("patientMatric").innerText = user.matric || "-";
-                document.getElementById("patientPhone").innerText = user.phone || "-";
-                document.getElementById("patientAddress").innerText = user.address || "-";
-                document.getElementById("appointmentReason").innerText = appt.reason || "General Checkup";
-                
-                if (appt.appointmentTime) {
-                    const date = new Date(appt.appointmentTime.seconds * 1000);
-                    document.getElementById("appointmentTime").innerText = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                }
-                document.getElementById("historyLink").href = `patient-records.html?id=${appt.patientId}`;
+                patientData = userSnap.data();
             }
-        } catch (err) {
-            console.error("Fetch error:", err);
+
+            // =========================
+            // UPDATE UI
+            // =========================
+
+            document.getElementById("patientName").innerText =
+                patientData.name ||
+                appt.patientName ||
+                "Unknown Patient";
+
+            document.getElementById("patientMatric").innerText =
+                patientData.matric || "-";
+
+            document.getElementById("patientPhone").innerText =
+                patientData.phone || "-";
+
+            document.getElementById("patientAddress").innerText =
+                patientData.address || "-";
+
+            document.getElementById("appointmentReason").innerText =
+                appt.reason || "General Checkup";
+
+            document.getElementById("appointmentTime").innerText =
+                appt.time || "--:--";
+
+            // Patient records link
+            document.getElementById("historyLink").href =
+                `patient-records.html?id=${appt.userId}`;
+
+        } catch (error) {
+
+            console.error("Error loading appointment:", error);
+
         }
+
     }
+    async function loadSchedule() {
+
+    try {
+
+        const scheduleContainer =
+            document.getElementById("scheduleContainer");
+
+        const appointmentCol =
+            collection(db, "appointments");
+
+        const scheduleQuery = query(
+            appointmentCol,
+            orderBy("createdAt", "desc")
+        );
+
+        const querySnapshot =
+            await getDocs(scheduleQuery);
+
+        // No appointments
+        if (querySnapshot.empty) {
+
+            scheduleContainer.innerHTML = `
+                <div class="appt-item">
+                    <div class="appt-info">
+                        <div class="appt-details">
+                            <h4>No appointments found</h4>
+                            <p>There are currently no scheduled appointments.</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            return;
+        }
+
+        // Clear existing content
+        scheduleContainer.innerHTML = "";
+
+        // Loop appointments
+        for (const apptDoc of querySnapshot.docs) {
+
+            const appt = apptDoc.data();
+
+            // Get patient info
+            let patientName =
+                appt.patientName || "Unknown Patient";
+
+            const userSnap = await getDoc(
+                doc(db, "users", appt.userId)
+            );
+
+            if (userSnap.exists()) {
+
+                const userData = userSnap.data();
+
+                patientName =
+                    userData.name || patientName;
+            }
+
+            // Create appointment card
+            const appointmentHTML = `
+                <div class="appt-item">
+
+                    <div class="appt-info">
+
+                        <div class="appt-time">
+                            ${appt.time || "--:--"}
+                        </div>
+
+                        <div class="appt-details">
+                            <h4>${patientName}</h4>
+
+                            <p>
+                                ${appt.reason || "General Checkup"}
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <div class="actions">
+
+                        <a href="patient-records.html?id=${appt.userId}">
+                            <button class="btn-sm btn-outline">
+                                Record
+                            </button>
+                        </a>
+
+                        <a href="write-diagnosis.html?id=${apptDoc.id}">
+                            <button class="btn-sm btn-fill">
+                                Consult
+                            </button>
+                        </a>
+
+                    </div>
+
+                </div>
+            `;
+
+            scheduleContainer.innerHTML += appointmentHTML;
+        }
+
+    } catch (error) {
+
+        console.error("Error loading schedule:", error);
+
+    }
+
+}
 </script>
 </body>
 </html>
