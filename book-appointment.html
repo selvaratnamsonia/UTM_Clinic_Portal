@@ -1,234 +1,691 @@
-<!-- Book Appointment page by Sonia Selvaratnam 14/5/2026 -->
+<!-- Book Appointment page by Sonia Selvaratnam 18/5/2026 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book Appointment - UTM Clinic</title>
-
     <style>
-        :root {
-            --primary: #802c44;
-            --primary-light: #f4e8ec;
-            --primary-hover: #6a2438;
-            --bg-body: #f8fafc;
-            --white: #ffffff;
-            --text-dark: #1e293b;
-            --text-muted: #64748b;
-            --border-color: #e2e8f0;
-            --radius: 16px;
-            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-
-        body { display: flex; min-height: 100vh; background: var(--bg-body); color: var(--text-dark); }
-
-        /* --- Sidebar --- */
-        .sidebar {
-            width: 280px; background: var(--white); border-right: 1px solid var(--border-color);
-            padding: 30px 0; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh;
+        body {
+            background: #f5f7fb;
+            min-height: 100vh;
         }
 
-        .logo-container { display: flex; align-items: center; gap: 12px; padding: 0 25px 40px; }
-        .logo-box { width: 42px; height: 42px; background: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
-        .logo-img { width: 80%; height: 80%; object-fit: contain; }
-        .logo-text { font-size: 22px; font-weight: 700; color: var(--primary); }
-
-        .nav-links { display: flex; flex-direction: column; gap: 5px; padding: 0 15px; }
-        .nav-link {
-            padding: 12px 18px; color: var(--text-muted); border-radius: 12px; font-weight: 500;
-            transition: all 0.3s ease; display: flex; align-items: center; gap: 12px; text-decoration: none;
+        /* Header Navigation */
+        .header {
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+            padding: 0 32px;
+            height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
-        .nav-link:hover { background: var(--primary-light); color: var(--primary); }
-        .nav-link.active { background: var(--primary); color: white; }
 
-        /* --- Main Content --- */
-        .main { flex: 1; padding: 40px 60px; max-width: 1000px; }
-        header { margin-bottom: 35px; }
-        h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
-        .subtitle { color: var(--text-muted); }
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
-        /* --- Booking Card --- */
-        .card {
-            background: var(--white); padding: 40px; border-radius: var(--radius);
-            border: 1px solid var(--border-color); box-shadow: var(--shadow);
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: #1a5c7e;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .logo-text h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a2c3e;
+        }
+
+        .logo-text p {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #6c757d;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: #1a5c7e;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: #1a5c7e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .user-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1a2c3e;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 32px;
+        }
+
+        /* Page Title */
+        .page-title {
+            margin-bottom: 24px;
+        }
+
+        .page-title h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a2c3e;
+            margin-bottom: 8px;
+        }
+
+        .page-title p {
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        /* Two Column Layout */
+        .booking-layout {
+            display: grid;
+            grid-template-columns: 1fr 380px;
+            gap: 32px;
+        }
+
+        /* Main Form Card */
+        .form-card {
+            background: white;
+            border-radius: 20px;
+            padding: 32px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 28px;
         }
 
         label {
             display: block;
-            margin-bottom: 6px;
             font-size: 14px;
+            font-weight: 600;
+            color: #1a2c3e;
+            margin-bottom: 8px;
         }
 
         input, textarea {
             width: 100%;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid #ddd;
+            padding: 12px 16px;
+            border: 1px solid #e1e4e8;
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+
+        input:focus, textarea:focus {
             outline: none;
+            border-color: #1a5c7e;
+            box-shadow: 0 0 0 3px rgba(26,92,126,0.1);
         }
 
-        textarea {
-            resize: none;
-        }
-
-        .row {
-            display: flex;
+        /* Time Slots */
+        .time-slots {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
             gap: 10px;
-            margin-top: 20px;
+            margin-top: 8px;
         }
 
-        .btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
+        .time-slot {
+            padding: 10px 12px;
+            text-align: center;
+            background: #f8f9fa;
+            border: 1px solid #e1e4e8;
             border-radius: 10px;
             cursor: pointer;
+            font-size: 13px;
             font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .time-slot:hover {
+            background: #e9ecef;
+            border-color: #1a5c7e;
+        }
+
+        .time-slot.selected {
+            background: #1a5c7e;
+            color: white;
+            border-color: #1a5c7e;
+        }
+
+        .time-slot.disabled {
+            background: #f1f3f5;
+            color: #adb5bd;
+            cursor: not-allowed;
+            text-decoration: line-through;
+        }
+
+        .time-slot.disabled:hover {
+            background: #f1f3f5;
+            border-color: #e1e4e8;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a2c3e;
+            margin-bottom: 12px;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 16px;
+            margin-top: 24px;
         }
 
         .btn-primary {
-            background: #802c44;
+            flex: 1;
+            padding: 14px 24px;
+            background: #1a5c7e;
             color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
         }
 
         .btn-primary:hover {
-            opacity: 0.9;
+            background: #0f4a66;
         }
 
-        .btn-outline {
+        .btn-primary:disabled {
+            background: #adb5bd;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            flex: 1;
+            padding: 14px 24px;
             background: white;
-            border: 1px solid #ddd;
-        }
-
-        /* --- Info Box --- */
-        .info-box {
-            background: #fdf2f2; border: 1px solid #f9d5d5;
-            padding: 20px; border-radius: 12px; margin-top: 30px;
-        }
-        .info-box h4 { color: var(--primary); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
-        .info-box ul { list-style: none; }
-        .info-box li {
-            font-size: 14px; color: #7a3e4e; margin-bottom: 8px;
-            display: flex; align-items: flex-start; gap: 10px;
-        }
-
-        .info-box h4 {
-            margin-bottom: 10px;
-            color: #1d4ed8;
-        }
-
-        .info-box ul {
-            padding-left: 18px;
-            color: #1e40af;
+            color: #6c757d;
+            border: 1px solid #e1e4e8;
+            border-radius: 12px;
             font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
         }
 
-        .info-box li {
-            margin-bottom: 5px;
+        .btn-secondary:hover {
+            background: #f8f9fa;
+            border-color: #1a5c7e;
+            color: #1a5c7e;
         }
 
+        /* Right Sidebar - Info Cards */
+        .info-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .info-card {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .info-card h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a2c3e;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .guidelines-list {
+            list-style: none;
+        }
+
+        .guidelines-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 14px;
+            font-size: 13px;
+            color: #4a5568;
+            line-height: 1.5;
+        }
+
+        .guidelines-list li i {
+            color: #1a5c7e;
+            font-size: 14px;
+            margin-top: 2px;
+            min-width: 18px;
+        }
+
+        .clinic-hours {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .clinic-hours p {
+            font-size: 13px;
+            color: #4a5568;
+            margin-bottom: 6px;
+        }
+
+        .clinic-hours .hours {
+            font-weight: 600;
+            color: #1a2c3e;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            display: none;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+            font-size: 13px;
+        }
+
+        @media (max-width: 900px) {
+            .booking-layout {
+                grid-template-columns: 1fr;
+            }
+            .header {
+                padding: 0 16px;
+            }
+            .container {
+                padding: 16px;
+            }
+            .nav-links {
+                display: none;
+            }
+        }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 <body>
 
-
-
-<div class="container">
-
-    <h1>Book Appointment</h1>
-    <p class="subtitle">Request a consultation at the clinic</p>
-
-    <div class="card">
-
-        <form method="POST">
-
-            <div style="margin-bottom:15px;">
-                <label>Preferred Appointment Date</label>
-                <input type="date"
-                       name="date"
-                       min="<?php echo date('Y-m-d'); ?>"
-                       required>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo-area">
+            <div class="logo-icon">UTM</div>
+            <div class="logo-text">
+                <h2>UTM Clinic Portal</h2>
+                <p>Health & Wellness</p>
             </div>
+        </div>
+        <div class="nav-links">
+            <a href="patient_dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
+            <a href="appointments.html"><i class="fas fa-calendar"></i> My Appointments</a>
+            <a href="book-appointment.html" style="color: #1a5c7e; font-weight: 600;"><i class="fas fa-plus-circle"></i> Book Appointment</a>
+            <a href="patient-profile.html"><i class="fas fa-user"></i> Profile</a>
+        </div>
+        <div class="user-menu" id="userMenu">
+            <div class="user-avatar" id="userAvatar">SS</div>
+            <div class="user-name" id="userName">Sonia</div>
+        </div>
+    </header>
 
-            <div class="form-group">
-                <label>Reason for Visit</label>
-                <textarea name="reason" rows="4"
-                          placeholder="Describe your symptoms or reason for consultation..."
-                          required></textarea>
-            </div>
-
-            <div class="row">
-
-                <button type="submit" class="btn btn-primary">
-                    Book Appointment
-                </button>
-
-                <button type="button" class="btn btn-outline"
-                        onclick="window.location='patient-dashboard.php'">
-                    Cancel
-                </button>
-
-            </div>
-        </form>
-
-        <div class="info-box">
-
-            <h4>Booking Guidelines</h4>
-
-            <ul>
-                <li>Submit your request and a doctor will be assigned to your appointment</li>
-                <li>You will receive confirmation once a doctor is assigned</li>
-                <li>All consultations are free for UTM students and staff</li>
-                <li>Please arrive 10 minutes before your scheduled time</li>
-                <li>Bring your student/staff ID card</li>
-            </ul>
+    <!-- Main Content -->
+    <div class="container">
+        <div class="page-title">
+            <h1>Book Appointment</h1>
+            <p>Select your preferred date and time for consultation</p>
         </div>
 
+        <div class="booking-layout">
+            <!-- Left Column - Booking Form -->
+            <div class="form-card">
+                <div id="alertMessage" class="alert"></div>
+
+                <form id="appointmentForm">
+                    <div class="form-group">
+                        <label><i class="fas fa-calendar-alt" style="margin-right: 8px;"></i> Preferred Date</label>
+                        <input type="date" id="date" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-clock" style="margin-right: 8px;"></i> Available Time Slots</label>
+                        <div id="timeSlotsContainer" class="time-slots">
+                            <div class="loading">Select a date to view available slots</div>
+                        </div>
+                        <input type="hidden" id="selectedTime">
+                    </div>
+
+                    <div class="form-group">
+                        <label><i class="fas fa-stethoscope" style="margin-right: 8px;"></i> Reason for Visit</label>
+                        <textarea id="reason" rows="4" placeholder="Describe your symptoms or reason for consultation..."></textarea>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button type="submit" class="btn-primary" id="submitBtn">
+                            <i class="fas fa-check-circle"></i> Confirm Booking
+                        </button>
+                        <button type="button" class="btn-secondary" id="cancelBtn">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Right Column - Info Sidebar -->
+            <div class="info-sidebar">
+                <div class="info-card">
+                    <h3><i class="fas fa-clinic-medical"></i> Booking Guidelines</h3>
+                    <ul class="guidelines-list">
+                        <li><i class="fas fa-user-md"></i> A doctor will be assigned to your appointment</li>
+                        <li><i class="fas fa-bell"></i> You will receive confirmation once a doctor is assigned</li>
+                        <li><i class="fas fa-graduation-cap"></i> Free for UTM students and staff</li>
+                        <li><i class="fas fa-clock"></i> Please arrive 10 minutes before your scheduled time</li>
+                        <li><i class="fas fa-id-card"></i> Bring your student/staff ID card</li>
+                    </ul>
+                </div>
+
+                <div class="info-card">
+                    <h3><i class="fas fa-building"></i> Clinic Information</h3>
+                    <div class="clinic-hours">
+                        <p><i class="fas fa-map-marker-alt"></i> <strong>Location:</strong> PKU UTM, Skudai</p>
+                        <p><i class="fas fa-clock"></i> <strong>Operating Hours:</strong></p>
+                        <p class="hours">Monday - Friday: 8:00 AM - 5:00 PM</p>
+                        <p class="hours">Saturday: 9:00 AM - 12:00 PM</p>
+                        <p class="hours">Sunday & Public Holidays: Closed</p>
+                        <p style="margin-top: 12px;"><i class="fas fa-phone"></i> <strong>Emergency:</strong> +607-553 3333</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-</div>
-
-</body>
-</html>>
     <script type="module">
         import { auth, db } from './js/firebase-config.js';
-        import { addDoc, collection } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+        import { collection, query, where, getDocs, addDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+        import { signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
-        auth.onAuthStateChanged((user) => {
-            if (!user) window.location.href = 'login.html';
-        });
+        // Predefined time slots
+        const TIME_SLOTS = [
+            "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM",
+            "12:00 PM", "12:30 PM", "02:00 PM", "02:30 PM", "03:00 PM", "03:30 PM",
+            "04:00 PM", "04:30 PM"
+        ];
 
-        const form = document.getElementById('appointmentForm');
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const date = document.getElementById('date').value;
-            const reason = document.getElementById('reason').value;
-            const user = auth.currentUser;
-            if (!user) return;
+        let currentSelectedSlot = null;
+        let bookedSlots = [];
 
-            try {
-                await addDoc(collection(db, "appointments"), {
-                    userId: user.uid,
-                    date: date,
-                    reason: reason,
-                    status: "pending",
-                    doctorId: "",
-                    createdAt: new Date().toISOString()
-                });
-                alert("Appointment booked successfully!");
-                window.location.href = "patient_dashboard.html";
-            } catch (error) {
-                alert("Error: " + error.message);
+        // Auth check and load user data
+        auth.onAuthStateChanged(async (user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Load user name
+            const userRef = doc(db, "users", user.uid);
+            const userSnap = await getDoc(userRef);
+            if (userSnap.exists()) {
+                const userName = userSnap.data().name || user.email.split('@')[0];
+                document.getElementById('userName').textContent = userName.split(' ')[0];
+                const initials = userName.split(' ').map(n => n[0]).join('').toUpperCase();
+                document.getElementById('userAvatar').textContent = initials.substring(0, 2);
             }
         });
-        document.getElementById('cancelBtn').onclick = () => window.location.href = "patient_dashboard.html";
+
+        // Load booked appointments for selected date
+        async function loadBookedSlots(date) {
+            if (!date) return [];
+            
+            try {
+                const appointmentsQuery = query(
+                    collection(db, "appointments"),
+                    where("date", "==", date),
+                    where("status", "in", ["pending", "confirmed"])
+                );
+                const appointmentsSnap = await getDocs(appointmentsQuery);
+                const bookedTimes = [];
+                appointmentsSnap.forEach((doc) => {
+                    const data = doc.data();
+                    if (data.time) {
+                        bookedTimes.push(data.time);
+                    }
+                });
+                return bookedTimes;
+            } catch (error) {
+                console.error("Error loading booked slots:", error);
+                return [];
+            }
+        }
+
+        // Render time slots
+        async function renderTimeSlots() {
+            const date = document.getElementById('date').value;
+            const container = document.getElementById('timeSlotsContainer');
+            
+            if (!date) {
+                container.innerHTML = '<div class="loading"><i class="fas fa-calendar-alt"></i> Select a date to view available slots</div>';
+                return;
+            }
+            
+            container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-pulse"></i> Loading available slots...</div>';
+            
+            bookedSlots = await loadBookedSlots(date);
+            
+            container.innerHTML = '';
+            
+            TIME_SLOTS.forEach(slot => {
+                const slotDiv = document.createElement('div');
+                slotDiv.className = 'time-slot';
+                if (bookedSlots.includes(slot)) {
+                    slotDiv.classList.add('disabled');
+                    slotDiv.innerHTML = `<i class="fas fa-ban" style="font-size: 10px;"></i> ${slot}`;
+                } else {
+                    slotDiv.innerHTML = `<i class="fas fa-clock"></i> ${slot}`;
+                    slotDiv.addEventListener('click', () => {
+                        document.querySelectorAll('.time-slot').forEach(el => {
+                            el.classList.remove('selected');
+                        });
+                        slotDiv.classList.add('selected');
+                        currentSelectedSlot = slot;
+                        document.getElementById('selectedTime').value = slot;
+                    });
+                }
+                container.appendChild(slotDiv);
+            });
+        }
+
+        function setMinDate() {
+            const dateInput = document.getElementById('date');
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.min = today;
+        }
+
+        function showAlert(message, type) {
+            const alertDiv = document.getElementById('alertMessage');
+            alertDiv.textContent = message;
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.style.display = 'block';
+            setTimeout(() => {
+                alertDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        async function submitAppointment() {
+            const date = document.getElementById('date').value;
+            const reason = document.getElementById('reason').value;
+            const time = document.getElementById('selectedTime').value;
+            
+            if (!date) {
+                showAlert("Please select a date", "error");
+                return false;
+            }
+            if (!time) {
+                showAlert("Please select a time slot", "error");
+                return false;
+            }
+            if (!reason || reason.trim() === "") {
+                showAlert("Please provide a reason for your visit", "error");
+                return false;
+            }
+            
+            const currentBookedSlots = await loadBookedSlots(date);
+            if (currentBookedSlots.includes(time)) {
+                showAlert("Sorry, this time slot has been taken. Please select another.", "error");
+                await renderTimeSlots();
+                return false;
+            }
+            
+            return true;
+        }
+
+        // Event listeners
+        document.getElementById('date').addEventListener('change', () => {
+            renderTimeSlots();
+        });
+        
+        document.getElementById('appointmentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const isValid = await submitAppointment();
+            if (!isValid) return;
+            
+            const date = document.getElementById('date').value;
+            const reason = document.getElementById('reason').value;
+            const time = document.getElementById('selectedTime').value;
+            const user = auth.currentUser;
+            
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Booking...';
+            
+            try {
+                const userRef = doc(db, "users", user.uid);
+                const userSnap = await getDoc(userRef);
+                const patientName = userSnap.exists() ? userSnap.data().name : 'Patient';
+                
+                await addDoc(collection(db, "appointments"), {
+                    userId: user.uid,
+                    patientName: patientName,
+                    doctorId: "",
+                    doctorName: "",
+                    date: date,
+                    time: time,
+                    reason: reason,
+                    status: "pending",
+                    createdAt: new Date().toISOString()
+                });
+                
+                showAlert(`✅ Appointment booked for ${date} at ${time}! A doctor will review your request.`, "success");
+                
+                document.getElementById('reason').value = '';
+                document.getElementById('selectedTime').value = '';
+                currentSelectedSlot = null;
+                await renderTimeSlots();
+                
+                setTimeout(() => {
+                    window.location.href = "patient_dashboard.html";
+                }, 2500);
+                
+            } catch (error) {
+                console.error("Error booking appointment:", error);
+                showAlert("Error: " + error.message, "error");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Confirm Booking';
+            }
+        });
+        
+        document.getElementById('cancelBtn').addEventListener('click', () => {
+            window.location.href = "patient_dashboard.html";
+        });
+
+        // Logout
+        document.getElementById('userMenu').addEventListener('click', async () => {
+            if (confirm("Logout?")) {
+                await signOut(auth);
+                window.location.href = 'login.html';
+            }
+        });
+        
+        setMinDate();
     </script>
 </body>
 </html>
-<!-- Book Appointment page by Sonia Selvaratnam 14/5/2026 -->
+<!-- Book Appointment page by Sonia Selvaratnam 18/5/2026 -->
