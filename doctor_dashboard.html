@@ -217,7 +217,7 @@
             </div>
             <div style="text-align: right;">
                 <p style="margin-bottom: 15px; opacity: 0.8;">Appt Time: <span id="appointmentTime">--:--</span></p>
-                <a id="historyLink" href="#" class="btn-white">View Full Records</a>
+               <a id="historyLink" href="/patient-records" class="btn-white">View Full Records</a>
             </div>
         </div>
     </div>
@@ -234,8 +234,12 @@
                 </div>
             </div>
             <div class="actions">
-                <button class="btn-sm btn-outline">Record</button>
+               <a href="patient-records.html">
+  <button class="btn-sm btn-outline">Record</button>
+</a>
+                <a href="write-diagnosis.html">
                 <button class="btn-sm btn-fill">Consult</button>
+                </a>
             </div>
         </div>
     </div>
@@ -300,7 +304,7 @@
                     const date = new Date(appt.appointmentTime.seconds * 1000);
                     document.getElementById("appointmentTime").innerText = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 }
-                document.getElementById("historyLink").href = `patient-history.html?id=${appt.patientId}`;
+                document.getElementById("historyLink").href = `patient-records.html?id=${appt.patientId}`;
             }
         } catch (err) {
             console.error("Fetch error:", err);
