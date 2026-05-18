@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Claim Appointments - UTM Clinic</title>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #802c44;
+            --primary-light: #f4e8ec;
+            --primary-hover: #6a2438;
+            --bg-body: #f8fafc;
+            --white: #ffffff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --radius-lg: 20px;
+            --radius-md: 14px;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05),
+                      0 4px 6px -2px rgba(0, 0, 0, 0.02);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            background: var(--bg-body);
+            color: var(--text-dark);
+        }
+
+        /* ================= SIDEBAR ================= */
+
+        .sidebar {
+            width: 280px;
+            background: var(--white);
+            border-right: 1px solid var(--border-color);
+            padding: 30px 0;
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+        }
+
+        .logo-container { display: flex; align-items: center; gap: 12px; padding: 0 25px 40px; }
+        .logo-box { width: 42px; height: 42px; background: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+        .logo-img { width: 80%; height: 80%; object-fit: contain; }
+        .logo-text { font-size: 22px; font-weight: 700; color: var(--primary); }
+
+        .nav-links {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 0 15px;
+            flex: 1;
+        }
+
+        .nav-link {
+            padding: 12px 18px;
+            color: var(--text-muted);
+            border-radius: 12px;
+            font-weight: 500;
+            transition: 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .nav-link i {
+            width: 20px;
+            text-align: center;
+            font-size: 18px;
+        }
+
+        .nav-link:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .nav-link.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(128, 44, 68, 0.2);
+        }
+
+        .sidebar-footer {
+            padding: 20px 15px 0;
+            border-top: 1px solid var(--border-color);
+            margin-top: auto;
+        }
+
+        .logout-link {
+            color: #ef4444 !important;
+        }
+
+        .logout-link:hover {
+            background: #fef2f2 !important;
+        }
+
+        /* ================= MAIN CONTENT ================= */
+
+        .main-content {
+            flex: 1;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        /* Header */
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 16px;
+            margin-top: 4px;
+        }
+
+        .badge-count {
+            background: #fdf2f8;
+            color: var(--primary);
+            padding: 6px 16px;
+            border-radius: 30px;
+            font-weight: 800;
+            font-size: 14px;
+        }
+
+        /* Toolbar */
+
+        .toolbar {
+            background: var(--white);
+            padding: 16px 24px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #f1f5f9;
+            padding: 8px 16px;
+            border-radius: 10px;
+            border: 1px solid transparent;
+            transition: 0.3s;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--primary);
+            background: white;
+        }
+
+        .search-box input {
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 14px;
+        }
+
+        .clear-btn {
+            color: var(--primary);
+            background: transparent;
+            border: none;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: 0.2s;
+        }
+
+        .clear-btn:hover {
+            background: #f5f3ff;
+        }
+
+        /* Appointment Cards */
+
+        .appointments-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .appointment-card {
+            background: var(--white);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: center;
+            gap: 24px;
+            transition: 0.2s;
+        }
+
+        .appointment-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+            border-color: #d8b4fe;
+        }
+
+        /* Avatar */
+
+        .avatar {
+            width: 56px;
+            height: 56px;
+            background: #f1f5f9;
+            color: var(--primary);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 20px;
+        }
+
+        /* Info */
+
+        .info-main h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .patient-id {
+            background: #f1f5f9;
+            color: var(--text-muted);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .info-grid {
+            display: flex;
+            gap: 24px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .info-item span {
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
+        .info-item i {
+            color: #94a3b8;
+        }
+
+        /* Claim Button */
+
+        .claim-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: 0.2s;
+        }
+
+        .claim-btn:hover {
+            background: var(--primary-hover);
+        }
+
+        /* Empty State */
+
+        .empty-state {
+            display: none;
+            text-align: center;
+            padding: 60px;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            color: #10b981;
+            margin-bottom: 16px;
+        }
+
+        /* Guide Box */
+
+        .guide-box {
+            margin-top: 40px;
+            background: #fdf2f8;
+            border: 1px solid #fbcfe8;
+            padding: 24px;
+            border-radius: var(--radius-md);
+        }
+
+        .guide-box h4 {
+            color: #9d174d;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .guide-box ul {
+            list-style: none;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .guide-box li {
+            font-size: 13px;
+            color: #be185d;
+            display: flex;
+            gap: 8px;
+        }
+
+        .guide-box li::before {
+            content: "•";
+            font-weight: bold;
+        }
+
+        /* Mobile */
+
+        @media (max-width: 768px) {
+
+            body {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+
+            .main-content {
+                padding: 20px;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .toolbar {
+                flex-direction: column;
+                gap: 16px;
+                align-items: stretch;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            .appointment-card {
+                grid-template-columns: 1fr;
+                text-align: center;
+                justify-items: center;
+            }
+
+            .info-grid {
+                flex-direction: column;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .guide-box ul {
+                grid-template-columns: 1fr;
+            }
+
+            .claim-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+
+        <div class="logo-container">
+            <div class="logo-box">
+                <img src="images/Clinic-logo.png" alt="Logo" class="logo-img">
+            </div>
+
+            <div class="logo-text">UTM Clinic</div>
+        </div>
+
+        <nav class="nav-links">
+
+            <a href="doctor_dashboard.html" class="nav-link">
+                <i class="fas fa-columns"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <a href="claim-appointment.html" class="nav-link">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Claim Appointments</span>
+            </a>
+
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="login.html" id="logoutLink" class="nav-link logout-link">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+        <div class="container">
+
+            <!-- Header -->
+            <div class="header">
+
+                <div>
+                    <h1>Claim Appointments</h1>
+                    <p>Available patients awaiting a doctor's assignment.</p>
+                </div>
+
+                <div class="badge-count">
+                    3 Available
+                </div>
+
+            </div>
+
+            <!-- Toolbar -->
+            <div class="toolbar">
+
+                <div class="search-box">
+                    <i class="fa-solid fa-calendar-day" style="color: #64748b;"></i>
+
+                    <input
+                        type="date"
+                        id="filterDate"
+                        onchange="handleFilter()"
+                    >
+                </div>
+
+                <button class="clear-btn" onclick="clearFilter()">
+                    Reset View
+                </button>
+
+            </div>
+
+            <!-- Appointments -->
+            <div class="appointments-grid" id="apptGrid">
+
+                <!-- Card 1 -->
+                <div class="appointment-card" data-date="2026-05-08">
+
+                    <div class="avatar">AA</div>
+
+                    <div class="info-main">
+
+                        <h3>
+                            Ahmad bin Abdullah
+                            <span class="patient-id">A21EC0001</span>
+                        </h3>
+
+                        <div class="info-grid">
+
+                            <div class="info-item">
+                                <i class="fa-solid fa-clock"></i>
+                                Requested:
+                                <span>2026-05-08</span>
+                            </div>
+
+                            <div class="info-item">
+                                <i class="fa-solid fa-stethoscope"></i>
+                                Reason:
+                                <span>General Checkup</span>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <button class="claim-btn" onclick="claimAppointment(this)">
+                        Claim
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+
+                </div>
+
+                <!-- Card 2 -->
+                <div class="appointment-card" data-date="2026-05-08">
+
+                    <div class="avatar" style="background:#ecfdf5; color:#10b981;">
+                        SN
+                    </div>
+
+                    <div class="info-main">
+
+                        <h3>
+                            Siti Nurhaliza
+                            <span class="patient-id">A21EC0045</span>
+                        </h3>
+
+                        <div class="info-grid">
+
+                            <div class="info-item">
+                                <i class="fa-solid fa-clock"></i>
+                                Requested:
+                                <span>2026-05-08</span>
+                            </div>
+
+                            <div class="info-item">
+                                <i class="fa-solid fa-stethoscope"></i>
+                                Reason:
+                                <span>Flu symptoms</span>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <button class="claim-btn" onclick="claimAppointment(this)">
+                        Claim
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+
+                </div>
+
+                <!-- Card 3 -->
+                <div class="appointment-card" data-date="2026-05-09">
+
+                    <div class="avatar" style="background:#fff7ed; color:#f97316;">
+                        MA
+                    </div>
+
+                    <div class="info-main">
+
+                        <h3>
+                            Muhammad Ali
+                            <span class="patient-id">A21EC0089</span>
+                        </h3>
+
+                        <div class="info-grid">
+
+                            <div class="info-item">
+                                <i class="fa-solid fa-clock"></i>
+                                Requested:
+                                <span>2026-05-09</span>
+                            </div>
+
+                            <div class="info-item">
+                                <i class="fa-solid fa-stethoscope"></i>
+                                Reason:
+                                <span>Follow-up consultation</span>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <button class="claim-btn" onclick="claimAppointment(this)">
+                        Claim
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+
+                </div>
+
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state" id="emptyState">
+
+                <i class="fa-solid fa-circle-check"></i>
+
+                <p style="font-weight: 600;">
+                    All caught up!
+                </p>
+
+                <p style="font-size: 14px;">
+                    There are no unassigned appointments at this time.
+                </p>
+
+            </div>
+
+            <!-- Guide -->
+            <div class="guide-box">
+
+                <h4>
+                    <i class="fa-solid fa-circle-info"></i>
+                    How it works
+                </h4>
+
+                <ul>
+                    <li>Claimed items move to your personal dashboard.</li>
+                    <li>Patients receive an SMS/Email once you claim.</li>
+                    <li>Availability is based on your clinic hours.</li>
+                    <li>Urgent cases are highlighted in red (if any).</li>
+                </ul>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <script>
+
+        function claimAppointment(button) {
+
+            if (confirm("Are you sure you want to claim this patient?")) {
+
+                const card = button.closest(".appointment-card");
+
+                card.style.opacity = "0";
+                card.style.transform = "translateX(20px)";
+
+                setTimeout(() => {
+
+                    card.remove();
+
+                    checkEmpty();
+
+                }, 300);
+            }
+        }
+
+        function checkEmpty() {
+
+            const grid = document.getElementById("apptGrid");
+            const cards = grid.querySelectorAll(".appointment-card");
+
+            document.querySelector(".badge-count").innerText =
+                cards.length + " Available";
+
+            if (cards.length === 0) {
+                document.getElementById("emptyState").style.display = "block";
+            }
+        }
+
+        function clearFilter() {
+
+            document.getElementById("filterDate").value = "";
+
+            document.querySelectorAll(".appointment-card")
+                .forEach(card => {
+                    card.style.display = "grid";
+                });
+        }
+
+        function handleFilter() {
+
+            const selectedDate =
+                document.getElementById("filterDate").value;
+
+            const cards =
+                document.querySelectorAll(".appointment-card");
+
+            cards.forEach(card => {
+
+                const cardDate = card.dataset.date;
+
+                if (!selectedDate || cardDate === selectedDate) {
+                    card.style.display = "grid";
+                } else {
+                    card.style.display = "none";
+                }
+
+            });
+        }
+
+    </script>
+
+</body>
+</html>
