@@ -1,4 +1,3 @@
-<!-- Appointments page by Sonia Selvaratnam 14/5/2026 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Appointment History - UTM Clinic</title>
 
-    <!-- Modern Font and Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -38,7 +36,7 @@
             color: var(--text-dark);
         }
 
-        /* --- Sidebar --- */
+        /* --- Sidebar Navigation --- */
         .sidebar {
             width: 280px;
             background: var(--white);
@@ -86,9 +84,9 @@
         }
 
         .nav-link:hover { background: var(--primary-light); color: var(--primary); }
-        .nav-link.active { background: var(--primary); color: white; }
+        .nav-link.active { background: var(--primary-light); color: var(--primary); font-weight: 600; }
 
-        /* --- Main Content --- */
+        /* --- Main Content Section --- */
         .main {
             flex: 1;
             padding: 40px 60px;
@@ -99,7 +97,38 @@
         h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
         .subtitle { color: var(--text-muted); }
 
-        /* --- Table Card --- */
+        /* --- Navigation Sub-Tabs --- */
+        .history-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 10px 20px;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn:hover {
+            color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        .tab-btn.active-tab {
+            color: var(--white);
+            background: var(--primary);
+        }
+
+        /* --- Table Filter Controls --- */
         .table-card {
             background: var(--white);
             border-radius: var(--radius);
@@ -155,7 +184,7 @@
             cursor: pointer;
         }
 
-        /* --- Table Styling --- */
+        /* --- Data Presentation Table --- */
         table {
             width: 100%;
             border-collapse: collapse;
@@ -177,6 +206,7 @@
             padding: 20px 25px;
             border-top: 1px solid #f1f5f9;
             font-size: 15px;
+            vertical-align: middle;
         }
 
         tr:hover { background: #fcfcfc; }
@@ -184,13 +214,14 @@
         .doctor-info { font-weight: 600; color: var(--text-dark); }
         .date-cell { color: var(--text-muted); font-size: 14px; }
 
-        /* --- Badges --- */
+        /* --- Custom Status Badges --- */
         .badge {
             padding: 6px 12px;
             border-radius: 8px;
             font-size: 12px;
             font-weight: 700;
             display: inline-block;
+            text-transform: capitalize;
         }
 
         .confirmed { background: #dcfce7; color: #15803d; }
@@ -198,7 +229,7 @@
         .completed { background: #e0f2fe; color: #0369a1; }
         .cancelled { background: #fee2e2; color: #dc2626; }
 
-        /* --- Action Button --- */
+        /* --- Action Controls --- */
         .btn-icon {
             width: 36px;
             height: 36px;
@@ -207,19 +238,32 @@
             background: white;
             color: var(--text-muted);
             cursor: pointer;
-            transition: 0.2s;
-            display: flex;
+            transition: all 0.2s ease;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
         }
 
-        .btn-icon:hover {
-            border-color: var(--primary);
-            color: var(--primary);
-            background: var(--primary-light);
+        .btn-icon.btn-danger {
+            color: #ef4444;
+            border-color: #fee2e2;
+            background: #fff5f5;
         }
 
-        /* --- Responsive --- */
+        .btn-icon.btn-danger:hover {
+            border-color: #dc2626;
+            color: #ffffff;
+            background: #dc2626;
+        }
+
+        .empty-row-msg {
+            text-align: center;
+            padding: 40px !important;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        /* --- Layout Responsiveness --- */
         @media (max-width: 1024px) {
             .sidebar { width: 80px; }
             .logo-text, .nav-link span { display: none; }
@@ -242,21 +286,20 @@
         <div class="logo-text">UTM Clinic</div>
     </div>
 
-   <nav class="nav-links">
-        <a href="#" class="nav-link">
+    <nav class="nav-links">
+        <a href="patient_dashboard.html" class="nav-link">
             <i class="fas fa-columns"></i> <span>Dashboard</span>
         </a>
-        <a href="appointments.html" class="nav-link">
+        <a href="appointments.html" class="nav-link active">
             <i class="fas fa-calendar-alt"></i> <span>My Appointments</span>
         </a>
         <a href="book-appointment.html" class="nav-link">
             <i class="fas fa-plus-circle"></i> <span>Book Appointment</span>
         </a>
-       
         <a href="patient-profile.html" class="nav-link">
             <i class="fas fa-user-circle"></i> <span>Profile</span>
         </a>
-        <a href="login.html" id="logoutLink" class="nav-link" style="margin-top: auto; color: #ef4444;">
+        <a href="#" id="logoutLink" class="nav-link" style="margin-top: auto; color: #ef4444;">
             <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
         </a>
     </nav>
@@ -268,14 +311,19 @@
         <p class="subtitle">Track and manage your visits to the UTM Health Centre.</p>
     </header>
 
+    <div class="history-tabs">
+        <button class="tab-btn active-tab" id="tabUpcoming">Future Appointments</button>
+        <button class="tab-btn" id="tabPast">Past History</button>
+    </div>
+
     <div class="table-card">
         <div class="table-controls">
             <div class="search-wrapper">
                 <i class="fas fa-search"></i>
-                <input type="text" placeholder="Search by doctor or reason...">
+                <input type="text" id="tableSearch" placeholder="Search by doctor or reason...">
             </div>
             
-            <select class="filter-select">
+            <select class="filter-select" id="statusFilter">
                 <option value="all">All Statuses</option>
                 <option value="confirmed">Confirmed</option>
                 <option value="completed">Completed</option>
@@ -291,82 +339,203 @@
                     <th>Date & Time</th>
                     <th>Reason</th>
                     <th>Status</th>
-                    <th style="text-align: center;">Details</th>
+                    <th style="text-align: center; width: 180px;">Cancel Appointment</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="appointmentsTableBody">
                 <tr>
-                    <td class="doctor-info">Dr. Sarah Ahmad</td>
-                    <td class="date-cell">May 08, 2026 <br> <small>10:00 AM</small></td>
-                    <td>General Checkup</td>
-                    <td><span class="badge confirmed">Confirmed</span></td>
-                    <td align="center">
-                        <button class="btn-icon" title="View Details"><i class="fas fa-eye"></i></button>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="doctor-info">Dr. Ahmad Hassan</td>
-                    <td class="date-cell">May 15, 2026 <br> <small>02:00 PM</small></td>
-                    <td>Fever Consultation</td>
-                    <td><span class="badge pending">Pending</span></td>
-                    <td align="center">
-                        <button class="btn-icon" title="View Details"><i class="fas fa-eye"></i></button>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="doctor-info">Dr. Nurul Aisyah</td>
-                    <td class="date-cell">May 03, 2026 <br> <small>11:30 AM</small></td>
-                    <td>Medical Certificate</td>
-                    <td><span class="badge completed">Completed</span></td>
-                    <td align="center">
-                        <button class="btn-icon" title="View Details"><i class="fas fa-eye"></i></button>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="doctor-info">Dr. Hafiz Rahman</td>
-                    <td class="date-cell">April 25, 2026 <br> <small>09:00 AM</small></td>
-                    <td>Dental Checkup</td>
-                    <td><span class="badge cancelled">Cancelled</span></td>
-                    <td align="center">
-                        <button class="btn-icon" title="View Details"><i class="fas fa-eye"></i></button>
-                    </td>
+                    <td colspan="5" class="empty-row-msg">Loading your clinic history data...</td>
                 </tr>
             </tbody>
         </table>
     </div>
 </main>
 
-</body>
-</html>
     <script type="module">
         import { auth, db } from './js/firebase-config.js';
-        import { collection, query, where, getDocs, orderBy } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+        import { signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+        import { collection, query, where, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
+        let allAppointments = []; 
+        let currentTab = 'upcoming'; 
+
+        // Authenticate account state configuration
         auth.onAuthStateChanged(async (user) => {
-            if (!user) { window.location.href = 'login.html'; return; }
-            const q = query(collection(db, "appointments"), where("userId", "==", user.uid), orderBy("date", "desc"));
-            const snap = await getDocs(q);
-            const container = document.getElementById('appointmentsList');
-            if (snap.empty) {
-                container.innerHTML = '<div class="bg-white p-6 rounded shadow text-center">No appointments found.</div>';
+            if (!user) { 
+                window.location.href = 'login.html'; 
+                return; 
+            }
+            await loadAppointments(user.uid);
+        });
+
+        // Query fetching handler
+        async function loadAppointments(uid) {
+            try {
+                const q = query(collection(db, "appointments"), where("userId", "==", uid));
+                const snap = await getDocs(q);
+                
+                if (snap.empty) {
+                    document.getElementById('appointmentsTableBody').innerHTML = '<tr><td colspan="5" class="empty-row-msg">No appointments found in your account history.</td></tr>';
+                    allAppointments = [];
+                    return;
+                }
+                
+                allAppointments = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                // Sort in-memory with JS to avoid Firestore Index errors
+                allAppointments.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                applyFilters(); 
+                
+            } catch (error) {
+                console.error("Firestore read error:", error);
+                document.getElementById('appointmentsTableBody').innerHTML = `<tr><td colspan="5" class="empty-row-msg" style="color:red;">Error connecting to medical database. Please try again later.</td></tr>`;
+            }
+        }
+
+        // View interface rendering logic engine
+        function renderTable(appointmentsList) {
+            const container = document.getElementById('appointmentsTableBody');
+            if(!container) return;
+
+            if(appointmentsList.length === 0) {
+                container.innerHTML = `<tr><td colspan="5" class="empty-row-msg">No ${currentTab} appointments found matching your criteria.</td></tr>`;
                 return;
             }
+
             let html = '';
-            snap.forEach(doc => {
-                const data = doc.data();
+            appointmentsList.forEach(item => {
+                const docName = item.doctorName || "Assigned UTM Practitioner";
+                const timeStr = item.time || "09:00 AM";
+                const reasonStr = item.reason || "General Consultation";
+                const currentStatus = item.status ? item.status.toLowerCase() : 'pending';
+
+                // Allow cancellation if it's upcoming and not already processed/cancelled
+                const canCancel = (currentTab === 'upcoming' && (currentStatus === 'pending' || currentStatus === 'confirmed'));
+
                 html += `
-                    <div class="bg-white p-4 rounded shadow flex justify-between items-center">
-                        <div>
-                            <p class="font-bold">${data.date}</p>
-                            <p class="text-gray-600">Reason: ${data.reason}</p>
-                        </div>
-                        <span class="px-3 py-1 rounded-full text-xs ${data.status === 'confirmed' ? 'bg-green-100 text-green-700' : (data.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100')}">${data.status}</span>
-                    </div>
+                    <tr>
+                        <td class="doctor-info">${docName}</td>
+                        <td class="date-cell">${item.date} <br> <small>${timeStr}</small></td>
+                        <td>${reasonStr}</td>
+                        <td><span class="badge ${currentStatus}">${currentStatus}</span></td>
+                        <td align="center">
+                            ${canCancel ? `
+                                <button class="btn-icon btn-danger cancel-appointment-btn" title="Cancel Appointment" data-id="${item.id}">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            ` : `<span style="color: var(--text-muted); font-size: 13px; font-style: italic;">No actions available</span>`}
+                        </td>
+                    </tr>
                 `;
             });
             container.innerHTML = html;
+        }
+
+        // Database entry rewrite execution function
+        async function cancelAppointment(appointmentId) {
+            const confirmCancel = confirm("Are you sure you want to cancel this scheduled clinic appointment?");
+            if (!confirmCancel) return;
+
+            try {
+                const appointmentDocRef = doc(db, "appointments", appointmentId);
+                
+                await updateDoc(appointmentDocRef, {
+                    status: "cancelled"
+                });
+
+                alert("Your appointment has been successfully cancelled.");
+                await loadAppointments(auth.currentUser.uid);
+
+            } catch (error) {
+                console.error("Cancellation operation error:", error);
+                alert("Failed to execute cancellation: " + error.message);
+            }
+        }
+
+        // Combined filter logic selector processor
+        function applyFilters() {
+            const searchInput = document.getElementById('tableSearch');
+            const statusFilter = document.getElementById('statusFilter');
+            
+            const keyword = searchInput ? searchInput.value.toLowerCase().trim() : '';
+            const filterValue = statusFilter ? statusFilter.value : 'all';
+            
+            const today = new Date();
+            today.setHours(0,0,0,0);
+
+            const filteredData = allAppointments.filter(item => {
+                const doctorMatches = (item.doctorName || '').toLowerCase().includes(keyword);
+                const reasonMatches = (item.reason || '').toLowerCase().includes(keyword);
+                const matchesKeyword = doctorMatches || reasonMatches;
+
+                const matchesStatus = (filterValue === 'all') || (item.status && item.status.toLowerCase() === filterValue);
+
+                const appointmentDate = new Date(item.date);
+                appointmentDate.setHours(0,0,0,0);
+                
+                let matchesTimeline = false;
+                if (currentTab === 'upcoming') {
+                    matchesTimeline = (appointmentDate >= today) && (item.status !== 'cancelled' && item.status !== 'completed');
+                } else {
+                    matchesTimeline = (appointmentDate < today) || (item.status === 'cancelled' || item.status === 'completed');
+                }
+
+                return matchesKeyword && matchesStatus && matchesTimeline;
+            });
+
+            renderTable(filteredData);
+        }
+
+        // Setup DOM listeners cleanly and use single target delegation for buttons
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('tableSearch');
+            const statusFilter = document.getElementById('statusFilter');
+            const tabUpcoming = document.getElementById('tabUpcoming');
+            const tabPast = document.getElementById('tabPast');
+            const tableBody = document.getElementById('appointmentsTableBody');
+
+            if (searchInput) searchInput.addEventListener('input', applyFilters);
+            if (statusFilter) statusFilter.addEventListener('change', applyFilters);
+
+            if (tabUpcoming && tabPast) {
+                tabUpcoming.addEventListener('click', () => {
+                    currentTab = 'upcoming';
+                    tabUpcoming.classList.add('active-tab');
+                    tabPast.classList.remove('active-tab');
+                    applyFilters();
+                });
+
+                tabPast.addEventListener('click', () => {
+                    currentTab = 'past';
+                    tabPast.classList.add('active-tab');
+                    tabUpcoming.classList.remove('active-tab');
+                    applyFilters();
+                });
+            }
+
+            // Event Delegation: Click handles inside table
+            if (tableBody) {
+                tableBody.addEventListener('click', async (e) => {
+                    const cancelBtn = e.target.closest('.cancel-appointment-btn');
+
+                    if (cancelBtn) {
+                        const id = cancelBtn.getAttribute('data-id');
+                        await cancelAppointment(id);
+                    }
+                });
+            }
         });
+
+        // Session logout handler hook
+        const logoutLink = document.getElementById('logoutLink');
+        if (logoutLink) {
+            logoutLink.addEventListener('click', async (e) => {
+                e.preventDefault();
+                await signOut(auth);
+                window.location.href = 'login.html';
+            });
+        }
     </script>
 </body>
 </html>
-<!-- Appointments page by Sonia Selvaratnam 14/5/2026 -->

@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Patient Dashboard - UTM Clinic Portal</title>
-    <!-- Modern Font and Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -63,7 +62,14 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            overflow: hidden;
             box-shadow: 0 4px 10px rgba(128, 44, 68, 0.3);
+        }
+
+        .logo-img {
+            width: 80%;       
+            height: 80%;
+            object-fit: contain;
         }
 
         .logo-text {
@@ -78,6 +84,7 @@
             flex-direction: column;
             gap: 5px;
             padding: 0 15px;
+            height: 100%;
         }
 
         .nav-link {
@@ -215,12 +222,19 @@
             align-items: center;
         }
 
-        .doctor-info h4 {
+        .appointment-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .doctor-name {
             font-weight: 600;
             margin-bottom: 4px;
         }
 
-        .doctor-info span {
+        .appointment-date {
             font-size: 13px;
             color: var(--text-muted);
         }
@@ -234,17 +248,26 @@
         }
 
         .status-confirmed { background: #dcfce7; color: #15803d; }
+        .status-pending { background: #fef3c7; color: #d97706; }
         
         .view-link {
             display: inline-block;
-            margin-top: 10px;
             color: var(--primary);
             font-weight: 600;
             font-size: 14px;
             transition: 0.2s;
+            text-decoration: none;
         }
 
         .view-link:hover { text-decoration: underline; }
+
+        .empty-message {
+            color: var(--text-muted);
+            font-size: 14px;
+            font-style: italic;
+            text-align: center;
+            padding: 20px 0;
+        }
 
         @media (max-width: 1024px) {
             .content-grid { grid-template-columns: 1fr; }
@@ -253,38 +276,20 @@
             .nav-link { justify-content: center; padding: 15px; }
             .main { padding: 30px; }
         }
-        .logo-box {
-    width: 42px;
-    height: 42px;
-    background: var(--primary); /* Keeps the maroon background */
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden; /* Ensures the image doesn't bleed past rounded corners */
-    box-shadow: 0 4px 10px rgba(128, 44, 68, 0.3);
-}
-
-.logo-img {
-    width: 80%;       /* Adjust this % to create "padding" inside the box */
-    height: 80%;
-    object-fit: contain; /* Keeps the logo aspect ratio perfect */
-}
     </style>
 </head>
 <body>
 
 <aside class="sidebar">
-   <div class="logo-container">
-    <div class="logo-box">
-        <!-- Replace 'logo.png' with your actual file path -->
-        <img src="images/Clinic-logo.png" alt="UTM Clinic Logo" class="logo-img">
+    <div class="logo-container">
+        <div class="logo-box">
+            <img src="images/Clinic-logo.png" alt="UTM Clinic Logo" class="logo-img">
+        </div>
+        <div class="logo-text">UTM Clinic</div>
     </div>
-    <div class="logo-text">UTM Clinic</div>
-</div>
 
     <nav class="nav-links">
-        <a href="#" class="nav-link">
+        <a href="patient-dashboard.html" class="nav-link active">
             <i class="fas fa-columns"></i> <span>Dashboard</span>
         </a>
         <a href="appointments.html" class="nav-link">
@@ -293,7 +298,6 @@
         <a href="book-appointment.html" class="nav-link">
             <i class="fas fa-plus-circle"></i> <span>Book Appointment</span>
         </a>
-       
         <a href="patient-profile.html" class="nav-link">
             <i class="fas fa-user-circle"></i> <span>Profile</span>
         </a>
@@ -305,27 +309,27 @@
 
 <main class="main">
     <header>
-        <h1 id="welcomeMessage">Welcome back, Sarah! 👋</h1>
+        <h1 id="welcomeMessage">Welcome back! 👋</h1>
         <p class="subtitle">University Health Centre • UTM Student Wellness</p>
     </header>
 
     <div class="stats-grid">
         <div class="card">
             <div class="card-icon primary-bg"><i class="fas fa-clock"></i></div>
-            <h3 id="upcomingCount">2</h3>
+            <h3 id="upcomingCount">-</h3>
             <p>Upcoming Appointments</p>
         </div>
         <div class="card">
             <div class="card-icon blue-bg"><i class="fas fa-history"></i></div>
-            <h3 id="totalVisits">14</h3>
+            <h3 id="totalVisits">-</h3>
             <p>Total Consultations</p>
         </div>
         <div class="card">
             <div class="card-icon green-bg"><i class="fas fa-award"></i></div>
-            <h3 id="mcCount">3</h3>
+            <h3 id="mcCount">-</h3>
             <p>Active Certificates</p>
         </div>
-        <a href="#" class="card book-card" style="text-decoration: none;">
+        <a href="book-appointment.html" class="card book-card" style="text-decoration: none;">
             <i class="fas fa-calendar-plus" style="font-size: 30px; margin-bottom: 15px;"></i>
             <h4 style="font-weight: 700;">Book a Visit</h4>
             <p>Quick 2-min booking</p>
@@ -336,51 +340,23 @@
         <section class="card">
             <div class="section-title">
                 Upcoming Appointments
-                <a href="" class="view-link">View schedule</a>
+                <a href="appointments.html" class="view-link">View schedule</a>
             </div>
             
-            <!-- Sample Data -->
-            <div class="appointment-item">
-                <div class="doctor-info">
-                    <h4>Dr. Ahmad Razif</h4>
-                    <span>General Consultation • May 20, 10:00 AM</span>
-                </div>
-                <span class="status status-confirmed">Confirmed</span>
-            </div>
-
-            <div class="appointment-item">
-                <div class="doctor-info">
-                    <h4>Dental Clinic</h4>
-                    <span>Scaling & Polishing • June 02, 02:30 PM</span>
-                </div>
-                <span class="status status-confirmed">Confirmed</span>
+            <div id="upcomingAppointmentsList">
+                <div class="empty-message">Loading appointments...</div>
             </div>
         </section>
 
         <section class="card">
             <h2 class="section-title">Recent Activity</h2>
-            <div style="display: flex; flex-direction: column; gap: 20px;">
-                <div style="display: flex; gap: 15px; align-items: flex-start;">
-                    <div style="background: #f1f5f9; padding: 10px; border-radius: 10px;"><i class="fas fa-file-pdf"></i></div>
-                    <div>
-                        <p style="font-size: 14px; font-weight: 600;">Medical Certificate Issued</p>
-                        <p style="font-size: 12px; color: var(--text-muted);">2 days ago • Dr. Siti</p>
-                    </div>
-                </div>
-                <div style="display: flex; gap: 15px; align-items: flex-start;">
-                    <div style="background: #f1f5f9; padding: 10px; border-radius: 10px;"><i class="fas fa-pills"></i></div>
-                    <div>
-                        <p style="font-size: 14px; font-weight: 600;">Prescription Updated</p>
-                        <p style="font-size: 12px; color: var(--text-muted);">May 10, 2026</p>
-                    </div>
-                </div>
+            <div id="recentActivityList">
+                <div class="empty-message">Loading activity...</div>
             </div>
         </section>
     </div>
 </main>
 
-</body>
-</html>
 <script type="module">
     import { auth, db } from './js/firebase-config.js';
     import { signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
@@ -398,7 +374,7 @@
         const userSnap = await getDoc(userRef);
         if (userSnap.exists()) {
             const userName = userSnap.data().name || 'Patient';
-            document.getElementById('welcomeMessage').innerHTML = `Welcome, ${userName}`;
+            document.getElementById('welcomeMessage').innerHTML = `Welcome back, ${userName}! 👋`;
         }
         
         // Load dashboard data
@@ -421,7 +397,7 @@
         const upcomingAppointments = upcomingSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         document.getElementById('upcomingCount').innerHTML = upcomingAppointments.length;
         
-        // Display upcoming appointments
+        // Display upcoming appointments dynamically
         const upcomingContainer = document.getElementById('upcomingAppointmentsList');
         if (upcomingAppointments.length === 0) {
             upcomingContainer.innerHTML = '<div class="empty-message">No upcoming appointments</div>';
@@ -430,8 +406,8 @@
                 <div class="appointment-item">
                     <div class="appointment-top">
                         <div>
-                            <div class="doctor-name">${apt.doctorId ? 'Dr. Assigned' : 'Awaiting doctor'}</div>
-                            <div class="appointment-date">${apt.date}</div>
+                            <div class="doctor-name">${apt.doctorName ? apt.doctorName : 'Awaiting clinic confirmation'}</div>
+                            <div class="appointment-date">${apt.reason || 'General Consultation'} • ${apt.date}</div>
                         </div>
                         <div class="status status-${apt.status}">${apt.status}</div>
                     </div>
@@ -448,20 +424,4 @@
         const completedSnap = await getDocs(completedQuery);
         document.getElementById('totalVisits').innerHTML = completedSnap.size;
         
-        // MC count (placeholder - implement later)
-        document.getElementById('mcCount').innerHTML = '0';
-        
-        // Recent activity - simple placeholder
-        const recentContainer = document.getElementById('recentActivityList');
-        recentContainer.innerHTML = '<div class="empty-message">No recent activity</div>';
-    }
-
-    // Logout
-    document.getElementById('logoutLink').addEventListener('click', async (e) => {
-        e.preventDefault();
-        await signOut(auth);
-        window.location.href = 'login.html';
-    });
-</script>
-</body>
-</html>
+        //
