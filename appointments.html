@@ -1,3 +1,4 @@
+<!-- by Sonia Selvaratnam 19/5/2026 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -90,7 +91,7 @@
         .main {
             flex: 1;
             padding: 40px 60px;
-            max-width: 1200px;
+            max-width: 1400px;
         }
 
         header { margin-bottom: 35px; }
@@ -213,6 +214,7 @@
 
         .doctor-info { font-weight: 600; color: var(--text-dark); }
         .date-cell { color: var(--text-muted); font-size: 14px; }
+        .date-cell small { font-size: 12px; color: #94a3b8; }
 
         /* --- Custom Status Badges --- */
         .badge {
@@ -224,10 +226,10 @@
             text-transform: capitalize;
         }
 
-        .confirmed { background: #dcfce7; color: #15803d; }
-        .pending { background: #fef3c7; color: #b45309; }
-        .completed { background: #e0f2fe; color: #0369a1; }
-        .cancelled { background: #fee2e2; color: #dc2626; }
+        .badge.confirmed { background: #dcfce7; color: #15803d; }
+        .badge.pending { background: #fef3c7; color: #b45309; }
+        .badge.completed { background: #e0f2fe; color: #0369a1; }
+        .badge.cancelled { background: #fee2e2; color: #dc2626; }
 
         /* --- Action Controls --- */
         .btn-icon {
@@ -244,16 +246,22 @@
             justify-content: center;
         }
 
-        .btn-icon.btn-danger {
+        .btn-icon.cancel-btn {
             color: #ef4444;
             border-color: #fee2e2;
             background: #fff5f5;
         }
 
-        .btn-icon.btn-danger:hover {
+        .btn-icon.cancel-btn:hover {
             border-color: #dc2626;
             color: #ffffff;
             background: #dc2626;
+        }
+
+        .no-action {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-style: italic;
         }
 
         .empty-row-msg {
@@ -312,8 +320,8 @@
     </header>
 
     <div class="history-tabs">
-        <button class="tab-btn active-tab" id="tabUpcoming">Future Appointments</button>
-        <button class="tab-btn" id="tabPast">Past History</button>
+        <button class="tab-btn active-tab" id="tabUpcoming">📅 Upcoming Appointments</button>
+        <button class="tab-btn" id="tabPast">📜 Past Appointments</button>
     </div>
 
     <div class="table-card">
@@ -335,11 +343,11 @@
         <table>
             <thead>
                 <tr>
-                    <th>Doctor Name</th>
+                    <th>Doctor</th>
                     <th>Date & Time</th>
                     <th>Reason</th>
                     <th>Status</th>
-                    <th style="text-align: center; width: 180px;">Cancel Appointment</th>
+                    <th style="text-align: center; width: 140px;">Action</th>
                 </tr>
             </thead>
             <tbody id="appointmentsTableBody">
@@ -351,191 +359,225 @@
     </div>
 </main>
 
-    <script type="module">
-        import { auth, db } from './js/firebase-config.js';
-        import { signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-        import { collection, query, where, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+<script type="module">
+    import { auth, db } from './js/firebase-config.js';
+    import { signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+    import { collection, query, where, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
-        let allAppointments = []; 
-        let currentTab = 'upcoming'; 
+    let allAppointments = []; 
+    let currentTab = 'upcoming'; 
 
-        // Authenticate account state configuration
-        auth.onAuthStateChanged(async (user) => {
-            if (!user) { 
-                window.location.href = 'login.html'; 
-                return; 
-            }
-            await loadAppointments(user.uid);
-        });
-
-        // Query fetching handler
-        async function loadAppointments(uid) {
-            try {
-                const q = query(collection(db, "appointments"), where("userId", "==", uid));
-                const snap = await getDocs(q);
-                
-                if (snap.empty) {
-                    document.getElementById('appointmentsTableBody').innerHTML = '<tr><td colspan="5" class="empty-row-msg">No appointments found in your account history.</td></tr>';
-                    allAppointments = [];
-                    return;
-                }
-                
-                allAppointments = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                
-                // Sort in-memory with JS to avoid Firestore Index errors
-                allAppointments.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-                applyFilters(); 
-                
-            } catch (error) {
-                console.error("Firestore read error:", error);
-                document.getElementById('appointmentsTableBody').innerHTML = `<tr><td colspan="5" class="empty-row-msg" style="color:red;">Error connecting to medical database. Please try again later.</td></tr>`;
-            }
+    // Authenticate account state configuration
+    auth.onAuthStateChanged(async (user) => {
+        if (!user) { 
+            window.location.href = 'login.html'; 
+            return; 
         }
+        await loadAppointments(user.uid);
+    });
 
-        // View interface rendering logic engine
-        function renderTable(appointmentsList) {
-            const container = document.getElementById('appointmentsTableBody');
-            if(!container) return;
-
-            if(appointmentsList.length === 0) {
-                container.innerHTML = `<tr><td colspan="5" class="empty-row-msg">No ${currentTab} appointments found matching your criteria.</td></tr>`;
+    // Query fetching handler
+    async function loadAppointments(uid) {
+        try {
+            const q = query(collection(db, "appointments"), where("userId", "==", uid));
+            const snap = await getDocs(q);
+            
+            if (snap.empty) {
+                document.getElementById('appointmentsTableBody').innerHTML = '<tr><td colspan="5" class="empty-row-msg">No appointments found in your account history.</td></tr>';
+                allAppointments = [];
                 return;
             }
-
-            let html = '';
-            appointmentsList.forEach(item => {
-                const docName = item.doctorName || "Assigned UTM Practitioner";
-                const timeStr = item.time || "09:00 AM";
-                const reasonStr = item.reason || "General Consultation";
-                const currentStatus = item.status ? item.status.toLowerCase() : 'pending';
-
-                // Allow cancellation if it's upcoming and not already processed/cancelled
-                const canCancel = (currentTab === 'upcoming' && (currentStatus === 'pending' || currentStatus === 'confirmed'));
-
-                html += `
-                    <tr>
-                        <td class="doctor-info">${docName}</td>
-                        <td class="date-cell">${item.date} <br> <small>${timeStr}</small></td>
-                        <td>${reasonStr}</td>
-                        <td><span class="badge ${currentStatus}">${currentStatus}</span></td>
-                        <td align="center">
-                            ${canCancel ? `
-                                <button class="btn-icon btn-danger cancel-appointment-btn" title="Cancel Appointment" data-id="${item.id}">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
-                            ` : `<span style="color: var(--text-muted); font-size: 13px; font-style: italic;">No actions available</span>`}
-                        </td>
-                    </tr>
-                `;
-            });
-            container.innerHTML = html;
-        }
-
-        // Database entry rewrite execution function
-        async function cancelAppointment(appointmentId) {
-            const confirmCancel = confirm("Are you sure you want to cancel this scheduled clinic appointment?");
-            if (!confirmCancel) return;
-
-            try {
-                const appointmentDocRef = doc(db, "appointments", appointmentId);
-                
-                await updateDoc(appointmentDocRef, {
-                    status: "cancelled"
-                });
-
-                alert("Your appointment has been successfully cancelled.");
-                await loadAppointments(auth.currentUser.uid);
-
-            } catch (error) {
-                console.error("Cancellation operation error:", error);
-                alert("Failed to execute cancellation: " + error.message);
-            }
-        }
-
-        // Combined filter logic selector processor
-        function applyFilters() {
-            const searchInput = document.getElementById('tableSearch');
-            const statusFilter = document.getElementById('statusFilter');
             
-            const keyword = searchInput ? searchInput.value.toLowerCase().trim() : '';
-            const filterValue = statusFilter ? statusFilter.value : 'all';
+            allAppointments = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             
-            const today = new Date();
-            today.setHours(0,0,0,0);
+            applyFilters(); 
+            
+        } catch (error) {
+            console.error("Firestore read error:", error);
+            document.getElementById('appointmentsTableBody').innerHTML = '<tr><td colspan="5" class="empty-row-msg" style="color:red;">Error connecting to medical database. Please refresh and try again.</td></tr>';
+        }
+    }
 
-            const filteredData = allAppointments.filter(item => {
-                const doctorMatches = (item.doctorName || '').toLowerCase().includes(keyword);
-                const reasonMatches = (item.reason || '').toLowerCase().includes(keyword);
-                const matchesKeyword = doctorMatches || reasonMatches;
+    // Format doctor name display
+    function getDoctorDisplayName(appointment) {
+        if (appointment.doctorName && appointment.doctorName !== "") {
+            return `Dr. ${appointment.doctorName}`;
+        }
+        if (appointment.doctorId && appointment.doctorId !== "") {
+            return "Doctor Assigned (Name Pending)";
+        }
+        return "Awaiting Doctor Assignment";
+    }
 
-                const matchesStatus = (filterValue === 'all') || (item.status && item.status.toLowerCase() === filterValue);
+    // View interface rendering logic
+    function renderTable(appointmentsList) {
+        const container = document.getElementById('appointmentsTableBody');
+        if (!container) return;
 
-                const appointmentDate = new Date(item.date);
-                appointmentDate.setHours(0,0,0,0);
-                
-                let matchesTimeline = false;
-                if (currentTab === 'upcoming') {
-                    matchesTimeline = (appointmentDate >= today) && (item.status !== 'cancelled' && item.status !== 'completed');
-                } else {
-                    matchesTimeline = (appointmentDate < today) || (item.status === 'cancelled' || item.status === 'completed');
-                }
-
-                return matchesKeyword && matchesStatus && matchesTimeline;
-            });
-
-            renderTable(filteredData);
+        if (appointmentsList.length === 0) {
+            container.innerHTML = `<tr><td colspan="5" class="empty-row-msg">No ${currentTab} appointments found matching your criteria.</td></tr>`;
+            return;
         }
 
-        // Setup DOM listeners cleanly and use single target delegation for buttons
-        document.addEventListener('DOMContentLoaded', () => {
-            const searchInput = document.getElementById('tableSearch');
-            const statusFilter = document.getElementById('statusFilter');
-            const tabUpcoming = document.getElementById('tabUpcoming');
-            const tabPast = document.getElementById('tabPast');
-            const tableBody = document.getElementById('appointmentsTableBody');
+        let html = '';
+        appointmentsList.forEach(item => {
+            const doctorDisplay = getDoctorDisplayName(item);
+            const timeStr = item.time || "Time TBD";
+            const reasonStr = item.reason || "General Consultation";
+            const currentStatus = item.status ? item.status.toLowerCase() : 'pending';
 
-            if (searchInput) searchInput.addEventListener('input', applyFilters);
-            if (statusFilter) statusFilter.addEventListener('change', applyFilters);
+            // Determine if cancellation is allowed
+            const canCancel = (currentTab === 'upcoming' && (currentStatus === 'pending' || currentStatus === 'confirmed'));
+            const isCancelled = currentStatus === 'cancelled';
+            const isCompleted = currentStatus === 'completed';
 
-            if (tabUpcoming && tabPast) {
-                tabUpcoming.addEventListener('click', () => {
-                    currentTab = 'upcoming';
-                    tabUpcoming.classList.add('active-tab');
-                    tabPast.classList.remove('active-tab');
-                    applyFilters();
-                });
-
-                tabPast.addEventListener('click', () => {
-                    currentTab = 'past';
-                    tabPast.classList.add('active-tab');
-                    tabUpcoming.classList.remove('active-tab');
-                    applyFilters();
-                });
+            let actionHtml = '';
+            if (canCancel) {
+                actionHtml = `<button class="btn-icon cancel-btn" title="Cancel Appointment" data-id="${item.id}">
+                                <i class="fas fa-trash-alt"></i>
+                              </button>`;
+            } else if (isCancelled) {
+                actionHtml = '<span class="no-action">Cancelled</span>';
+            } else if (isCompleted) {
+                actionHtml = '<span class="no-action">Completed</span>';
+            } else {
+                actionHtml = '<span class="no-action">No action</span>';
             }
 
-            // Event Delegation: Click handles inside table
-            if (tableBody) {
-                tableBody.addEventListener('click', async (e) => {
-                    const cancelBtn = e.target.closest('.cancel-appointment-btn');
+            html += `
+                <tr>
+                    <td class="doctor-info">${doctorDisplay}</td>
+                    <td class="date-cell">${item.date} <br> <small>${timeStr}</small></td>
+                    <td>${escapeHtml(reasonStr)}</td>
+                    <td><span class="badge ${currentStatus}">${currentStatus}</span></td>
+                    <td align="center">${actionHtml}</td>
+                </tr>
+            `;
+        });
+        container.innerHTML = html;
+        
+        // Attach cancel button event listeners
+        document.querySelectorAll('.cancel-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const id = btn.getAttribute('data-id');
+                await cancelAppointment(id);
+            });
+        });
+    }
+    
+    // Simple escape to prevent XSS
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
 
-                    if (cancelBtn) {
-                        const id = cancelBtn.getAttribute('data-id');
-                        await cancelAppointment(id);
-                    }
-                });
+    // Cancel appointment in Firestore
+    async function cancelAppointment(appointmentId) {
+        const confirmCancel = confirm("Are you sure you want to cancel this scheduled clinic appointment?");
+        if (!confirmCancel) return;
+
+        try {
+            const appointmentDocRef = doc(db, "appointments", appointmentId);
+            await updateDoc(appointmentDocRef, { status: "cancelled" });
+            alert("Your appointment has been successfully cancelled.");
+            await loadAppointments(auth.currentUser.uid);
+        } catch (error) {
+            console.error("Cancellation error:", error);
+            alert("Failed to cancel appointment: " + error.message);
+        }
+    }
+
+    // Combined filter logic
+    function applyFilters() {
+        const searchInput = document.getElementById('tableSearch');
+        const statusFilter = document.getElementById('statusFilter');
+        
+        const keyword = searchInput ? searchInput.value.toLowerCase().trim() : '';
+        const filterValue = statusFilter ? statusFilter.value : 'all';
+        
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        // First, separate upcoming vs past based on date and status
+        let timelineFiltered = allAppointments.filter(item => {
+            const appointmentDate = new Date(item.date);
+            appointmentDate.setHours(0, 0, 0, 0);
+            const status = item.status ? item.status.toLowerCase() : 'pending';
+            
+            if (currentTab === 'upcoming') {
+                // Upcoming: future date OR pending/confirmed even if today
+                return (appointmentDate >= today) && (status !== 'cancelled' && status !== 'completed');
+            } else {
+                // Past: past date OR cancelled/completed appointments
+                return (appointmentDate < today) || (status === 'cancelled' || status === 'completed');
             }
         });
+        
+        // Sort: upcoming by date ascending (closest first), past by date descending (most recent first)
+        if (currentTab === 'upcoming') {
+            timelineFiltered.sort((a, b) => new Date(a.date) - new Date(b.date));
+        } else {
+            timelineFiltered.sort((a, b) => new Date(b.date) - new Date(a.date));
+        }
+        
+        // Apply search and status filters
+        const finalFiltered = timelineFiltered.filter(item => {
+            const doctorName = (item.doctorName || '').toLowerCase();
+            const reason = (item.reason || '').toLowerCase();
+            const matchesKeyword = doctorName.includes(keyword) || reason.includes(keyword);
+            
+            const itemStatus = item.status ? item.status.toLowerCase() : 'pending';
+            const matchesStatus = (filterValue === 'all') || (itemStatus === filterValue);
+            
+            return matchesKeyword && matchesStatus;
+        });
 
-        // Session logout handler hook
-        const logoutLink = document.getElementById('logoutLink');
-        if (logoutLink) {
-            logoutLink.addEventListener('click', async (e) => {
-                e.preventDefault();
-                await signOut(auth);
-                window.location.href = 'login.html';
+        renderTable(finalFiltered);
+    }
+
+    // Setup DOM listeners
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchInput = document.getElementById('tableSearch');
+        const statusFilter = document.getElementById('statusFilter');
+        const tabUpcoming = document.getElementById('tabUpcoming');
+        const tabPast = document.getElementById('tabPast');
+
+        if (searchInput) searchInput.addEventListener('input', applyFilters);
+        if (statusFilter) statusFilter.addEventListener('change', applyFilters);
+
+        if (tabUpcoming && tabPast) {
+            tabUpcoming.addEventListener('click', () => {
+                currentTab = 'upcoming';
+                tabUpcoming.classList.add('active-tab');
+                tabPast.classList.remove('active-tab');
+                applyFilters();
+            });
+
+            tabPast.addEventListener('click', () => {
+                currentTab = 'past';
+                tabPast.classList.add('active-tab');
+                tabUpcoming.classList.remove('active-tab');
+                applyFilters();
             });
         }
-    </script>
+    });
+
+    // Logout handler
+    const logoutLink = document.getElementById('logoutLink');
+    if (logoutLink) {
+        logoutLink.addEventListener('click', async (e) => {
+            e.preventDefault();
+            await signOut(auth);
+            window.location.href = 'login.html';
+        });
+    }
+</script>
 </body>
 </html>
+<!-- by Sonia Selvaratnam 19/5/2026 -->
