@@ -13,7 +13,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 
     <style>
-
         :root {
             --primary: #802c44;
             --primary-hover: #6a2438;
@@ -41,7 +40,6 @@
         }
 
         /* ================= SIDEBAR ================= */
-
         .sidebar {
             width: 270px;
             background: white;
@@ -124,7 +122,6 @@
         }
 
         /* ================= MAIN ================= */
-
         .main-content {
             flex: 1;
             padding: 40px;
@@ -161,7 +158,6 @@
         }
 
         /* ================= TOOLBAR ================= */
-
         .toolbar {
             background: white;
             border: 1px solid var(--border);
@@ -198,11 +194,11 @@
         }
 
         /* ================= APPOINTMENTS ================= */
-
         .appointments-grid {
             display: flex;
             flex-direction: column;
             gap: 18px;
+            margin-bottom: 24px;
         }
 
         .appointment-card {
@@ -215,7 +211,14 @@
             gap: 24px;
             align-items: center;
             box-shadow: var(--shadow);
-            border-color: #d8b4fe;
+            transition: transform 0.3s, opacity 0.3s;
+        }
+
+        .patient-id {
+            font-size: 14px;
+            color: var(--muted);
+            font-weight: 500;
+            margin-left: 8px;
         }
 
         .avatar {
@@ -263,6 +266,9 @@
             border-radius: 12px;
             cursor: pointer;
             font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
             transition: 0.2s;
         }
 
@@ -275,27 +281,46 @@
             cursor: not-allowed;
         }
 
-        /* Loading State */
-
+        /* Loading & Empty States */
         .loading-state {
             text-align: center;
             padding: 60px;
-            color: var(--text-muted);
+            color: var(--muted);
+            font-weight: 600;
         }
-
-        /* ================= EMPTY ================= */
 
         .empty-state {
             display: none;
             text-align: center;
             padding: 60px;
             color: var(--muted);
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            box-shadow: var(--shadow);
         }
 
         .empty-state i {
             font-size: 50px;
             margin-bottom: 16px;
             color: #10b981;
+        }
+
+        /* Guide */
+        .guide-box {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+        }
+
+        .guide-box h4 {
+            margin-bottom: 14px;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .guide-box ul {
@@ -307,28 +332,31 @@
 
         .guide-box li {
             font-size: 13px;
-            color: #be185d;
+            color: var(--muted);
             display: flex;
             gap: 8px;
+            align-items: center;
         }
 
         .guide-box li::before {
             content: "•";
             font-weight: bold;
+            color: var(--primary);
         }
 
-        /* Mobile */
-
+        /* Mobile Adjustments */
         @media (max-width: 768px) {
-
             body {
                 flex-direction: column;
             }
 
             .sidebar {
                 width: 100%;
-                height: auto;
-                position: relative;
+                padding: 20px 0;
+            }
+
+            .logo-container {
+                padding-bottom: 20px;
             }
 
             .main-content {
@@ -372,25 +400,17 @@
                 justify-content: center;
             }
         }
-
     </style>
 </head>
 
 <body>
 
     <!-- SIDEBAR -->
-
     <aside class="sidebar">
         <div class="logo-container">
-
             <div class="logo-box">
                 <img src="images/Clinic-logo.png" alt="Logo">
             </div>
-
-            <div class="logo-text">
-                UTM Clinic
-            </div>
-
             <div class="logo-text">UTM Clinic</div>
         </div>
 
@@ -399,8 +419,7 @@
                 <i class="fas fa-columns"></i>
                 Dashboard
             </a>
-
-            <a href="claim-appointment.html" class="nav-link">
+            <a href="claim-appointment.html" class="nav-link active">
                 <i class="fas fa-calendar-alt"></i>
                 Claim Appointments
             </a>
@@ -411,12 +430,10 @@
                 <i class="fas fa-sign-out-alt"></i>
                 Logout
             </a>
-
         </div>
     </aside>
 
     <!-- MAIN -->
-
     <main class="main-content">
         <div class="container">
 
@@ -426,256 +443,202 @@
                     <h1>Claim Appointments</h1>
                     <p>Available patients awaiting a doctor's assignment.</p>
                 </div>
-
-                <div class="badge-count">
-                    3 Available
-                </div>
-
+                <div class="badge-count" id="badgeCount">0 Available</div>
             </div>
 
+            <!-- Toolbar -->
             <div class="toolbar">
                 <div class="search-box">
                     <i class="fa-solid fa-calendar-day" style="color: #64748b;"></i>
-
-                    <input
-                        type="date"
-                        id="filterDate"
-                        onchange="handleFilter()"
-                    >
+                    <input type="date" id="filterDate">
                 </div>
+                <button class="clear-btn" id="resetFilterBtn">Reset View</button>
+            </div>
 
-                <button class="clear-btn" onclick="clearFilter()">
-                    Reset View
-                </button>
+            <!-- Loading State Placeholder -->
+            <div id="loadingState" class="loading-state">
+                <i class="fas fa-spinner fa-spin"></i> Fetching real-time appointments...
+            </div>
+
+            <!-- Appointments Container -->
+            <div class="appointments-grid" id="apptGrid"></div>
 
             <!-- Empty State -->
             <div class="empty-state" id="emptyState">
                 <i class="fa-solid fa-circle-check"></i>
-                <p style="font-weight: 600;">All caught up!</p>
+                <p style="font-weight: 600; font-size: 18px; margin-bottom: 4px;">All caught up!</p>
                 <p style="font-size: 14px;">There are no unassigned appointments at this time.</p>
             </div>
 
-            <!-- Appointments -->
-            <div class="appointments-grid" id="apptGrid">
-
-                <!-- Card 1 -->
-                <div class="appointment-card" data-date="2026-05-08">
-
-                    <div class="avatar">AA</div>
-
-                    <div class="info-main">
-
-                        <h3>
-                            Ahmad bin Abdullah
-                            <span class="patient-id">A21EC0001</span>
-                        </h3>
-
-                        <div class="info-grid">
-
-                            <div class="info-item">
-                                <i class="fa-solid fa-clock"></i>
-                                Requested:
-                                <span>2026-05-08</span>
-                            </div>
-
-                            <div class="info-item">
-                                <i class="fa-solid fa-stethoscope"></i>
-                                Reason:
-                                <span>General Checkup</span>
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    <button class="claim-btn" onclick="claimAppointment(this)">
-                        Claim
-                        <i class="fa-solid fa-arrow-right"></i>
-                    </button>
-
-                </div>
-
-                <!-- Card 2 -->
-                <div class="appointment-card" data-date="2026-05-08">
-
-                    <div class="avatar" style="background:#ecfdf5; color:#10b981;">
-                        SN
-                    </div>
-
-                    <div class="info-main">
-
-                        <h3>
-                            Siti Nurhaliza
-                            <span class="patient-id">A21EC0045</span>
-                        </h3>
-
-                        <div class="info-grid">
-
-                            <div class="info-item">
-                                <i class="fa-solid fa-clock"></i>
-                                Requested:
-                                <span>2026-05-08</span>
-                            </div>
-
-                            <div class="info-item">
-                                <i class="fa-solid fa-stethoscope"></i>
-                                Reason:
-                                <span>Flu symptoms</span>
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    <button class="claim-btn" onclick="claimAppointment(this)">
-                        Claim
-                        <i class="fa-solid fa-arrow-right"></i>
-                    </button>
-
-                </div>
-
-                <!-- Card 3 -->
-                <div class="appointment-card" data-date="2026-05-09">
-
-                    <div class="avatar" style="background:#fff7ed; color:#f97316;">
-                        MA
-                    </div>
-
-                    <div class="info-main">
-
-                        <h3>
-                            Muhammad Ali
-                            <span class="patient-id">A21EC0089</span>
-                        </h3>
-
-                        <div class="info-grid">
-
-                            <div class="info-item">
-                                <i class="fa-solid fa-clock"></i>
-                                Requested:
-                                <span>2026-05-09</span>
-                            </div>
-
-                            <div class="info-item">
-                                <i class="fa-solid fa-stethoscope"></i>
-                                Reason:
-                                <span>Follow-up consultation</span>
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                    <button class="claim-btn" onclick="claimAppointment(this)">
-                        Claim
-                        <i class="fa-solid fa-arrow-right"></i>
-                    </button>
-
-                </div>
-
-            </div>
-
-            <!-- Empty State -->
-            <div class="empty-state" id="emptyState">
-
-                <i class="fa-solid fa-circle-check"></i>
-
-                <p style="font-weight: 600;">
-                    All caught up!
-                </p>
-
-                <p style="font-size: 14px;">
-                    There are no unassigned appointments at this time.
-                </p>
-
-            </div>
-
-            <!-- Guide -->
+            <!-- Guide Box -->
             <div class="guide-box">
-
-                <h4>
-                    <i class="fa-solid fa-circle-info"></i>
-                    How it works
-                </h4>
-
+                <h4><i class="fa-solid fa-circle-info"></i> How it works</h4>
                 <ul>
                     <li>Claimed items move to your personal dashboard.</li>
-                    <li>Patients receive an SMS/Email once you claim.</li>
-                    <li>Availability is based on your clinic hours.</li>
-                    <li>Urgent cases are highlighted in red (if any).</li>
+                    <li>Patients receive updates once you claim.</li>
+                    <li>Availability is based on clinic hours.</li>
+                    <li>Urgent cases are processed chronologically.</li>
                 </ul>
-
             </div>
 
         </div>
-
     </main>
 
-    <script>
+    <!-- Firebase SDK Modular Scripts Setup -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getFirestore, collection, query, where, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
-        function claimAppointment(button) {
+        // TODO: Replace with your actual Firebase Configuration details
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
 
-            if (confirm("Are you sure you want to claim this patient?")) {
+        // Initialize App instances
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
 
-                const card = button.closest(".appointment-card");
+        // Global state references for dynamic local filtering management
+        let allAppointments = [];
+        const apptGrid = document.getElementById("apptGrid");
+        const emptyState = document.getElementById("emptyState");
+        const loadingState = document.getElementById("loadingState");
+        const badgeCount = document.getElementById("badgeCount");
+        const filterDateInput = document.getElementById("filterDate");
+        const resetFilterBtn = document.getElementById("resetFilterBtn");
 
-                card.style.opacity = "0";
-                card.style.transform = "translateX(20px)";
+        // Step 1: Real-time listener for unassigned appointments
+        // Assumes collection structure 'appointments' where status == 'pending' or 'unassigned'
+        const appointmentsQuery = query(
+            collection(db, "appointments"), 
+            where("status", "==", "unassigned")
+        );
 
-                setTimeout(() => {
+        onSnapshot(appointmentsQuery, (snapshot) => {
+            allAppointments = [];
+            snapshot.forEach((doc) => {
+                allAppointments.push({ id: doc.id, ...doc.data() });
+            });
+            
+            // Turn off initial element loading container
+            loadingState.style.display = "none";
+            renderAppointments();
+        }, (error) => {
+            console.error("Error loading live appointments data: ", error);
+            loadingState.innerText = "Failed to load live tracking metrics. Verify permissions.";
+        });
 
-                    card.remove();
+        // Step 2: Pure render routine combining current data state matrix and active filters
+        function renderAppointments() {
+            const filterValue = filterDateInput.value; // expected format: YYYY-MM-DD
+            
+            // Filter list array mapping based on selected baseline target match
+            const filtered = allAppointments.filter(appt => {
+                if (!filterValue) return true;
+                return appt.date === filterValue;
+            });
 
-                    checkEmpty();
+            // Wipe matching layout interface clean before mapping next item set
+            apptGrid.innerHTML = "";
+            badgeCount.innerText = `${filtered.length} Available`;
 
-                }, 300);
+            if (filtered.length === 0) {
+                emptyState.style.display = "block";
+                return;
             }
-        }
+            
+            emptyState.style.display = "none";
 
-        function checkEmpty() {
+            filtered.forEach(appt => {
+                // Generate simple dynamic visual context matching initials
+                const initials = appt.patientName ? appt.patientName.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase() : "PT";
+                
+                const card = document.createElement("div");
+                card.className = "appointment-card";
+                card.setAttribute("data-id", appt.id);
 
-            const grid = document.getElementById("apptGrid");
-            const cards = grid.querySelectorAll(".appointment-card");
+                card.innerHTML = `
+                    <div class="avatar">${initials}</div>
+                    <div class="info-main">
+                        <h3>
+                            ${appt.patientName} 
+                            <span class="patient-id">${appt.patientId || ''}</span>
+                        </h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <i class="fa-solid fa-clock"></i>
+                                Requested: <span>${appt.date}</span>
+                            </div>
+                            <div class="info-item">
+                                <i class="fa-solid fa-stethoscope"></i>
+                                Reason: <span>${appt.reason || 'General Consultation'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="claim-btn" data-id="${appt.id}">
+                        Claim <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                `;
 
-            document.querySelector(".badge-count").innerText =
-                cards.length + " Available";
-
-            if (cards.length === 0) {
-                document.getElementById("emptyState").style.display = "block";
-            }
-        }
-
-        function clearFilter() {
-
-            document.getElementById("filterDate").value = "";
-
-            document.querySelectorAll(".appointment-card")
-                .forEach(card => {
-                    card.style.display = "grid";
+                // Bind click event cleanly to handling module execution flow 
+                card.querySelector(".claim-btn").addEventListener("click", function() {
+                    processClaim(appt.id, card);
                 });
-        }
 
-        function handleFilter() {
-
-            const selectedDate =
-                document.getElementById("filterDate").value;
-
-            const cards =
-                document.querySelectorAll(".appointment-card");
-
-            cards.forEach(card => {
-
-                const cardDate = card.dataset.date;
-
-                if (!selectedDate || cardDate === selectedDate) {
-                    card.style.display = "grid";
-                } else {
-                    card.style.display = "none";
-                }
-
+                apptGrid.appendChild(card);
             });
         }
 
+        // Step 3: Mutate data assignment in Firestore document structure securely
+        async function processClaim(appointmentId, cardElement) {
+            // Context mapping fallbacks down to dynamic user authorization keys
+            const doctorUser = auth.currentUser;
+            const doctorName = doctorUser ? (doctorUser.displayName || "Doctor Assigned") : "Staff Doctor";
+            const doctorId = doctorUser ? doctorUser.uid : "DOC_OFFLINE_TEMP";
+
+            if (confirm("Are you sure you want to claim assignment for this patient item case file?")) {
+                try {
+                    const docRef = doc(db, "appointments", appointmentId);
+                    
+                    // Transaction-safe updates shifting parameters mapping state indicators
+                    await updateDoc(docRef, {
+                        status: "assigned",
+                        doctorId: doctorId,
+                        doctorName: doctorName,
+                        claimedAt: new Date().toISOString()
+                    });
+
+                    // Fast UI exit transition visual effects handling wrapper block
+                    cardElement.style.opacity = "0";
+                    cardElement.style.transform = "translateX(25px)";
+                    setTimeout(() => {
+                        cardElement.remove();
+                        // Real-time engine catches and redraws natively, fallback check safety routine:
+                        if(apptGrid.children.length === 0) {
+                            emptyState.style.display = "block";
+                        }
+                    }, 300);
+
+                } catch (err) {
+                    console.error("Critical database assertion failure writing assignment update object: ", err);
+                    alert("System failed handling your operation request lock state check. Try again.");
+                }
+            }
+        }
+
+        // Filtering handling event listeners attached inside isolated module structure context
+        filterDateInput.addEventListener("change", renderAppointments);
+        resetFilterBtn.addEventListener("click", () => {
+            filterDateInput.value = "";
+            renderAppointments();
+        });
     </script>
 </body>
 </html>

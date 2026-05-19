@@ -301,7 +301,7 @@
         <a href="patient-profile.html" class="nav-link">
             <i class="fas fa-user-circle"></i> <span>Profile</span>
         </a>
-        <a href="#" id="logoutLink" class="nav-link" style="margin-top: auto; color: #ef4444;">
+        <a href="login.html" id="logoutLink" class="nav-link" style="margin-top: auto; color: #ef4444;">
             <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
         </a>
     </nav>
@@ -359,69 +359,298 @@
 
 <script type="module">
     import { auth, db } from './js/firebase-config.js';
-    import { signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-    import { collection, query, where, getDocs, orderBy, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
-    // Auth check
+    import {
+        signOut
+    } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+
+    import {
+        collection,
+        query,
+        where,
+        getDocs,
+        orderBy,
+        doc,
+        getDoc,
+        limit
+    } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+    // =========================
+    // AUTH CHECK
+    // =========================
     auth.onAuthStateChanged(async (user) => {
+
         if (!user) {
-            window.location.href = 'login.html';
+            window.location.href = "login.html";
             return;
         }
-        
-        // Load user name
-        const userRef = doc(db, "users", user.uid);
-        const userSnap = await getDoc(userRef);
-        if (userSnap.exists()) {
-            const userName = userSnap.data().name || 'Patient';
-            document.getElementById('welcomeMessage').innerHTML = `Welcome back, ${userName}! 👋`;
+
+        try {
+
+            // Load user profile
+            const userRef = doc(db, "users", user.uid);
+            const userSnap = await getDoc(userRef);
+
+            if (userSnap.exists()) {
+                const userData = userSnap.data();
+
+                document.getElementById("welcomeMessage").innerHTML =
+                    `Welcome back, ${userData.name || "Patient"}! 👋`;
+            }
+
+            // Load dashboard
+            await loadDashboardData(user.uid);
+
+        } catch (error) {
+            console.error("Dashboard error:", error);
         }
-        
-        // Load dashboard data
-        await loadDashboardData(user.uid);
     });
 
+    // =========================
+    // LOAD DASHBOARD DATA
+    // =========================
     async function loadDashboardData(userId) {
-        const today = new Date().toISOString().split('T')[0];
-        
-        // Upcoming appointments
-        const upcomingQuery = query(
-            collection(db, "appointments"),
-            where("userId", "==", userId),
-            where("date", ">=", today),
-            where("status", "in", ["pending", "confirmed"]),
-            orderBy("date", "asc")
-        );
-        
-        const upcomingSnap = await getDocs(upcomingQuery);
-        const upcomingAppointments = upcomingSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        document.getElementById('upcomingCount').innerHTML = upcomingAppointments.length;
-        
-        // Display upcoming appointments dynamically
-        const upcomingContainer = document.getElementById('upcomingAppointmentsList');
-        if (upcomingAppointments.length === 0) {
-            upcomingContainer.innerHTML = '<div class="empty-message">No upcoming appointments</div>';
-        } else {
-            upcomingContainer.innerHTML = upcomingAppointments.map(apt => `
-                <div class="appointment-item">
-                    <div class="appointment-top">
-                        <div>
-                            <div class="doctor-name">${apt.doctorName ? apt.doctorName : 'Awaiting clinic confirmation'}</div>
-                            <div class="appointment-date">${apt.reason || 'General Consultation'} • ${apt.date}</div>
-                        </div>
-                        <div class="status status-${apt.status}">${apt.status}</div>
+
+        const today = new Date().toISOString().split("T")[0];
+
+        try {
+
+            // =========================
+            // UPCOMING APPOINTMENTS
+            // =========================
+            const upcomingQuery = query(
+                collection(db, "appointments"),
+                where("userId", "==", userId),
+                where("date", ">=", today),
+                where("status", "in", ["pending", "confirmed"]),
+                orderBy("date", "asc")
+            );
+
+            const upcomingSnap = await getDocs(upcomingQuery);
+
+            const upcomingAppointments = upcomingSnap.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+
+            // Update count
+            document.getElementById("upcomingCount").innerText =
+                upcomingAppointments.length;
+
+            // Render appointments
+            const upcomingContainer =
+                document.getElementById("upcomingAppointmentsList");
+
+            if (upcomingAppointments.length === 0) {
+
+                upcomingContainer.innerHTML = `
+                    <div class="empty-message">
+                        No upcoming appointments
                     </div>
+                `;
+
+            } else {
+
+                upcomingContainer.innerHTML =
+                    upcomingAppointments.map(apt => {
+
+                        const doctorName =
+                            apt.doctorName && apt.doctorName.trim() !== ""
+                                ? apt.doctorName
+                                : "Awaiting clinic confirmation";
+
+                        return `
+                            <div class="appointment-item">
+                                <div class="appointment-top">
+
+                                    <div>
+                                        <div class="doctor-name">
+                                            ${doctorName}
+                                        </div>
+
+                                        <div class="appointment-date">
+                                            ${apt.reason || "General Consultation"}
+                                            •
+                                            ${formatDate(apt.date)}
+                                            ${apt.time ? `• ${apt.time}` : ""}
+                                        </div>
+                                    </div>
+
+                                    <div class="status status-${apt.status}">
+                                        ${apt.status}
+                                    </div>
+
+                                </div>
+                            </div>
+                        `;
+
+                    }).join("");
+            }
+
+            // =========================
+            // TOTAL CONSULTATIONS
+            // =========================
+            const completedQuery = query(
+                collection(db, "appointments"),
+                where("userId", "==", userId),
+                where("status", "==", "completed")
+            );
+
+            const completedSnap = await getDocs(completedQuery);
+
+            document.getElementById("totalVisits").innerText =
+                completedSnap.size;
+
+            // =========================
+            // ACTIVE MC COUNT
+            // =========================
+            const mcQuery = query(
+                collection(db, "medicalCertificates"),
+                where("userId", "==", userId),
+                where("status", "==", "active")
+            );
+
+            const mcSnap = await getDocs(mcQuery);
+
+            document.getElementById("mcCount").innerText =
+                mcSnap.size;
+
+            // =========================
+            // RECENT ACTIVITY
+            // =========================
+            const recentQuery = query(
+                collection(db, "appointments"),
+                where("userId", "==", userId),
+                orderBy("createdAt", "desc"),
+                limit(5)
+            );
+
+            const recentSnap = await getDocs(recentQuery);
+
+            const recentActivities = recentSnap.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }));
+
+            const recentContainer =
+                document.getElementById("recentActivityList");
+
+            if (recentActivities.length === 0) {
+
+                recentContainer.innerHTML = `
+                    <div class="empty-message">
+                        No recent activity
+                    </div>
+                `;
+
+            } else {
+
+                recentContainer.innerHTML =
+                    recentActivities.map(activity => {
+
+                        let activityText = "";
+
+                        switch (activity.status) {
+
+                            case "pending":
+                                activityText =
+                                    "Appointment submitted and waiting for approval";
+                                break;
+
+                            case "confirmed":
+                                activityText =
+                                    "Appointment confirmed by clinic";
+                                break;
+
+                            case "completed":
+                                activityText =
+                                    "Consultation completed";
+                                break;
+
+                            case "cancelled":
+                                activityText =
+                                    "Appointment cancelled";
+                                break;
+
+                            default:
+                                activityText =
+                                    "Appointment updated";
+                        }
+
+                        return `
+                            <div class="appointment-item">
+
+                                <div>
+                                    <div class="doctor-name">
+                                        ${activity.reason || "General Consultation"}
+                                    </div>
+
+                                    <div class="appointment-date">
+                                        ${activityText}
+                                    </div>
+                                </div>
+
+                                <div class="appointment-date">
+                                    ${formatDate(activity.date)}
+                                </div>
+
+                            </div>
+                        `;
+
+                    }).join("");
+            }
+
+        } catch (error) {
+
+            console.error("Error loading dashboard:", error);
+
+            document.getElementById("upcomingAppointmentsList").innerHTML = `
+                <div class="empty-message">
+                    Failed to load appointments
                 </div>
-            `).join('');
+            `;
+
+            document.getElementById("recentActivityList").innerHTML = `
+                <div class="empty-message">
+                    Failed to load activity
+                </div>
+            `;
         }
-        
-        // Total visits (completed)
-        const completedQuery = query(
-            collection(db, "appointments"),
-            where("userId", "==", userId),
-            where("status", "==", "completed")
-        );
-        const completedSnap = await getDocs(completedQuery);
-        document.getElementById('totalVisits').innerHTML = completedSnap.size;
-        
-        //
+    }
+
+    // =========================
+    // FORMAT DATE
+    // =========================
+    function formatDate(dateString) {
+
+        if (!dateString) return "-";
+
+        const date = new Date(dateString);
+
+        return date.toLocaleDateString("en-MY", {
+            day: "numeric",
+            month: "short",
+            year: "numeric"
+        });
+    }
+
+    // =========================
+    // LOGOUT
+    // =========================
+    document.getElementById("logoutLink")
+        .addEventListener("click", async (e) => {
+
+            e.preventDefault();
+
+            try {
+
+                await signOut(auth);
+
+                window.location.href = "login.html";
+
+            } catch (error) {
+
+                console.error("Logout error:", error);
+            }
+        });
+</script>
