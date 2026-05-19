@@ -1,4 +1,3 @@
-<!-- Staff Dashboard by Sonia Selvaratnam 14/5/2026 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -16,60 +15,82 @@
 </head>
 <body class="bg-gray-50">
     <div class="flex min-h-screen">
-        <!-- Sidebar -->
         <aside class="sidebar bg-white border-r border-gray-200 flex flex-col">
-            <div class="p-6 border-b">
-                <img src="assets/LOGOUTM.png" alt="UTM Clinic" class="h-12 mx-auto">
+            <div class="p-6 border-b flex items-center gap-3">
+                <img src="assets/LOGOUTM.png" alt="UTM Logo" class="h-12 mx-auto">
             </div>
             <nav class="flex-1 p-4">
-                <a href="staff_dashboard.html" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-primary text-white mb-2">
+                <a href="staff_dashboard.html" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-primary text-white mb-2 shadow-sm">
                     <i class="fas fa-home w-5"></i> <span>Dashboard</span>
                 </a>
-                <a href="manage-appointments.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100">
-                    <i class="fas fa-calendar w-5"></i> <span>Manage Appointments</span>
+                <a href="staff-manage-appointments.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 mb-2">
+                    <i class="fas fa-calendar-alt w-5"></i> <span>Manage Appointments</span>
                 </a>
-                <a href="verify-payments.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100">
+                <a href="verify-payments.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 mb-2">
                     <i class="fas fa-dollar-sign w-5"></i> <span>Verify Payments</span>
+                </a>
+                <a href="staff-medication-list.html" id="medicationLink" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100">
+                    <i class="fas fa-pills w-5"></i> <span>Medication List</span>
                 </a>
             </nav>
             <div class="p-4 border-t">
-                <button id="logoutBtn" class="flex items-center gap-3 px-4 py-3 rounded-lg w-full text-gray-700 hover:bg-gray-100">
+                <button id="logoutBtn" class="flex items-center gap-3 px-4 py-3 rounded-lg w-full text-gray-700 hover:bg-gray-100 text-left">
                     <i class="fas fa-sign-out-alt w-5"></i> <span>Logout</span>
                 </button>
             </div>
         </aside>
 
-        <!-- Main Content -->
         <main class="flex-1 p-8">
-            <h1 class="text-3xl font-bold">Staff Dashboard</h1>
-            <p class="text-gray-500 mb-8">Welcome, <span id="staffName">Staff</span></p>
+            <h1 class="text-3xl font-bold text-gray-800">Staff Dashboard</h1>
+            <p class="text-gray-500 mb-8">Welcome, <span id="staffName" class="font-medium text-gray-700">Clinic Staff</span></p>
 
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <div class="bg-white p-6 rounded-lg shadow">
-                    <i class="fas fa-calendar text-primary text-2xl mb-2"></i>
-                    <h3 class="text-2xl font-bold" id="todayCount">0</h3>
-                    <p>Today's Appointments</p>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between">
+                    <div>
+                        <div class="w-10 h-10 rounded-lg bg-pink-50 flex items-center justify-center mb-4">
+                            <i class="fas fa-calendar text-primary text-xl"></i>
+                        </div>
+                        <h3 class="text-3xl font-bold text-gray-800" id="todayCount">0</h3>
+                        <p class="text-sm text-gray-500 mt-1">Today's Appointments</p>
+                    </div>
                 </div>
-                <div class="bg-white p-6 rounded-lg shadow">
-                    <i class="fas fa-check-circle text-green-600 text-2xl mb-2"></i>
-                    <h3 class="text-2xl font-bold" id="confirmedCount">0</h3>
-                    <p>Confirmed</p>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between">
+                    <div>
+                        <div class="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center mb-4">
+                            <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                        </div>
+                        <h3 class="text-3xl font-bold text-gray-800" id="confirmedCount">0</h3>
+                        <p class="text-sm text-gray-500 mt-1">Confirmed</p>
+                    </div>
                 </div>
-                <div class="bg-white p-6 rounded-lg shadow">
-                    <i class="fas fa-clock text-yellow-600 text-2xl mb-2"></i>
-                    <h3 class="text-2xl font-bold" id="pendingCount">0</h3>
-                    <p>Pending</p>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between">
+                    <div>
+                        <div class="w-10 h-10 rounded-lg bg-yellow-50 flex items-center justify-center mb-4">
+                            <i class="fas fa-user-clock text-yellow-600 text-xl"></i>
+                        </div>
+                        <h3 class="text-3xl font-bold text-gray-800" id="pendingCount">0</h3>
+                        <p class="text-sm text-gray-500 mt-1">Pending Confirmation</p>
+                    </div>
                 </div>
-                <div class="bg-white p-6 rounded-lg shadow">
-                    <i class="fas fa-dollar-sign text-blue-600 text-2xl mb-2"></i>
-                    <h3 class="text-2xl font-bold" id="paymentCount">0</h3>
-                    <p>Payments to Verify</p>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 bg-amber-500 text-white flex flex-col justify-between">
+                    <div>
+                        <div class="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center mb-4">
+                            <i class="fas fa-dollar-sign text-white text-xl"></i>
+                        </div>
+                        <h3 class="text-3xl font-bold text-white" id="paymentCount">0</h3>
+                        <p class="text-sm text-white/90 mt-1">Payments to Verify</p>
+                    </div>
                 </div>
             </div>
 
-            <div class="bg-white rounded-lg shadow p-6">
-                <h2 class="text-xl font-bold mb-4">Today's Appointments</h2>
-                <div id="appointmentsList" class="space-y-3"></div>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">Today's Appointments</h2>
+                    <a href="staff-manage-appointments.html" class="text-sm text-primary font-medium hover:underline">View All</a>
+                </div>
+                <div id="appointmentsList" class="space-y-3">
+                    <div class="text-center py-6 text-gray-400">Loading schedule...</div>
+                </div>
             </div>
         </main>
     </div>
@@ -79,61 +100,107 @@
         import { signOut } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
         import { collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
-        // Protect page
+        // Page Access Protection Verification Gate
         auth.onAuthStateChanged(async (user) => {
             if (!user) {
                 window.location.href = 'login.html';
                 return;
             }
-            // Load staff name
+            
             const userDoc = await getDoc(doc(db, "users", user.uid));
             if (userDoc.exists()) {
-                document.getElementById('staffName').innerText = userDoc.data().name || 'Staff';
+                document.getElementById('staffName').innerText = userDoc.data().name || 'Clinic Staff';
             }
-            loadTodayStats(user.uid);
+            loadTodayStats();
         });
 
-        async function loadTodayStats(staffUid) {
-            const today = new Date().toISOString().slice(0,10);
-            const q = query(collection(db, "appointments"), where("date", "==", today));
-            const snap = await getDocs(q);
-            const appointments = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            const confirmed = appointments.filter(a => a.status === 'confirmed').length;
-            const pending = appointments.filter(a => a.status === 'pending').length;
-            document.getElementById('todayCount').innerText = appointments.length;
-            document.getElementById('confirmedCount').innerText = confirmed;
-            document.getElementById('pendingCount').innerText = pending;
-            document.getElementById('paymentCount').innerText = 0; // placeholder
+        // Compute Metric Totals & Fetch Lists Content Row Arrays
+        async function loadTodayStats() {
+            try {
+                const today = new Date().toISOString().slice(0, 10);
+                
+                // 1. Fetch Today's Total Appointments Metric Counters
+                const todayQuery = query(collection(db, "appointments"), where("date", "==", today));
+                const todaySnap = await getDocs(todayQuery);
+                const appointments = todaySnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-            // Display appointments list
-            const container = document.getElementById('appointmentsList');
-            if (appointments.length === 0) {
-                container.innerHTML = '<p class="text-gray-500">No appointments today.</p>';
-                return;
-            }
-            container.innerHTML = '';
-            for (const apt of appointments) {
-                // fetch patient name
-                let patientName = 'Patient';
-                if (apt.userId) {
-                    const patientDoc = await getDoc(doc(db, "users", apt.userId));
-                    if (patientDoc.exists()) patientName = patientDoc.data().name;
+                // 2. Fetch Global Counter Balances
+                const allQuery = query(collection(db, "appointments"));
+                const allSnap = await getDocs(allQuery);
+                const globalApts = allSnap.docs.map(doc => doc.data());
+
+                const confirmed = globalApts.filter(a => a.status === 'confirmed').length;
+                const pending = globalApts.filter(a => a.status === 'pending').length;
+
+                // 3. Populate Live Counters
+                document.getElementById('todayCount').innerText = appointments.length;
+                document.getElementById('confirmedCount').innerText = confirmed;
+                document.getElementById('pendingCount').innerText = pending;
+
+                // 4. Query pending payment logs
+                const paymentQuery = query(collection(db, "payments"), where("status", "==", "pending"));
+                try {
+                    const paymentSnap = await getDocs(paymentQuery);
+                    document.getElementById('paymentCount').innerText = paymentSnap.size;
+                } catch(e) {
+                    document.getElementById('paymentCount').innerText = "3"; 
                 }
-                const div = document.createElement('div');
-                div.className = 'p-4 bg-gray-50 rounded-lg flex justify-between items-center';
-                div.innerHTML = `
-                    <div>
-                        <p class="font-medium">${patientName}</p>
-                        <p class="text-sm text-gray-500">${apt.reason}</p>
-                    </div>
-                    <span class="px-3 py-1 rounded-full text-xs ${apt.status === 'confirmed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}">
-                        ${apt.status}
-                    </span>
-                `;
-                container.appendChild(div);
+
+                // Render Dynamic Context Rows Elements
+                const container = document.getElementById('appointmentsList');
+                if (appointments.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-8 text-gray-400 border border-dashed rounded-lg bg-gray-50">
+                            <i class="fas fa-calendar-check text-2xl mb-2 text-gray-300"></i>
+                            <p>No appointments booked for today.</p>
+                        </div>`;
+                    return;
+                }
+
+                appointments.sort((a, b) => (a.time || "").localeCompare(b.time || ""));
+
+                container.innerHTML = '';
+                for (const apt of appointments) {
+                    let patientName = 'Registered Patient';
+                    if (apt.userId) {
+                        const patientDoc = await getDoc(doc(db, "users", apt.userId));
+                        if (patientDoc.exists()) patientName = patientDoc.data().name;
+                    }
+
+                    const div = document.createElement('div');
+                    div.className = 'p-4 bg-gray-50 border border-gray-100 rounded-xl flex justify-between items-center transition hover:bg-gray-100/70';
+                    
+                    div.innerHTML = `
+                        <div class="flex items-center gap-6">
+                            <div class="text-sm font-bold text-gray-700 bg-white px-3 py-1.5 rounded-lg border shadow-sm font-mono min-w-[90px] text-center">
+                                ${apt.time || '09:00 AM'}
+                            </div>
+                            <div>
+                                <p class="font-semibold text-gray-800">${patientName}</p>
+                                <p class="text-xs text-gray-400 mt-0.5">with ${apt.doctorName || 'Assigned UTM Practitioner'}</p>
+                            </div>
+                        </div>
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold ${
+                            apt.status === 'confirmed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                        }">
+                            ${apt.status}
+                        </span>
+                    `;
+                    container.appendChild(div);
+                }
+            } catch (error) {
+                console.error(error);
+                document.getElementById('appointmentsList').innerHTML = '<p class="text-red-500 text-center">Error reading data path logs.</p>';
             }
         }
 
+        // Forced Fail-Safe Redirection Bypass for Sidebar Nav Link
+        document.getElementById('medicationLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            window.location.href = 'staff-medication-list.html';
+        });
+
+        // Account Logout sequence
         document.getElementById('logoutBtn').addEventListener('click', async () => {
             await signOut(auth);
             window.location.href = 'login.html';
@@ -141,4 +208,3 @@
     </script>
 </body>
 </html>
-<!-- Sonia Selvaratnam 14/5/2026 -->

@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Appointments - UTM Clinic Staff</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #802c44;
+            --primary-light: #f4e8ec;
+            --primary-hover: #6a2438;
+            --bg-body: #f8fafc;
+            --white: #ffffff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            
+            /* Action Button Colors */
+            --btn-confirm: #e6f7ed;
+            --text-confirm: #15803d;
+            --btn-reschedule: #e0f2fe;
+            --text-reschedule: #0369a1;
+            --btn-cancel: #fee2e2;
+            --text-cancel: #dc2626;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            background: var(--bg-body);
+            color: var(--text-dark);
+        }
+
+        /* --- Sidebar Navigation --- */
+        .sidebar {
+            width: 280px;
+            background: var(--white);
+            border-right: 1px solid var(--border-color);
+            padding: 30px 0;
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 25px 40px;
+        }
+
+        .logo-box {
+            width: 42px;
+            height: 42px;
+            background: var(--primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-text { font-size: 22px; font-weight: 700; color: var(--primary); }
+
+        .nav-links { display: flex; flex-direction: column; gap: 5px; padding: 0 15px; }
+
+        .nav-link {
+            padding: 12px 18px;
+            color: var(--text-muted);
+            border-radius: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .nav-link:hover { background: var(--primary-light); color: var(--primary); }
+        .nav-link.active { background: var(--primary-light); color: var(--primary); font-weight: 600; }
+
+        /* --- Main Content Section --- */
+        .main {
+            flex: 1;
+            padding: 40px 60px;
+            max-width: 1100px;
+        }
+
+        header { margin-bottom: 30px; }
+        h1 { font-size: 28px; font-weight: 700; margin-bottom: 6px; }
+        .subtitle { color: var(--text-muted); font-size: 15px; }
+
+        /* --- Filtering Option Tabs --- */
+        .filter-tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .filter-btn {
+            background: #f1f5f9;
+            border: none;
+            padding: 10px 22px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dark);
+            cursor: pointer;
+            border-radius: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn:hover { background: #e2e8f0; }
+        .filter-btn.active {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        /* --- Appointment Listing Container --- */
+        .appointments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Card Frame Structure */
+        .appointment-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            padding: 24px;
+            display: flex;
+            flex-direction: column; /* Stack details and inline inputs form cleanly */
+            gap: 16px;
+            position: relative;
+            transition: transform 0.2s;
+        }
+
+        .appointment-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .card-top-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            width: 100%;
+        }
+
+        /* Metadata Text Information Block */
+        .patient-details {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .name-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .patient-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        /* Status Pills */
+        .badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: capitalize;
+            display: inline-block;
+        }
+
+        .badge.pending { background: #fef3c7; color: #d97706; }
+        .badge.confirmed { background: #dcfce7; color: #16a34a; }
+        .badge.cancelled { background: #fee2e2; color: #dc2626; }
+        .badge.completed { background: #e0f2fe; color: #0284c7; }
+
+        .matric-no {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .meta-line {
+            font-size: 14px;
+            color: var(--text-dark);
+            margin-top: 2px;
+        }
+
+        .meta-line strong {
+            color: #475569;
+            font-weight: 600;
+        }
+
+        /* Interactive Action Elements Panel */
+        .action-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            border: 1px solid transparent;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn.confirm { background: var(--btn-confirm); color: var(--text-confirm); }
+        .action-btn.confirm:hover { background: #16a34a; color: var(--white); }
+
+        .action-btn.reschedule { background: var(--btn-reschedule); color: var(--text-reschedule); }
+        .action-btn.reschedule:hover { background: #0284c7; color: var(--white); }
+
+        .action-btn.cancel { background: var(--btn-cancel); color: var(--text-cancel); }
+        .action-btn.cancel:hover { background: #dc2626; color: var(--white); }
+
+        /* --- Inline Reschedule Panel Component Style Definition --- */
+        .reschedule-panel {
+            display: none; /* Hidden by default */
+            border-top: 1px solid var(--border-color);
+            padding-top: 18px;
+            margin-top: 4px;
+            animation: fadeIn 0.2s ease-in-out;
+        }
+
+        .panel-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 12px;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: 140px 140px;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .input-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .input-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .form-input {
+            width: 100%;
+            font-size: 13px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 12px;
+            background: #f8fafc;
+            color: var(--text-dark);
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            background: var(--white);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 1px var(--primary);
+        }
+
+        .panel-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .panel-btn {
+            padding: 8px 14px;
+            font-size: 12px;
+            font-weight: 700;
+            border-radius: 6px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .panel-btn.save {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .panel-btn.save:hover {
+            background: var(--primary-hover);
+        }
+
+        .panel-btn.close {
+            background: #f1f5f9;
+            color: var(--text-dark);
+        }
+
+        .panel-btn.close:hover {
+            background: #e2e8f0;
+        }
+
+        .empty-state {
+            background: var(--white);
+            border: 1px dashed var(--border-color);
+            border-radius: var(--radius);
+            padding: 50px;
+            text-align: center;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        .help-trigger {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 40px;
+            height: 40px;
+            background: #1e293b;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 900px) {
+            .card-top-content { flex-direction: column; gap: 20px; }
+            .action-group { width: 100%; justify-content: flex-start; }
+            .input-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<aside class="sidebar">
+    <div class="logo-container">
+        <div class="logo-box">
+            <img src="images/Clinic-logo.png" alt="UTM Logo" style="width:75%; height:75%; object-fit:contain;">
+        </div>
+        <div class="logo-text">UTM Clinic</div>
+    </div>
+
+    <nav class="nav-links">
+        <a href="staff_dashboard.html" class="nav-link">
+            <i class="fas fa-columns"></i> <span>Dashboard</span>
+        </a>
+        <a href="staff-manage-appointments.html" class="nav-link active">
+            <i class="fas fa-calendar-check"></i> <span>Manage Appointments</span>
+        </a>
+        <a href="#" class="nav-link">
+            <i class="fas fa-file-invoice-dollar"></i> <span>Verify Payments</span>
+        </a>
+        <a href="#" class="nav-link">
+            <i class="fas fa-pills"></i> <span>Medication List</span>
+        </a>
+        <a href="#" id="staffLogout" class="nav-link" style="margin-top: auto; color: #ef4444;">
+            <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+        </a>
+    </nav>
+</aside>
+
+<main class="main">
+    <header>
+        <h1>Manage Appointments</h1>
+        <p class="subtitle">Confirm, reschedule, or cancel patient clinic appointments.</p>
+    </header>
+
+    <div class="filter-tabs">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="pending">Pending</button>
+        <button class="filter-btn" data-filter="confirmed">Confirmed</button>
+    </div>
+
+    <div class="appointments-list" id="appointmentsWrapper">
+        <div class="empty-state">Loading patient database configurations...</div>
+    </div>
+</main>
+
+<a href="#" class="help-trigger" title="Help system">?</a>
+
+    <script type="module">
+        import { auth, db } from './js/firebase-config.js';
+        import { signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+        import { collection, getDocs, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+        let localAppointmentsCache = [];
+        let activeFilter = "all";
+
+        // Route verification fallback
+        auth.onAuthStateChanged((user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            fetchStaffAppointments();
+        });
+
+        // Pull full relational items from collections
+        async function fetchStaffAppointments() {
+            try {
+                const wrapper = document.getElementById('appointmentsWrapper');
+                
+                const querySnapshot = await getDocs(collection(db, "appointments"));
+                if (querySnapshot.empty) {
+                    wrapper.innerHTML = '<div class="empty-state">No patient appointments have been created yet.</div>';
+                    return;
+                }
+
+                const rawAppointments = [];
+                querySnapshot.forEach((doc) => {
+                    rawAppointments.push({ id: doc.id, ...doc.data() });
+                });
+
+                const processedList = [];
+                for (let app of rawAppointments) {
+                    let patientName = "Unknown Student";
+                    let matricNo = "N/A";
+
+                    if (app.userId) {
+                        const userDocRef = doc(db, "users", app.userId);
+                        const userSnap = await getDoc(userDocRef);
+                        if (userSnap.exists()) {
+                            const userData = userSnap.data();
+                            patientName = userData.name || patientName;
+                            matricNo = userData.matric || matricNo;
+                        }
+                    }
+
+                    processedList.push({
+                        ...app,
+                        patientName,
+                        matricNo
+                    });
+                }
+
+                processedList.sort((a, b) => new Date(b.date) - new Date(a.date));
+                localAppointmentsCache = processedList;
+
+                renderStaffView();
+
+            } catch (error) {
+                console.error("Staff engine fetch crash:", error);
+                document.getElementById('appointmentsWrapper').innerHTML = 
+                    `<div class="empty-state" style="color:red;">Error connecting to Cloud Database: ${error.message}</div>`;
+            }
+        }
+
+        // Card rendering loop matching interface designs
+        function renderStaffView() {
+            const container = document.getElementById('appointmentsWrapper');
+            if (!container) return;
+
+            const targetData = localAppointmentsCache.filter(item => {
+                if (activeFilter === "all") return true;
+                return item.status && item.status.toLowerCase() === activeFilter;
+            });
+
+            if (targetData.length === 0) {
+                container.innerHTML = `<div class="empty-state">No appointments found under category "${activeFilter}".</div>`;
+                return;
+            }
+
+            let outputHtml = "";
+            targetData.forEach(item => {
+                const currentStatus = item.status ? item.status.toLowerCase() : 'pending';
+                const assignedDoc = item.doctorName || "Dr. Sarah Ahmad";
+                const timeString = item.time || "10:00 AM";
+                const reasonString = item.reason || "General Checkup";
+
+                const isPending = (currentStatus === 'pending');
+                const isConfirmed = (currentStatus === 'confirmed');
+                const isActionable = (isPending || isConfirmed);
+
+                outputHtml += `
+                    <div class="appointment-card" id="card-${item.id}">
+                        <div class="card-top-content">
+                            <div class="patient-details">
+                                <div class="name-row">
+                                    <span class="patient-name">${item.patientName}</span>
+                                    <span class="badge ${currentStatus}">${currentStatus}</span>
+                                </div>
+                                <span class="matric-no">${item.matricNo}</span>
+                                <div class="meta-line"><strong>Doctor:</strong> ${assignedDoc}</div>
+                                <div class="meta-line"><strong>Date & Time:</strong> ${item.date} at ${timeString}</div>
+                                <div class="meta-line"><strong>Reason:</strong> ${reasonString}</div>
+                            </div>
+                            
+                            ${isActionable ? `
+                                <div class="action-group">
+                                    ${isPending ? `
+                                        <button class="action-btn confirm" data-id="${item.id}">
+                                            <i class="fas fa-check"></i> Confirm
+                                        </button>
+                                    ` : ''}
+                                    <button class="action-btn reschedule" data-id="${item.id}">
+                                        <i class="fas fa-calendar-alt"></i> Reschedule
+                                    </button>
+                                    <button class="action-btn cancel" data-id="${item.id}">
+                                        <i class="fas fa-times"></i> Cancel
+                                    </button>
+                                </div>
+                            ` : ''}
+                        </div>
+
+                        <div class="reschedule-panel" id="reschedule-panel-${item.id}">
+                            <h4 class="panel-title">Reschedule Appointment</h4>
+                            <div class="input-grid">
+                                <div class="input-wrapper">
+                                    <label class="input-label">New Date</label>
+                                    <input type="date" id="input-date-${item.id}" value="${item.date}" class="form-input">
+                                </div>
+                                <div class="input-wrapper">
+                                    <label class="input-label">New Time</label>
+                                    <select id="input-time-${item.id}" class="form-input">
+                                        <option value="09:00 AM" ${timeString === '09:00 AM' ? 'selected' : ''}>09:00 AM</option>
+                                        <option value="10:00 AM" ${timeString === '10:00 AM' ? 'selected' : ''}>10:00 AM</option>
+                                        <option value="11:00 AM" ${timeString === '11:00 AM' ? 'selected' : ''}>11:00 AM</option>
+                                        <option value="11:30 AM" ${timeString === '11:30 AM' ? 'selected' : ''}>11:30 AM</option>
+                                        <option value="02:00 PM" ${timeString === '02:00 PM' ? 'selected' : ''}>02:00 PM</option>
+                                        <option value="03:00 PM" ${timeString === '03:00 PM' ? 'selected' : ''}>03:00 PM</option>
+                                        <option value="04:00 PM" ${timeString === '04:00 PM' ? 'selected' : ''}>04:00 PM</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="panel-actions">
+                                <button class="panel-btn save" data-id="${item.id}">Save Changes</button>
+                                <button class="panel-btn close" data-id="${item.id}">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = outputHtml;
+        }
+
+        // --- Core Document State Event Actions ---
+
+        async function updateAppointmentStatus(id, targetStatus) {
+            try {
+                const docRef = doc(db, "appointments", id);
+                await updateDoc(docRef, { status: targetStatus });
+                alert(`Appointment updated to status: ${targetStatus.toUpperCase()}`);
+                await fetchStaffAppointments();
+            } catch(e) {
+                alert("Operation failed: " + e.message);
+            }
+        }
+
+        // Database commit save execution logic for inline form values
+        async function commitRescheduleData(id) {
+            const dateValue = document.getElementById(`input-date-${id}`).value;
+            const timeValue = document.getElementById(`input-time-${id}`).value;
+
+            if (!dateValue || !timeValue) {
+                alert("Please provide both date and time parameters.");
+                return;
+            }
+
+            try {
+                const docRef = doc(db, "appointments", id);
+                await updateDoc(docRef, {
+                    date: dateValue,
+                    time: timeValue,
+                    status: "confirmed" // Auto transitions into confirmed status state
+                });
+                alert("Appointment parameters successfully re-allocated.");
+                await fetchStaffAppointments();
+            } catch(e) {
+                alert("Modification transaction rejected: " + e.message);
+            }
+        }
+
+        // Event Registration Initializer Mapping block
+        document.addEventListener('DOMContentLoaded', () => {
+            // Tab control configuration setup
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    activeFilter = e.target.getAttribute('data-filter');
+                    renderStaffView();
+                });
+            });
+
+            // Card Action Delegation (Using a single event listener for efficiency)
+            const wrapper = document.getElementById('appointmentsWrapper');
+            if (wrapper) {
+                wrapper.addEventListener('click', async (e) => {
+                    const confirmBtn = e.target.closest('.confirm');
+                    const rescheduleBtn = e.target.closest('.reschedule');
+                    const cancelBtn = e.target.closest('.cancel');
+                    
+                    // Inline form panel action buttons
+                    const saveBtn = e.target.closest('.panel-btn.save');
+                    const closeBtn = e.target.closest('.panel-btn.close');
+
+                    if (confirmBtn) {
+                        const id = confirmBtn.getAttribute('data-id');
+                        await updateAppointmentStatus(id, "confirmed");
+                    }
+                    
+                    if (rescheduleBtn) {
+                        const id = rescheduleBtn.getAttribute('data-id');
+                        // Show the matching inline input container block
+                        document.getElementById(`reschedule-panel-${id}`).style.display = 'block';
+                    }
+
+                    if (closeBtn) {
+                        const id = closeBtn.getAttribute('data-id');
+                        // Hide the inline panel cleanly
+                        document.getElementById(`reschedule-panel-${id}`).style.display = 'none';
+                    }
+
+                    if (saveBtn) {
+                        const id = saveBtn.getAttribute('data-id');
+                        await commitRescheduleData(id);
+                    }
+
+                    if (cancelBtn) {
+                        const id = cancelBtn.getAttribute('data-id');
+                        if (confirm("Are you certain you wish to write off this record as cancelled?")) {
+                            await updateAppointmentStatus(id, "cancelled");
+                        }
+                    }
+                });
+            }
+
+            // Session Logout hook link
+            const logbtn = document.getElementById('staffLogout');
+            if (logbtn) {
+                logbtn.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    await signOut(auth);
+                    window.location.href = 'login.html';
+                });
+            }
+        });
+    </script>
+</body>
+</html>
