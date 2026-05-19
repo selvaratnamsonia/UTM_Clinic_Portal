@@ -330,6 +330,16 @@
     document.getElementById("backBtn").addEventListener("click", goBack);
     document.getElementById("cancelBtn").addEventListener("click", goBack);
     document.getElementById("draftBtn").addEventListener("click", () => alert("Draft saved successfully to session variables!"));
+    
+    document.getElementById("draftBtn").addEventListener("click", () => {
+  const draftData = {
+    diagnosis: document.getElementById("diagnosis").value,
+    mcIssued: document.getElementById("mcCheckbox").checked,
+    mcDays: document.getElementById("mcDays").value
+  };
+  localStorage.setItem(`diagnosisDraft_${appointmentId}`, JSON.stringify(draftData));
+  alert("Draft saved locally! You can safely close this tab.");
+});
   </script>
 
 </body>

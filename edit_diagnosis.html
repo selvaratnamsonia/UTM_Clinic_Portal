@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Edit Diagnosis Record - UTM Clinic</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body class="bg-gray-100 font-sans text-gray-800">
+
+  <div class="max-w-3xl mx-auto py-10 px-4">
+
+    <div class="flex items-center justify-between mb-6">
+      <button
+        id="cancelBtn"
+        class="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition"
+      >
+        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+        Cancel & Return
+      </button>
+      
+      <span class="text-xs bg-gray-200 text-gray-700 font-mono px-2.5 py-1 rounded-md" id="docIdBadge">
+        ID: Loading...
+      </span>
+    </div>
+
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      
+      <div class="border-b border-gray-100 bg-gray-50/50 p-6">
+        <h1 class="text-2xl font-bold text-gray-900">Edit Diagnosis Record</h1>
+        <p class="text-gray-500 text-sm mt-1">Modify historical treatment notes, medical certificate parameters, or medication details.</p>
+      </div>
+
+      <div id="formLoadingState" class="p-16 text-center text-gray-500">
+        <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-300 border-t-[#802c44] mb-4"></div>
+        <p class="text-sm font-medium">Retrieving database ledger entry...</p>
+      </div>
+
+      <form id="editDiagnosisForm" class="hidden p-6 space-y-6">
+        
+        <div class="bg-gray-50 rounded-xl p-4 border border-gray-100 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider">Patient Full Name</label>
+            <div id="displayPatientName" class="text-base font-semibold text-gray-900 mt-0.5">Loading Name...</div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider">Matric / Staff Identification Number</label>
+            <div id="displayMatricNumber" class="text-base font-mono text-gray-700 mt-0.5">Loading ID...</div>
+          </div>
+        </div>
+
+        <div>
+          <label for="diagnosisNotes" class="block text-sm font-medium text-gray-700 mb-1">
+            Clinical Diagnosis Notes <span class="text-red-500">*</span>
+          </label>
+          <textarea
+            id="diagnosisNotes"
+            rows="4"
+            required
+            placeholder="Document presentation symptoms, physiological observations, and clinical assessment findings..."
+            class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#802c44] transition resize-y"
+          ></textarea>
+        </div>
+
+        <div class="border-t border-gray-100 pt-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <label class="text-sm font-medium text-gray-900 block">Issue Medical Certificate (MC)</label>
+              <span class="text-xs text-gray-500">Authorize excused clinical absence logs for this patient.</span>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="mcIssuedToggle" class="sr-only peer">
+              <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-600"></div>
+            </label>
+          </div>
+
+          <div id="mcDurationWrapper" class="mt-4 hidden bg-green-50/50 border border-green-100 rounded-xl p-4 max-w-xs">
+            <label for="mcDays" class="block text-xs font-semibold text-green-800 uppercase tracking-wide mb-1.5">
+              Authorized Absence Duration
+            </label>
+            <div class="relative rounded-lg shadow-sm">
+              <input
+                type="number"
+                id="mcDays"
+                min="1"
+                placeholder="0"
+                class="w-full pl-3 pr-12 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm font-medium"
+              />
+              <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                <span class="text-gray-400 text-xs font-medium">Days</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="border-t border-gray-100 pt-6">
+          <label for="medicine" class="block text-sm font-medium text-gray-700 mb-1">
+            Prescribed Medications & Dosage Instructions
+          </label>
+          <textarea
+            id="medicine"
+            rows="3"
+            placeholder="e.g. Paracetamol 500mg (2 tablets, 3x daily after meals), Amoxicillin 250mg..."
+            class="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#802c44] transition resize-y"
+          ></textarea>
+        </div>
+
+        <div class="border-t border-gray-100 pt-6 flex items-center justify-end gap-3 bg-gray-50 -mx-6 -mb-6 p-6">
+          <button
+            type="button"
+            id="discardFormBtn"
+            class="px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 transition"
+          >
+            Discard Changes
+          </button>
+          
+          <button
+            type="submit"
+            id="saveRecordBtn"
+            class="flex items-center gap-2 px-5 py-2.5 text-sm font-medium text-white bg-[#802c44] hover:bg-[#6b2438] rounded-xl shadow-sm transition"
+          >
+            <i data-lucide="save" class="w-4 h-4"></i>
+            Save Modifications
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <script type="module">
+    import { db } from './js/firebase-config.js';
+    import { 
+      doc, 
+      getDoc, 
+      updateDoc 
+    } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+    // Initialize Lucide Vector Icons
+    lucide.createIcons();
+
+    // DOM References
+    const formLoadingState = document.getElementById("formLoadingState");
+    const editDiagnosisForm = document.getElementById("editDiagnosisForm");
+    const docIdBadge = document.getElementById("docIdBadge");
+    
+    const displayPatientName = document.getElementById("displayPatientName");
+    const displayMatricNumber = document.getElementById("displayMatricNumber");
+    
+    const diagnosisNotesInput = document.getElementById("diagnosisNotes");
+    const mcIssuedToggle = document.getElementById("mcIssuedToggle");
+    const mcDurationWrapper = document.getElementById("mcDurationWrapper");
+    const mcDaysInput = document.getElementById("mcDays");
+    const medicineInput = document.getElementById("medicine");
+    
+    const cancelBtn = document.getElementById("backBtn") || document.getElementById("cancelBtn");
+    const discardFormBtn = document.getElementById("discardFormBtn");
+
+    // Dynamic Parameter URL ID Extraction Handler
+    const urlParams = new URLSearchParams(window.location.search);
+    const diagnosisId = urlParams.get('id');
+
+    // Route Abort Safeguard Navigation Handler
+    function exitToLedgerView() {
+      window.location.href = "past-patient.html";
+    }
+
+    // Interactive MC Toggle View Controller
+    mcIssuedToggle.addEventListener("change", (e) => {
+      if (e.target.checked) {
+        mcDurationWrapper.classList.remove("hidden");
+        mcDaysInput.required = true;
+      } else {
+        mcDurationWrapper.classList.add("hidden");
+        mcDaysInput.required = false;
+        mcDaysInput.value = "";
+      }
+    });
+
+    // #77 Criteria: Fetch Database Record & Pre-fill Form Fields
+    async function fetchAndPopulateForm() {
+      if (!diagnosisId) {
+        alert("Error: Missing valid record identifier token inside query payload parameter.");
+        exitToLedgerView();
+        return;
+      }
+
+      try {
+        docIdBadge.textContent = `ID: ${diagnosisId}`;
+
+        // Get matching diagnosis record document mapping metadata 
+        const diagnosisRef = doc(db, "diagnosis", diagnosisId);
+        const diagnosisSnap = await getDoc(diagnosisRef);
+
+        if (!diagnosisSnap.exists()) {
+          alert("The requested clinical diagnosis document trace could not be located inside database records.");
+          exitToLedgerView();
+          return;
+        }
+
+        const data = diagnosisSnap.data();
+
+        // Account for both 'diagnosis' field from Firestore logs and 'diagnosisNotes' from table definitions
+        diagnosisNotesInput.value = data.diagnosis || data.diagnosisNotes || "";
+        medicineInput.value = data.medicine || data.medicinePrescribed || "";
+        
+        // Handle MC toggle status parameters
+        if (data.mcIssued === true || data.mcIssued === "true") {
+          mcIssuedToggle.checked = true;
+          mcDurationWrapper.classList.remove("hidden");
+          mcDaysInput.value = data.mcDays || "";
+          mcDaysInput.required = true;
+        }
+
+        // Deep fetch cascading metadata linking maps from appointments block
+        if (data.appointmentId) {
+          try {
+            const appointmentSnap = await getDoc(doc(db, "appointments", data.appointmentId));
+            if (appointmentSnap.exists()) {
+              const apptData = appointmentSnap.data();
+              displayPatientName.textContent = apptData.patientName || "Unknown Patient";
+              displayMatricNumber.textContent = apptData.matricNumber || "N/A";
+            } else {
+              displayPatientName.textContent = "Unknown Patient (Orphan Link)";
+              displayMatricNumber.textContent = "N/A";
+            }
+          } catch (apptErr) {
+            console.error("Cascading appointment mapping lookups failed: ", apptErr);
+            displayPatientName.textContent = "Database Fetch Fault";
+          }
+        } else {
+          displayPatientName.textContent = "Direct Walk-In Record";
+          displayMatricNumber.textContent = "N/A";
+        }
+
+        // Reveal fully-populated view 
+        formLoadingState.classList.add("hidden");
+        editDiagnosisForm.classList.remove("hidden");
+
+      } catch (error) {
+        console.error("Critical target pre-population mapping sequence error:", error);
+        alert("Failed to initialize edit session: " + error.message);
+        exitToLedgerView();
+      }
+    }
+
+    // #78 & #79 Criteria: Save modifications and Update Existing Record in Database
+    editDiagnosisForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      // Show processing execution button layout state changes
+      const submitBtn = document.getElementById("saveRecordBtn");
+      const originalText = submitBtn.innerHTML;
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `<div class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div> Processing...`;
+
+      try {
+        const diagnosisRef = doc(db, "diagnosis", diagnosisId);
+
+        // Map and validate tracking variables to preserve existing structural data schemas
+        const updatedPayload = {
+          diagnosis: diagnosisNotesInput.value.trim(),
+          diagnosisNotes: diagnosisNotesInput.value.trim(), // Keep duplicated fallback for structural cross-safety
+          mcIssued: mcIssuedToggle.checked,
+          mcDays: mcIssuedToggle.checked ? parseInt(mcDaysInput.value, 10) || 0 : 0,
+          medicine: medicineInput.value.trim(),
+          lastUpdatedAt: new Date().toISOString() // Traceability audit trail metric logging
+        };
+
+        // Fire transaction call to modify record content maps cleanly
+        await updateDoc(diagnosisRef, updatedPayload);
+
+        alert("Clinical diagnosis record updated successfully.");
+        exitToLedgerView();
+
+      } catch (error) {
+        console.error("Database write interface transmission failure:", error);
+        alert("Transaction Aborted: " + error.message);
+        
+        // Re-enable interactive elements for retry attempts
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+      }
+    });
+
+    // Basic Form Exit Event Hooks
+    cancelBtn.addEventListener("click", exitToLedgerView);
+    discardFormBtn.addEventListener("click", exitToLedgerView);
+
+    // Run Initialization Sequence
+    fetchAndPopulateForm();
+  </script>
+
+</body>
+</html>
