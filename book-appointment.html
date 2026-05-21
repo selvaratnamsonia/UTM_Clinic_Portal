@@ -1,11 +1,9 @@
-<!-- Book Appointment page by Sonia Selvaratnam 18/5/2026 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Book Appointment - UTM Clinic Portal</title>
-    <!-- Modern Font and Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -185,7 +183,7 @@
         /* Time Slots */
         .time-slots {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
             gap: 12px;
             margin-top: 8px;
         }
@@ -200,6 +198,10 @@
             font-size: 13px;
             font-weight: 500;
             transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
         }
 
         .time-slot:hover {
@@ -348,6 +350,7 @@
             padding: 20px;
             color: var(--text-muted);
             font-size: 13px;
+            grid-column: 1 / -1;
         }
 
         @media (max-width: 1024px) {
@@ -360,7 +363,6 @@
 </head>
 <body>
 
-<!-- Sidebar -->
 <aside class="sidebar">
     <div class="logo-container">
         <div class="logo-box">
@@ -387,35 +389,32 @@
     </nav>
 </aside>
 
-<!-- Main Content -->
 <main class="main">
     <header>
         <h1>Book Appointment</h1>
         <p class="subtitle">Select your preferred date and time for consultation</p>
     </header>
 
-    <!-- Alert Messages -->
     <div id="alertMessage" class="alert"></div>
 
-    <!-- Booking Form -->
     <div class="form-card">
         <form id="appointmentForm">
             <div class="form-group">
-                <label><i class="fas fa-calendar-alt"></i> Preferred Date</label>
+                <label for="date"><i class="fas fa-calendar-alt"></i> Preferred Date</label>
                 <input type="date" id="date" required>
             </div>
 
             <div class="form-group">
                 <label><i class="fas fa-clock"></i> Available Time Slots</label>
                 <div id="timeSlotsContainer" class="time-slots">
-                    <div class="loading">Select a date to view available slots</div>
+                    <div class="loading"><i class="fas fa-calendar-alt"></i> Select a date to view available slots</div>
                 </div>
                 <input type="hidden" id="selectedTime">
             </div>
 
             <div class="form-group">
-                <label><i class="fas fa-stethoscope"></i> Reason for Visit</label>
-                <textarea id="reason" rows="4" placeholder="Describe your symptoms or reason for consultation..."></textarea>
+                <label for="reason"><i class="fas fa-stethoscope"></i> Reason for Visit</label>
+                <textarea id="reason" rows="4" placeholder="Describe your symptoms or reason for consultation..." required></textarea>
             </div>
 
             <div class="action-buttons">
@@ -429,7 +428,6 @@
         </form>
     </div>
 
-    <!-- Guidelines Card -->
     <div class="info-card">
         <h3><i class="fas fa-clinic-medical"></i> Booking Guidelines</h3>
         <ul class="guidelines-list">
@@ -458,10 +456,9 @@
     let bookedSlots = [];
 
     // Auth check and load user data
-    auth.onAuthStateChanged(async (user) => {
+    auth.onAuthStateChanged((user) => {
         if (!user) {
             window.location.href = 'login.html';
-            return;
         }
     });
 
@@ -503,8 +500,9 @@
         container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-pulse"></i> Loading available slots...</div>';
         
         bookedSlots = await loadBookedSlots(date);
-        
         container.innerHTML = '';
+        currentSelectedSlot = null;
+        document.getElementById('selectedTime').value = '';
         
         TIME_SLOTS.forEach(slot => {
             const slotDiv = document.createElement('div');
@@ -538,6 +536,7 @@
         alertDiv.textContent = message;
         alertDiv.className = `alert alert-${type}`;
         alertDiv.style.display = 'block';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         setTimeout(() => {
             alertDiv.style.display = 'none';
         }, 5000);
@@ -608,7 +607,7 @@
                 createdAt: new Date().toISOString()
             });
             
-            showAlert(`✅ Appointment booked successfully for ${date} at ${time}! A doctor will review and assign themselves to your appointment.`, "success");
+            showAlert(`Appointment booked successfully for ${date} at ${time}! A doctor will review and assign themselves shortly.`, "success");
             
             document.getElementById('reason').value = '';
             document.getElementById('selectedTime').value = '';
@@ -635,8 +634,12 @@
     // Logout
     document.getElementById('logoutLink').addEventListener('click', async (e) => {
         e.preventDefault();
-        await signOut(auth);
-        window.location.href = 'login.html';
+        try {
+            await signOut(auth);
+            window.location.href = 'login.html';
+        } catch (error) {
+            console.error("Error signing out:", error);
+        }
     });
     
     setMinDate();

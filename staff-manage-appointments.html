@@ -144,7 +144,7 @@
             box-shadow: var(--shadow);
             padding: 24px;
             display: flex;
-            flex-direction: column; /* Stack details and inline inputs form cleanly */
+            flex-direction: column; 
             gap: 16px;
             position: relative;
             transition: transform 0.2s;
@@ -243,7 +243,7 @@
 
         /* --- Inline Reschedule Panel Component Style Definition --- */
         .reschedule-panel {
-            display: none; /* Hidden by default */
+            display: none; 
             border-top: 1px solid var(--border-color);
             padding-top: 18px;
             margin-top: 4px;
@@ -501,7 +501,6 @@
             let outputHtml = "";
             targetData.forEach(item => {
                 const currentStatus = item.status ? item.status.toLowerCase() : 'pending';
-                const assignedDoc = item.doctorName || "Dr. Sarah Ahmad";
                 const timeString = item.time || "10:00 AM";
                 const reasonString = item.reason || "General Checkup";
 
@@ -518,7 +517,6 @@
                                     <span class="badge ${currentStatus}">${currentStatus}</span>
                                 </div>
                                 <span class="matric-no">${item.matricNo}</span>
-                                <div class="meta-line"><strong>Doctor:</strong> ${assignedDoc}</div>
                                 <div class="meta-line"><strong>Date & Time:</strong> ${item.date} at ${timeString}</div>
                                 <div class="meta-line"><strong>Reason:</strong> ${reasonString}</div>
                             </div>
@@ -560,6 +558,7 @@
                                     </select>
                                 </div>
                             </div>
+
                             <div class="panel-actions">
                                 <button class="panel-btn save" data-id="${item.id}">Save Changes</button>
                                 <button class="panel-btn close" data-id="${item.id}">Cancel</button>
@@ -577,8 +576,10 @@
         async function updateAppointmentStatus(id, targetStatus) {
             try {
                 const docRef = doc(db, "appointments", id);
-                await updateDoc(docRef, { status: targetStatus });
-                alert(`Appointment updated to status: ${targetStatus.toUpperCase()}`);
+                let updateData = { status: targetStatus };
+
+                await updateDoc(docRef, updateData);
+                alert(`Appointment status updated to ${targetStatus} successfully.`);
                 await fetchStaffAppointments();
             } catch(e) {
                 alert("Operation failed: " + e.message);
@@ -597,11 +598,13 @@
 
             try {
                 const docRef = doc(db, "appointments", id);
-                await updateDoc(docRef, {
+                let updateData = {
                     date: dateValue,
                     time: timeValue,
-                    status: "confirmed" // Auto transitions into confirmed status state
-                });
+                    status: "confirmed"
+                };
+
+                await updateDoc(docRef, updateData);
                 alert("Appointment parameters successfully re-allocated.");
                 await fetchStaffAppointments();
             } catch(e) {
@@ -640,13 +643,11 @@
                     
                     if (rescheduleBtn) {
                         const id = rescheduleBtn.getAttribute('data-id');
-                        // Show the matching inline input container block
                         document.getElementById(`reschedule-panel-${id}`).style.display = 'block';
                     }
 
                     if (closeBtn) {
                         const id = closeBtn.getAttribute('data-id');
-                        // Hide the inline panel cleanly
                         document.getElementById(`reschedule-panel-${id}`).style.display = 'none';
                     }
 

@@ -1,4 +1,3 @@
-<!-- appointments claim firebase integration by Sonia Selvaratnam 19/5/2026 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,10 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Claim Appointments - UTM Clinic</title>
 
-    <!-- Google Font -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 
     <style>
@@ -405,7 +402,6 @@
 
 <body>
 
-    <!-- SIDEBAR -->
     <aside class="sidebar">
         <div class="logo-container">
             <div class="logo-box">
@@ -433,11 +429,9 @@
         </div>
     </aside>
 
-    <!-- MAIN -->
     <main class="main-content">
         <div class="container">
 
-            <!-- Header -->
             <div class="header">
                 <div>
                     <h1>Claim Appointments</h1>
@@ -446,7 +440,6 @@
                 <div class="badge-count" id="badgeCount">0 Available</div>
             </div>
 
-            <!-- Toolbar -->
             <div class="toolbar">
                 <div class="search-box">
                     <i class="fa-solid fa-calendar-day" style="color: #64748b;"></i>
@@ -455,22 +448,18 @@
                 <button class="clear-btn" id="resetFilterBtn">Reset View</button>
             </div>
 
-            <!-- Loading State Placeholder -->
             <div id="loadingState" class="loading-state">
                 <i class="fas fa-spinner fa-spin"></i> Fetching real-time appointments...
             </div>
 
-            <!-- Appointments Container -->
             <div class="appointments-grid" id="apptGrid"></div>
 
-            <!-- Empty State -->
             <div class="empty-state" id="emptyState">
                 <i class="fa-solid fa-circle-check"></i>
                 <p style="font-weight: 600; font-size: 18px; margin-bottom: 4px;">All caught up!</p>
                 <p style="font-size: 14px;">There are no unassigned appointments at this time.</p>
             </div>
 
-            <!-- Guide Box -->
             <div class="guide-box">
                 <h4><i class="fa-solid fa-circle-info"></i> How it works</h4>
                 <ul>
@@ -484,29 +473,27 @@
         </div>
     </main>
 
-    <!-- Firebase SDK Modular Scripts Setup -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getFirestore, collection, query, where, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-        import { getAuth } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+        import { getFirestore, collection, query, where, onSnapshot, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
-        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyCVIQytNF0kQ5ZZh1J8Uc56pHhoL1bG90M",
-  authDomain: "utm-clinic-portal.firebaseapp.com",
-  projectId: "utm-clinic-portal",
-  storageBucket: "utm-clinic-portal.firebasestorage.app",
-  messagingSenderId: "579361367162",
-  appId: "1:579361367162:web:4e45c841ec63756aff07c3",
-  measurementId: "G-W1LNRL2VVY"
-};
+        const firebaseConfig = {
+            apiKey: "AIzaSyCVIQytNF0kQ5ZZh1J8Uc56pHhoL1bG90M",
+            authDomain: "utm-clinic-portal.firebaseapp.com",
+            projectId: "utm-clinic-portal",
+            storageBucket: "utm-clinic-portal.firebasestorage.app",
+            messagingSenderId: "579361367162",
+            appId: "1:579361367162:web:4e45c841ec63756aff07c3",
+            measurementId: "G-W1LNRL2VVY"
+        };
 
         // Initialize App instances
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // Global state references for dynamic local filtering management
+        // Global state references
         let allAppointments = [];
         const apptGrid = document.getElementById("apptGrid");
         const emptyState = document.getElementById("emptyState");
@@ -515,20 +502,62 @@ const firebaseConfig = {
         const filterDateInput = document.getElementById("filterDate");
         const resetFilterBtn = document.getElementById("resetFilterBtn");
 
-        // Step 1: Real-time listener for unassigned appointments
-        // Assumes collection structure 'appointments' where status == 'pending' or 'unassigned'
+        // Route verification fallback
+        auth.onAuthStateChanged((user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+            }
+        });
+
+        // Step 1: Real-time listener for active pending appointments
         const appointmentsQuery = query(
             collection(db, "appointments"), 
-            where("status", "==", "unassigned")
+            where("status", "==", "pending") // ✅ Listens for active incoming pending bookings
         );
 
-        onSnapshot(appointmentsQuery, (snapshot) => {
-            allAppointments = [];
+        onSnapshot(appointmentsQuery, async (snapshot) => {
+            const rawAppointments = [];
             snapshot.forEach((doc) => {
-                allAppointments.push({ id: doc.id, ...doc.data() });
+                rawAppointments.push({ id: doc.id, ...doc.data() });
             });
+
+            // Local condition mapping: Filter out records that already have assigned doctors
+            const unassignedRaw = rawAppointments.filter(item => {
+                return !item.doctorId || item.doctorId.trim() === "";
+            });
+
+            const processedList = [];
             
-            // Turn off initial element loading container
+            // Relational join loop to fetch live data from 'users' collection
+            for (let appt of unassignedRaw) {
+                let displayPatientName = appt.patientName || "Unknown Student";
+                let displayMatricNo = appt.patientId || "N/A";
+
+                if (appt.userId) {
+                    try {
+                        const userDocRef = doc(db, "users", appt.userId);
+                        const userSnap = await getDoc(userDocRef);
+                        if (userSnap.exists()) {
+                            const userData = userSnap.data();
+                            displayPatientName = userData.name || displayPatientName;
+                            displayMatricNo = userData.matric || displayMatricNo;
+                        }
+                    } catch (err) {
+                        console.error("Error retrieving secondary data node link: ", err);
+                    }
+                }
+
+                processedList.push({
+                    ...appt,
+                    patientName: displayPatientName,
+                    patientId: displayMatricNo
+                });
+            }
+
+            // Sort appointments chronologically by date
+            processedList.sort((a, b) => new Date(a.date) - new Date(b.date));
+            allAppointments = processedList;
+            
             loadingState.style.display = "none";
             renderAppointments();
         }, (error) => {
@@ -536,17 +565,15 @@ const firebaseConfig = {
             loadingState.innerText = "Failed to load live tracking metrics. Verify permissions.";
         });
 
-        // Step 2: Pure render routine combining current data state matrix and active filters
+        // Step 2: Render loop combining current data state matrices and active filters
         function renderAppointments() {
-            const filterValue = filterDateInput.value; // expected format: YYYY-MM-DD
+            const filterValue = filterDateInput.value; 
             
-            // Filter list array mapping based on selected baseline target match
             const filtered = allAppointments.filter(appt => {
                 if (!filterValue) return true;
                 return appt.date === filterValue;
             });
 
-            // Wipe matching layout interface clean before mapping next item set
             apptGrid.innerHTML = "";
             badgeCount.innerText = `${filtered.length} Available`;
 
@@ -558,8 +585,8 @@ const firebaseConfig = {
             emptyState.style.display = "none";
 
             filtered.forEach(appt => {
-                // Generate simple dynamic visual context matching initials
                 const initials = appt.patientName ? appt.patientName.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase() : "PT";
+                const displayTime = appt.time || "Unscheduled Time";
                 
                 const card = document.createElement("div");
                 card.className = "appointment-card";
@@ -570,12 +597,12 @@ const firebaseConfig = {
                     <div class="info-main">
                         <h3>
                             ${appt.patientName} 
-                            <span class="patient-id">${appt.patientId || ''}</span>
+                            <span class="patient-id">${appt.patientId}</span>
                         </h3>
                         <div class="info-grid">
                             <div class="info-item">
                                 <i class="fa-solid fa-clock"></i>
-                                Requested: <span>${appt.date}</span>
+                                Requested: <span>${appt.date} at ${displayTime}</span>
                             </div>
                             <div class="info-item">
                                 <i class="fa-solid fa-stethoscope"></i>
@@ -588,7 +615,6 @@ const firebaseConfig = {
                     </button>
                 `;
 
-                // Bind click event cleanly to handling module execution flow 
                 card.querySelector(".claim-btn").addEventListener("click", function() {
                     processClaim(appt.id, card);
                 });
@@ -599,33 +625,41 @@ const firebaseConfig = {
 
         // Step 3: Mutate data assignment in Firestore document structure securely
         async function processClaim(appointmentId, cardElement) {
-            // Context mapping fallbacks down to dynamic user authorization keys
             const doctorUser = auth.currentUser;
-            const doctorName = doctorUser ? (doctorUser.displayName || "Doctor Assigned") : "Staff Doctor";
-            const doctorId = doctorUser ? doctorUser.uid : "DOC_OFFLINE_TEMP";
+            
+            // Fallbacks down to current auth profile or placeholder string names if displayName is blank
+            let doctorName = "Staff Doctor";
+            let doctorId = "DOC_OFFLINE_TEMP";
+
+            if (doctorUser) {
+                doctorId = doctorUser.uid;
+                // Fetch doctor's real name from their profile or fallback if displayName isn't configured yet
+                doctorName = doctorUser.displayName || "Dr. Sia Jun Yu";
+            }
 
             if (confirm("Are you sure you want to claim assignment for this patient item case file?")) {
                 try {
                     const docRef = doc(db, "appointments", appointmentId);
                     
-                    // Transaction-safe updates shifting parameters mapping state indicators
+                    // Transaction-safe status modification update shift
                     await updateDoc(docRef, {
-                        status: "assigned",
+                        status: "confirmed", // Shifting to confirmed status maps it automatically on client histories!
                         doctorId: doctorId,
                         doctorName: doctorName,
                         claimedAt: new Date().toISOString()
                     });
 
-                    // Fast UI exit transition visual effects handling wrapper block
+                    // Immediate interface exit card translation visual slide trigger
                     cardElement.style.opacity = "0";
                     cardElement.style.transform = "translateX(25px)";
                     setTimeout(() => {
                         cardElement.remove();
-                        // Real-time engine catches and redraws natively, fallback check safety routine:
                         if(apptGrid.children.length === 0) {
                             emptyState.style.display = "block";
                         }
                     }, 300);
+
+                    alert(`Successfully claimed! This record is now listed under your active appointments.`);
 
                 } catch (err) {
                     console.error("Critical database assertion failure writing assignment update object: ", err);
@@ -634,13 +668,22 @@ const firebaseConfig = {
             }
         }
 
-        // Filtering handling event listeners attached inside isolated module structure context
+        // Filtering events setup
         filterDateInput.addEventListener("change", renderAppointments);
         resetFilterBtn.addEventListener("click", () => {
             filterDateInput.value = "";
             renderAppointments();
         });
+
+        // Session Logout link setup
+        const logoutLink = document.getElementById('logoutLink');
+        if (logoutLink) {
+            logoutLink.addEventListener('click', async (e) => {
+                e.preventDefault();
+                await signOut(auth);
+                window.location.href = 'login.html';
+            });
+        }
     </script>
 </body>
 </html>
-<!-- appointments claim firebase integration by Sonia Selvaratnam 19/5/2026 -->
