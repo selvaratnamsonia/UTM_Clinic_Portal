@@ -490,15 +490,16 @@
         import { getFirestore, collection, query, where, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
         import { getAuth } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
-        // TODO: Replace with your actual Firebase Configuration details
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT_ID.appspot.com",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyCVIQytNF0kQ5ZZh1J8Uc56pHhoL1bG90M",
+  authDomain: "utm-clinic-portal.firebaseapp.com",
+  projectId: "utm-clinic-portal",
+  storageBucket: "utm-clinic-portal.firebasestorage.app",
+  messagingSenderId: "579361367162",
+  appId: "1:579361367162:web:4e45c841ec63756aff07c3",
+  measurementId: "G-W1LNRL2VVY"
+};
 
         // Initialize App instances
         const app = initializeApp(firebaseConfig);
