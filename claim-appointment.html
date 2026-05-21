@@ -6,7 +6,6 @@
     <title>Claim Appointments - UTM Clinic</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 
     <style>
@@ -341,61 +340,151 @@
             color: var(--primary);
         }
 
+        /* --- PREMIUM ALERT & TOAST SYSTEM STYLE OVERLAYS --- */
+        .custom-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+
+        .custom-modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .custom-modal {
+            background: var(--white);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 420px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            transform: scale(0.95);
+            transition: transform 0.25s ease;
+        }
+
+        .custom-modal-overlay.active .custom-modal {
+            transform: scale(1);
+        }
+
+        .modal-icon-alert {
+            width: 56px;
+            height: 56px;
+            background: #fdf2f8;
+            color: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            margin: 0 auto 20px;
+        }
+
+        .custom-modal h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 10px;
+        }
+
+        .custom-modal p {
+            font-size: 14px;
+            color: var(--muted);
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+
+        .modal-actions-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .modal-btn.secondary {
+            background: #f1f5f9;
+            color: var(--text);
+        }
+        .modal-btn.secondary:hover { background: #e2e8f0; }
+
+        .modal-btn.primary-confirm {
+            background: var(--primary);
+            color: var(--white);
+        }
+        .modal-btn.primary-confirm:hover { background: var(--primary-hover); }
+
+        .toast-container {
+            position: fixed;
+            top: 25px;
+            right: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            z-index: 10000;
+        }
+
+        .premium-toast {
+            background: var(--white);
+            color: var(--text);
+            padding: 16px 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            min-width: 320px;
+            border-left: 4px solid var(--primary);
+            transform: translateX(120%);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .premium-toast.show {
+            transform: translateX(0);
+        }
+
+        .premium-toast.success { border-left-color: #10b981; }
+        .premium-toast.success i { color: #10b981; }
+        .premium-toast.error { border-left-color: #ef4444; }
+        .premium-toast.error i { color: #ef4444; }
+
         /* Mobile Adjustments */
         @media (max-width: 768px) {
-            body {
-                flex-direction: column;
-            }
-
-            .sidebar {
-                width: 100%;
-                padding: 20px 0;
-            }
-
-            .logo-container {
-                padding-bottom: 20px;
-            }
-
-            .main-content {
-                padding: 20px;
-            }
-
-            .header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 12px;
-            }
-
-            .toolbar {
-                flex-direction: column;
-                gap: 16px;
-                align-items: stretch;
-            }
-
-            .search-box {
-                width: 100%;
-            }
-
-            .appointment-card {
-                grid-template-columns: 1fr;
-                text-align: center;
-                justify-items: center;
-            }
-
-            .info-grid {
-                flex-direction: column;
-                align-items: center;
-                gap: 8px;
-            }
-
-            .guide-box ul {
-                grid-template-columns: 1fr;
-            }
-
-            .claim-btn {
-                width: 100%;
-                justify-content: center;
-            }
+            body { flex-direction: column; }
+            .sidebar { width: 100%; padding: 20px 0; }
+            .logo-container { padding-bottom: 20px; }
+            .main-content { padding: 20px; }
+            .header { flex-direction: column; align-items: flex-start; gap: 12px; }
+            .toolbar { flex-direction: column; gap: 16px; align-items: stretch; }
+            .search-box { width: 100%; }
+            .appointment-card { grid-template-columns: 1fr; text-align: center; justify-items: center; }
+            .info-grid { flex-direction: column; align-items: center; gap: 8px; }
+            .guide-box ul { grid-template-columns: 1fr; }
+            .claim-btn { width: 100%; justify-content: center; }
+            .toast-container { right: 15px; left: 15px; top: 15px; }
+            .premium-toast { min-width: auto; }
         }
     </style>
 </head>
@@ -473,6 +562,22 @@
         </div>
     </main>
 
+    <div id="premiumConfirmModal" class="custom-modal-overlay">
+        <div class="custom-modal">
+            <div class="modal-icon-alert">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <h3 id="modalTitle">Claim Assignment</h3>
+            <p id="modalMessage">Are you sure you want to claim assignment for this patient item case file?</p>
+            <div class="modal-actions-row">
+                <button id="modalCancelBtn" class="modal-btn secondary">Dismiss</button>
+                <button id="modalConfirmBtn" class="modal-btn primary-confirm">Confirm Claim</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toastContainer" class="toast-container"></div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getFirestore, collection, query, where, onSnapshot, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
@@ -509,10 +614,51 @@
             }
         });
 
+        /* --- PREMIUM ALERT & TOAST UTILITY ENGINES --- */
+        function showToast(message, type = "success") {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `premium-toast ${type}`;
+            
+            const icon = type === "success" ? "fa-check-circle" : "fa-exclamation-circle";
+            toast.innerHTML = `
+                <i class="fas ${icon}"></i>
+                <span>${message}</span>
+            `;
+            
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        function showPremiumConfirm(title, message) {
+            return new Promise((resolve) => {
+                const modal = document.getElementById('premiumConfirmModal');
+                document.getElementById('modalTitle').innerText = title;
+                document.getElementById('modalMessage').innerText = message;
+                
+                modal.classList.add('active');
+                
+                const cleanUp = (result) => {
+                    modal.classList.remove('active');
+                    document.getElementById('modalConfirmBtn').onclick = null;
+                    document.getElementById('modalCancelBtn').onclick = null;
+                    resolve(result);
+                };
+
+                document.getElementById('modalConfirmBtn').onclick = () => cleanUp(true);
+                document.getElementById('modalCancelBtn').onclick = () => cleanUp(false);
+            });
+        }
+
         // Step 1: Real-time listener for active pending appointments
         const appointmentsQuery = query(
             collection(db, "appointments"), 
-            where("status", "==", "pending") // ✅ Listens for active incoming pending bookings
+            where("status", "==", "pending")
         );
 
         onSnapshot(appointmentsQuery, async (snapshot) => {
@@ -627,25 +773,44 @@
         async function processClaim(appointmentId, cardElement) {
             const doctorUser = auth.currentUser;
             
-            // Fallbacks down to current auth profile or placeholder string names if displayName is blank
-            let doctorName = "Staff Doctor";
-            let doctorId = "DOC_OFFLINE_TEMP";
-
-            if (doctorUser) {
-                doctorId = doctorUser.uid;
-                // Fetch doctor's real name from their profile or fallback if displayName isn't configured yet
-                doctorName = doctorUser.displayName || "Dr. Sia Jun Yu";
+            if (!doctorUser) {
+                showToast("You must be logged in to claim an appointment.", "error");
+                return;
             }
 
-            if (confirm("Are you sure you want to claim assignment for this patient item case file?")) {
+            // Using premium confirmation overlay instead of browser confirm dialog
+            const confirmed = await showPremiumConfirm(
+                "Claim Assignment",
+                "Are you sure you want to claim this appointment?"
+            );
+
+            if (confirmed) {
                 try {
+                    let doctorName = "Staff Doctor";
+                    const doctorId = doctorUser.uid;
+
+                    // Dynamically read correct metadata fields from 'doctors' reference tree node
+                    const docDocRef = doc(db, "doctors", doctorId);
+                    const docDocSnap = await getDoc(docDocRef);
+                    
+                    if (docDocSnap.exists()) {
+                        doctorName = docDocSnap.data().name || "Staff Doctor";
+                    } else {
+                        // Dynamic link branch fallback check on the 'users' reference route
+                        const userDocRef = doc(db, "users", doctorId);
+                        const userDocSnap = await getDoc(userDocRef);
+                        if (userDocSnap.exists()) {
+                            doctorName = userDocSnap.data().name || "Staff Doctor";
+                        }
+                    }
+
                     const docRef = doc(db, "appointments", appointmentId);
                     
-                    // Transaction-safe status modification update shift
+                    // Secure data field write operation
                     await updateDoc(docRef, {
-                        status: "confirmed", // Shifting to confirmed status maps it automatically on client histories!
+                        status: "confirmed", 
                         doctorId: doctorId,
-                        doctorName: doctorName,
+                        doctorName: doctorName, 
                         claimedAt: new Date().toISOString()
                     });
 
@@ -659,11 +824,11 @@
                         }
                     }, 300);
 
-                    alert(`Successfully claimed! This record is now listed under your active appointments.`);
+                    showToast("Successfully claimed! Checked onto active dashboard.", "success");
 
                 } catch (err) {
                     console.error("Critical database assertion failure writing assignment update object: ", err);
-                    alert("System failed handling your operation request lock state check. Try again.");
+                    showToast("System write collision error. Please try again.", "error");
                 }
             }
         }

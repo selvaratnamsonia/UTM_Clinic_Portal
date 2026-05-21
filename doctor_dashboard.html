@@ -1,11 +1,9 @@
-<!-- Doctor Dashboard - Enhanced UI -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Doctor Dashboard - UTM Clinic</title>
-    <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -50,13 +48,13 @@
         .main { flex: 1; padding: 40px; overflow-y: auto; }
         header { margin-bottom: 30px; }
         h1 { font-size: 32px; font-weight: 700; color: var(--text-dark); }
-        .subtitle { color: var(--secondary); font-size: 16px; }
+        .subtitle { color: var(--text-muted); font-size: 16px; }
 
         /* --- STATS GRID --- */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 24px; margin-bottom: 32px; }
         .stat-card {
             background: var(--white); padding: 24px; border-radius: var(--radius);
-            border: 1px solid var(--border); box-shadow: var(--shadow);
+            border: 1px solid var(--border-color); box-shadow: var(--shadow);
             display: flex; align-items: center; gap: 20px;
         }
         .stat-icon {
@@ -64,7 +62,7 @@
             display: flex; align-items: center; justify-content: center; font-size: 24px;
         }
         .stat-info h3 { font-size: 24px; font-weight: 700; }
-        .stat-info p { font-size: 14px; color: var(--secondary); }
+        .stat-info p { font-size: 14px; color: var(--text-muted); }
 
         .bg-purple { background: #faf5ff; color: #a855f7; }
         .bg-blue { background: #eff6ff; color: #3b82f6; }
@@ -91,14 +89,14 @@
 
         .btn-white {
             background: white; color: var(--primary); padding: 12px 24px;
-            border-radius: 12px; font-weight: 600; transition: 0.3s; display: inline-block;
+            border-radius: 12px; font-weight: 600; transition: 0.3s; display: inline-block; text-decoration: none;
         }
         .btn-white:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
 
         /* --- SCHEDULE --- */
         .schedule-card {
             background: var(--white); border-radius: var(--radius);
-            border: 1px solid var(--border); padding: 24px; box-shadow: var(--shadow);
+            border: 1px solid var(--border-color); padding: 24px; box-shadow: var(--shadow);
         }
         .appt-item {
             display: flex; align-items: center; justify-content: space-between;
@@ -110,17 +108,19 @@
         .appt-info { display: flex; align-items: center; gap: 20px; }
         .appt-time { font-weight: 700; color: var(--primary); min-width: 70px; }
         .appt-details h4 { font-size: 16px; margin-bottom: 2px; }
-        .appt-details p { font-size: 13px; color: var(--secondary); }
+        .appt-details p { font-size: 13px; color: var(--text-muted); }
 
         .actions { display: flex; gap: 10px; }
         .btn-sm { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; transition: 0.2s; }
-        .btn-outline { border: 1px solid var(--border); color: var(--secondary); }
+        .btn-outline { border: 1px solid var(--border-color); background: white; color: var(--text-muted); }
         .btn-outline:hover { background: #f8fafc; color: var(--text-dark); }
-        .btn-fill { background: var(--primary); color: white; }
+        .btn-fill { border: none; background: var(--primary); color: white; }
+        .btn-fill:hover { background: var(--primary-hover); }
 
         @media (max-width: 768px) {
             .sidebar { width: 80px; padding: 20px 10px; }
-            .logo span, .nav-link span { display: none; }
+            .logo-container { padding: 0 10px 20px; justify-content: center; }
+            .logo-text, .nav-link span { display: none; }
             .patient-grid { grid-template-columns: 1fr; }
         }
          .sidebar-footer {
@@ -141,46 +141,35 @@
 <body>
 
 <aside class="sidebar">
-
     <div class="logo-container">
         <div class="logo-box">
             <img src="images/Clinic-logo.png" alt="Logo" class="logo-img">
         </div>
-
         <div class="logo-text">UTM Clinic</div>
     </div>
 
-    <!-- Navigation -->
     <nav class="nav-links">
-
-        <a href="doctor_dashboard.html" class="nav-link">
+        <a href="doctor_dashboard.html" class="nav-link active">
             <i class="fas fa-columns"></i>
             <span>Dashboard</span>
         </a>
-
         <a href="claim-appointment.html" class="nav-link">
             <i class="fas fa-calendar-alt"></i>
             <span>Claim Appointments</span>
         </a>
          <a href="past-patient.html" class="nav-link">
-            <i class="fas fa-calendar-alt"></i>
+            <i class="fas fa-history"></i>
             <span>Past Patients</span>
         </a>
-
     </nav>
 
-    <!-- Footer Logout -->
     <div class="sidebar-footer">
-
         <a href="login.html" id="logoutLink" class="nav-link logout-link">
             <i class="fas fa-sign-out-alt"></i>
             <span>Logout</span>
         </a>
-
     </div>
-
 </aside>
-
 
 <main class="main">
     <header>
@@ -191,15 +180,15 @@
     <div class="stats-grid">
         <div class="stat-card">
             <div class="stat-icon bg-purple"><i class="fas fa-calendar-day"></i></div>
-            <div class="stat-info"><h3>4</h3><p>Today's Slots</p></div>
+            <div class="stat-info"><h3 id="statTodaySlots">0</h3><p>Today's Slots</p></div>
         </div>
         <div class="stat-card">
             <div class="stat-icon bg-blue"><i class="fas fa-users"></i></div>
-            <div class="stat-info"><h3>28</h3><p>Monthly Total</p></div>
+            <div class="stat-info"><h3 id="statMonthlyTotal">0</h3><p>Monthly Total</p></div>
         </div>
         <div class="stat-card">
             <div class="stat-icon bg-green"><i class="fas fa-file-medical"></i></div>
-            <div class="stat-info"><h3>15</h3><p>Diagnoses</p></div>
+            <div class="stat-info"><h3 id="statDiagnoses">0</h3><p>Consultation</p></div>
         </div>
         <div class="stat-card">
             <div class="stat-icon bg-maroon"><i class="fas fa-clock"></i></div>
@@ -211,7 +200,7 @@
     <div class="current-patient-card">
         <div class="patient-grid">
             <div>
-                <h2 id="patientName" style="font-size: 28px; margin-bottom: 10px;">Waiting for Patients...</h2>
+                <h2 id="patientName" style="font-size: 28px; margin-bottom: 10px;">No Active Patient</h2>
                 <div class="patient-meta">
                     <div class="meta-item"><i class="fas fa-id-card"></i> Matric: <span id="patientMatric">-</span></div>
                     <div class="meta-item"><i class="fas fa-phone"></i> Phone: <span id="patientPhone">-</span></div>
@@ -221,7 +210,7 @@
             </div>
             <div style="text-align: right;">
                 <p style="margin-bottom: 15px; opacity: 0.8;">Appt Time: <span id="appointmentTime">--:--</span></p>
-               <a id="historyLink" href="/patient-records" class="btn-white">View Full Records</a>
+               <a id="historyLink" href="#" class="btn-white">View Full Records</a>
             </div>
         </div>
     </div>
@@ -232,279 +221,251 @@
 </div>
 
 <div class="schedule-card" id="scheduleContainer">
-
     <div class="appt-item">
         <div class="appt-info">
             <div class="appt-time">--:--</div>
-
             <div class="appt-details">
                 <h4>Loading appointments...</h4>
                 <p>Please wait</p>
             </div>
         </div>
     </div>
-
 </div>
 </main>
 
 <script type="module">
     import { db } from "./js/firebase-config.js";
-
-    import {
-        getAuth,
-        onAuthStateChanged
-    } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-
-    import {
-        collection,
-        query,
-        orderBy,
-        limit,
-        getDocs,
-        doc,
-        getDoc
-    } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+    import { collection, query, where, getDocs, doc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
     const auth = getAuth();
 
+    // ==========================================
+    // GET LOCAL DATE FORMAT STRING (YYYY-MM-DD)
+    // ==========================================
+    function getTodayDateString() {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    }
+
     // =========================
-    // LIVE CLOCK
+    // LIVE CLOCK ENGINE
     // =========================
     function updateClock() {
         const now = new Date();
-
-        document.getElementById("liveClock").innerText =
-            now.toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit"
-            });
+        document.getElementById("liveClock").innerText = now.toLocaleTimeString([], {
+            hour: "2-digit",
+            minute: "2-digit"
+        });
     }
-
     setInterval(updateClock, 1000);
     updateClock();
 
-    // =========================
-    // AUTH CHECK
-    // =========================
+    // ==========================================
+    // GLOBAL MONITOR & SECURED DATA PIPELINE
+    // ==========================================
     onAuthStateChanged(auth, async (user) => {
-
         if (!user) {
             window.location.href = "login.html";
             return;
         }
 
         try {
-
-            // Load doctor info
-            const doctorSnap = await getDoc(doc(db, "users", user.uid));
-
-            if (doctorSnap.exists()) {
-
-                const doctorData = doctorSnap.data();
-
-                document.getElementById("welcomeName").innerText =
-                    `Welcome, Dr. ${doctorData.name || "Doctor"}`;
+            // Load custom doctor account name from doctors collection fallback to users
+            let doctorName = "Doctor";
+            let docSnap = await getDoc(doc(db, "doctors", user.uid));
+            
+            if (docSnap.exists()) {
+                doctorName = docSnap.data().name || "Doctor";
+            } else {
+                docSnap = await getDoc(doc(db, "users", user.uid));
+                if (docSnap.exists()) {
+                    doctorName = docSnap.data().name || "Doctor";
+                }
             }
+            document.getElementById("welcomeName").innerText = `Welcome, Dr. ${doctorName}`;
 
-            // Load latest appointment
-            // Load dashboard data
-loadLatestAppointment();
-loadSchedule();
-
+            // Initialize Scoped Listening Triggers
+            loadDashboardStats(user.uid);
+            loadScopedDashboardData(user.uid);
 
         } catch (error) {
-
-            console.error("Authentication Error:", error);
-
+            console.error("System pipeline routing authentication error:", error);
         }
-
     });
 
-    // =========================
-    // LOAD LATEST APPOINTMENT
-    // =========================
-    async function loadLatestAppointment() {
+    // ==========================================
+    // REAL-TIME SCOPED SCHEDULE LISTENER
+    // ==========================================
+    function loadScopedDashboardData(doctorId) {
+        const todayStr = getTodayDateString();
+        const scheduleContainer = document.getElementById("scheduleContainer");
 
-        try {
+        // Scoped to: THIS doctor ID, CONFIRMED status, and TODAY's date string
+        const todayScheduleQuery = query(
+            collection(db, "appointments"),
+            where("doctorId", "==", doctorId),
+            where("status", "==", "confirmed"),
+            where("date", "==", todayStr)
+        );
 
-            const appointmentCol = collection(db, "appointments");
-
-            const latestQuery = query(
-                appointmentCol,
-                orderBy("createdAt", "desc"),
-                limit(1)
-            );
-
-            const querySnapshot = await getDocs(latestQuery);
-
-            // No appointments found
-            if (querySnapshot.empty) {
-
-                document.getElementById("patientName").innerText =
-                    "No Pending Appointments";
-
+        onSnapshot(todayScheduleQuery, async (snapshot) => {
+            if (snapshot.empty) {
+                scheduleContainer.innerHTML = `
+                    <div class="appt-item">
+                        <div class="appt-info">
+                            <div class="appt-details">
+                                <h4>No appointments claimed for today</h4>
+                                <p>Claim available patient cases via the Claim panel view.</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                // Reset current active card view state
+                resetCurrentPatientCard();
                 return;
             }
 
-            // Get latest appointment
-            const apptDoc = querySnapshot.docs[0];
+            const processedAppointments = [];
 
-            const appt = apptDoc.data();
+            // Query loop fetching mapped user identity profile models
+            for (const apptDoc of snapshot.docs) {
+                const appt = apptDoc.data();
+                let patientDetails = {
+                    name: appt.patientName || "Unknown Patient",
+                    matric: appt.patientId || "-",
+                    phone: "-",
+                    address: "-"
+                };
 
-            // Load patient details
-            const userSnap = await getDoc(
-                doc(db, "users", appt.userId)
-            );
+                if (appt.userId) {
+                    const userSnap = await getDoc(doc(db, "users", appt.userId));
+                    if (userSnap.exists()) {
+                        const userData = userSnap.data();
+                        patientDetails.name = userData.name || patientDetails.name;
+                        patientDetails.matric = userData.matric || userData.patientId || patientDetails.matric;
+                        patientDetails.phone = userData.phone || "-";
+                        patientDetails.address = userData.address || "-";
+                    }
+                }
 
-            let patientData = {};
-
-            if (userSnap.exists()) {
-                patientData = userSnap.data();
+                processedAppointments.push({
+                    id: apptDoc.id,
+                    ...appt,
+                    patientInfo: patientDetails
+                });
             }
 
-            // =========================
-            // UPDATE UI
-            // =========================
+            // Client side sorting metric for exact order mapping chronologically
+            processedAppointments.sort((a, b) => (a.time || "").localeCompare(b.time || ""));
 
-            document.getElementById("patientName").innerText =
-                patientData.name ||
-                appt.patientName ||
-                "Unknown Patient";
+            // Clear layout node completely
+            scheduleContainer.innerHTML = "";
 
-            document.getElementById("patientMatric").innerText =
-                patientData.matric || "-";
+            // Target first sorted record index to display inside current active module
+            updateCurrentConsultationCard(processedAppointments[0]);
 
-            document.getElementById("patientPhone").innerText =
-                patientData.phone || "-";
-
-            document.getElementById("patientAddress").innerText =
-                patientData.address || "-";
-
-            document.getElementById("appointmentReason").innerText =
-                appt.reason || "General Checkup";
-
-            document.getElementById("appointmentTime").innerText =
-                appt.time || "--:--";
-
-            // Patient records link
-            document.getElementById("historyLink").href =
-                `patient-records.html?id=${appt.userId}`;
-
-        } catch (error) {
-
-            console.error("Error loading appointment:", error);
-
-        }
-
+            // Render loop building schedule elements
+            processedAppointments.forEach(appt => {
+                const appointmentHTML = `
+                    <div class="appt-item">
+                        <div class="appt-info">
+                            <div class="appt-time">${appt.time || "--:--"}</div>
+                            <div class="appt-details">
+                                <h4>${appt.patientInfo.name}</h4>
+                                <p>${appt.reason || "General Checkup"}</p>
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <a href="patient-records.html?id=${appt.userId || '#'}">
+                                <button class="btn-sm btn-outline">Record</button>
+                            </a>
+                            <a href="write-diagnosis.html?id=${appt.id}">
+                                <button class="btn-sm btn-fill">Consult</button>
+                            </a>
+                        </div>
+                    </div>
+                `;
+                scheduleContainer.innerHTML += appointmentHTML;
+            });
+        }, (err) => {
+            console.error("Error reading updates from live data framework link:", err);
+        });
     }
-    async function loadSchedule() {
 
-    try {
+    // ==========================================
+    // UI SUB-MODULE METRIC UPDATERS
+    // ==========================================
+    function updateCurrentConsultationCard(appt) {
+        document.getElementById("patientName").innerText = appt.patientInfo.name;
+        document.getElementById("patientMatric").innerText = appt.patientInfo.matric;
+        document.getElementById("patientPhone").innerText = appt.patientInfo.phone;
+        document.getElementById("patientAddress").innerText = appt.patientInfo.address;
+        document.getElementById("appointmentReason").innerText = appt.reason || "General Checkup";
+        document.getElementById("appointmentTime").innerText = appt.time || "--:--";
+        document.getElementById("historyLink").href = `patient-records.html?id=${appt.userId || '#'}`;
+    }
 
-        const scheduleContainer =
-            document.getElementById("scheduleContainer");
+    function resetCurrentPatientCard() {
+        document.getElementById("patientName").innerText = "No Active Patient";
+        document.getElementById("patientMatric").innerText = "-";
+        document.getElementById("patientPhone").innerText = "-";
+        document.getElementById("patientAddress").innerText = "-";
+        document.getElementById("appointmentReason").innerText = "-";
+        document.getElementById("appointmentTime").innerText = "--:--";
+        document.getElementById("historyLink").href = "#";
+    }
 
-        const appointmentCol =
-            collection(db, "appointments");
+    // ==========================================
+    // REAL-TIME ANALYTICS METRIC DASHBOARD SYSTEM
+    // ==========================================
+    function loadDashboardStats(doctorId) {
+        const todayStr = getTodayDateString();
 
-        const scheduleQuery = query(
-            appointmentCol,
-            orderBy("createdAt", "desc")
+        // 1. Today's claimed counter
+        const todayQuery = query(
+            collection(db, "appointments"),
+            where("doctorId", "==", doctorId),
+            where("status", "==", "confirmed"),
+            where("date", "==", todayStr)
         );
+        onSnapshot(todayQuery, (snap) => {
+            document.getElementById("statTodaySlots").innerText = snap.size;
+        });
 
-        const querySnapshot =
-            await getDocs(scheduleQuery);
+        // 2. All time overall total claimed by this doctor account context profile
+        const totalQuery = query(
+            collection(db, "appointments"),
+            where("doctorId", "==", doctorId),
+            where("status", "==", "confirmed")
+        );
+        onSnapshot(totalQuery, (snap) => {
+            document.getElementById("statMonthlyTotal").innerText = snap.size;
+        });
 
-        // No appointments
-        if (querySnapshot.empty) {
-
-            scheduleContainer.innerHTML = `
-                <div class="appt-item">
-                    <div class="appt-info">
-                        <div class="appt-details">
-                            <h4>No appointments found</h4>
-                            <p>There are currently no scheduled appointments.</p>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            return;
-        }
-
-        // Clear existing content
-        scheduleContainer.innerHTML = "";
-
-        // Loop appointments
-        for (const apptDoc of querySnapshot.docs) {
-
-            const appt = apptDoc.data();
-
-            // Get patient info
-            let patientName =
-                appt.patientName || "Unknown Patient";
-
-            const userSnap = await getDoc(
-                doc(db, "users", appt.userId)
-            );
-
-            if (userSnap.exists()) {
-
-                const userData = userSnap.data();
-
-                patientName =
-                    userData.name || patientName;
-            }
-
-            // Create appointment card
-            const appointmentHTML = `
-                <div class="appt-item">
-
-                    <div class="appt-info">
-
-                        <div class="appt-time">
-                            ${appt.time || "--:--"}
-                        </div>
-
-                        <div class="appt-details">
-                            <h4>${patientName}</h4>
-
-                            <p>
-                                ${appt.reason || "General Checkup"}
-                            </p>
-                        </div>
-
-                    </div>
-
-                    <div class="actions">
-
-                        <a href="patient-records.html?id=${appt.userId}">
-                            <button class="btn-sm btn-outline">
-                                Record
-                            </button>
-                        </a>
-
-                        <a href="write-diagnosis.html?id=${apptDoc.id}">
-                            <button class="btn-sm btn-fill">
-                                Consult
-                            </button>
-                        </a>
-
-                    </div>
-
-                </div>
-            `;
-
-            scheduleContainer.innerHTML += appointmentHTML;
-        }
-
-    } catch (error) {
-
-        console.error("Error loading schedule:", error);
-
+        // 3. Completed history consultation files check tracker
+        const diagnosisQuery = query(
+            collection(db, "appointments"),
+            where("doctorId", "==", doctorId),
+            where("status", "==", "completed")
+        );
+        onSnapshot(diagnosisQuery, (snap) => {
+            document.getElementById("statDiagnoses").innerText = snap.size;
+        });
     }
 
-}
+    // Session Logout system configuration
+    const logoutLink = document.getElementById('logoutLink');
+    if (logoutLink) {
+        logoutLink.addEventListener('click', async (e) => {
+            e.preventDefault();
+            await signOut(auth);
+            window.location.href = 'login.html';
+        });
+    }
 </script>
 </body>
 </html>

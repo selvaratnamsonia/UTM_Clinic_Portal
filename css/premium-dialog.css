@@ -1,0 +1,93 @@
+/* --- UNIVERSAL PREMIUM MODAL OVERLAY STYLES --- */
+.custom-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+
+.custom-modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.custom-modal {
+    background: #ffffff;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 420px;
+    padding: 30px;
+    text-align: center;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    transform: scale(0.95);
+    transition: transform 0.25s ease;
+}
+
+.custom-modal-overlay.active .custom-modal {
+    transform: scale(1);
+}
+
+.modal-icon-alert {
+    width: 56px;
+    height: 56px;
+    background: #fdf2f8;
+    color: #802c44; /* UTM Maroon theme color */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    margin: 0 auto 20px;
+}
+
+.custom-modal h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1e293b;
+    margin-bottom: 10px;
+}
+
+.custom-modal p {
+    font-size: 14px;
+    color: #64748b;
+    line-height: 1.5;
+    margin-bottom: 24px;
+}
+
+.modal-actions-row {
+    display: flex;
+    gap: 12px;
+}
+
+.modal-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+}
+
+.modal-btn.secondary {
+    background: #f1f5f9;
+    color: #1e293b;
+}
+.modal-btn.secondary:hover { background: #e2e8f0; }
+
+.modal-btn.primary-confirm {
+    background: #802c44;
+    color: #ffffff;
+}
+.modal-btn.primary-confirm:hover { background: #6a2438; }

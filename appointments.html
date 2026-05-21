@@ -1,4 +1,3 @@
-<!-- by Sonia Selvaratnam 19/5/2026 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,7 +6,9 @@
     <title>Appointment History - UTM Clinic</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/premium-dialog.css">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
     <style>
         :root {
@@ -237,7 +238,7 @@
             height: 36px;
             border-radius: 8px;
             border: 1px solid var(--border-color);
-            background: white;
+            background: #ffffff;
             color: var(--text-muted);
             cursor: pointer;
             transition: all 0.2s ease;
@@ -247,15 +248,15 @@
         }
 
         .btn-icon.cancel-btn {
-            color: #ef4444;
-            border-color: #fee2e2;
-            background: #fff5f5;
+            color: #dc2626 !important;
+            border-color: #fee2e2 !important;
+            background: #fef2f2 !important;
         }
 
         .btn-icon.cancel-btn:hover {
-            border-color: #dc2626;
-            color: #ffffff;
-            background: #dc2626;
+             border-color: #dc2626 !important;
+             color: #ffffff !important;
+             background: #dc2626 !important;
         }
 
         .no-action {
@@ -360,6 +361,9 @@
 </main>
 
 <script type="module">
+    // --- Shared Premium Dialog Dynamic Import Engine ---
+    import { showConfirm } from "./js/premium-dialog.js";
+
     import { auth, db } from './js/firebase-config.js';
     import { signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
     import { collection, query, where, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
@@ -426,8 +430,8 @@
             const reasonStr = item.reason || "General Consultation";
             const currentStatus = item.status ? item.status.toLowerCase() : 'pending';
 
-            // Determine if cancellation is allowed
-            const canCancel = (currentTab === 'upcoming' && (currentStatus === 'pending' || currentStatus === 'confirmed'));
+            // FIXED CONDITION: Show cancel icons based on active record status tags directly
+            const canCancel = (currentStatus === 'pending' || currentStatus === 'confirmed');
             const isCancelled = currentStatus === 'cancelled';
             const isCompleted = currentStatus === 'completed';
 
@@ -477,19 +481,24 @@
         });
     }
 
-    // Cancel appointment in Firestore
+    // Cancel appointment in Firestore with Premium Dialog Integration
     async function cancelAppointment(appointmentId) {
-        const confirmCancel = confirm("Are you sure you want to cancel this scheduled clinic appointment?");
+        const confirmCancel = await showConfirm(
+            "Cancel Appointment",
+            "Are you sure you want to cancel this scheduled clinic appointment?",
+            "fa-exclamation-triangle"
+        );
         if (!confirmCancel) return;
 
         try {
             const appointmentDocRef = doc(db, "appointments", appointmentId);
             await updateDoc(appointmentDocRef, { status: "cancelled" });
-            alert("Your appointment has been successfully cancelled.");
+            
+            await showConfirm("Success", "Your appointment has been successfully cancelled.", "fa-check-circle");
             await loadAppointments(auth.currentUser.uid);
         } catch (error) {
             console.error("Cancellation error:", error);
-            alert("Failed to cancel appointment: " + error.message);
+            await showConfirm("Failed", "Failed to cancel appointment: " + error.message, "fa-times-circle");
         }
     }
 
@@ -511,15 +520,13 @@
             const status = item.status ? item.status.toLowerCase() : 'pending';
             
             if (currentTab === 'upcoming') {
-                // Upcoming: future date OR pending/confirmed even if today
                 return (appointmentDate >= today) && (status !== 'cancelled' && status !== 'completed');
             } else {
-                // Past: past date OR cancelled/completed appointments
                 return (appointmentDate < today) || (status === 'cancelled' || status === 'completed');
             }
         });
         
-        // Sort: upcoming by date ascending (closest first), past by date descending (most recent first)
+        // Sort timeline lists
         if (currentTab === 'upcoming') {
             timelineFiltered.sort((a, b) => new Date(a.date) - new Date(b.date));
         } else {
@@ -568,16 +575,24 @@
         }
     });
 
-    // Logout handler
+    // Premium Interactive Session Logout Handler
     const logoutLink = document.getElementById('logoutLink');
     if (logoutLink) {
         logoutLink.addEventListener('click', async (e) => {
             e.preventDefault();
-            await signOut(auth);
-            window.location.href = 'login.html';
+            
+            const confirmLogout = await showConfirm(
+                "Account Logout",
+                "Are you sure you want to log out of your UTM Clinic patient panel?",
+                "fa-sign-out-alt"
+            );
+            
+            if (confirmLogout) {
+                await signOut(auth);
+                window.location.href = 'login.html';
+            }
         });
     }
 </script>
 </body>
 </html>
-<!-- by Sonia Selvaratnam 19/5/2026 -->
