@@ -163,6 +163,11 @@
             background: #6a2438;
         }
 
+        .dispense-btn:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+        }
+
         .toast {
             position: fixed;
             bottom: 30px;
@@ -183,6 +188,20 @@
             from { transform: translateX(100%); opacity: 0; }
             to { transform: translateX(0); opacity: 1; }
         }
+
+        .error-box {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .loading-box {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-muted);
+        }
     </style>
 </head>
 <body>
@@ -197,7 +216,7 @@
         <p class="subtitle" id="patientInfo">Loading...</p>
 
         <div id="diagnosisContent">
-            <div style="text-align: center; padding: 40px;">
+            <div class="loading-box">
                 <i class="fas fa-spinner fa-pulse"></i> Loading diagnosis information...
             </div>
         </div>
@@ -220,18 +239,20 @@
     }
 
     async function loadDiagnosis() {
+        const contentDiv = document.getElementById('diagnosisContent');
+        
         if (!appointmentId) {
-            document.getElementById('diagnosisContent').innerHTML = '<div class="error">No appointment ID provided.</div>';
+            contentDiv.innerHTML = '<div class="error-box">❌ No appointment ID provided. Please go back and try again.</div>';
             return;
         }
 
         try {
-            // Fetch appointment details
+            // First, verify the appointment exists
             const appointmentRef = doc(db, "appointments", appointmentId);
             const appointmentSnap = await getDoc(appointmentRef);
             
             if (!appointmentSnap.exists()) {
-                document.getElementById('diagnosisContent').innerHTML = '<div class="error">Appointment not found.</div>';
+                contentDiv.innerHTML = '<div class="error-box">❌ Appointment not found in the database.</div>';
                 return;
             }
 
@@ -249,43 +270,58 @@
                 }
             }
 
-            document.getElementById('patientInfo').innerHTML = `${patientName} • ${matricNumber}`;
-            document.getElementById('pageTitle').innerHTML = `Diagnosis for ${patientName}`;
+            document.getElementById('patientInfo').innerHTML = `${escapeHtml(patientName)} • ${escapeHtml(matricNumber)}`;
+            document.getElementById('pageTitle').innerHTML = `Diagnosis for ${escapeHtml(patientName)}`;
 
-            // Fetch diagnosis from diagnosis table
-            const diagnosisQuery = query(collection(db, "diagnosis"), where("appointmentId", "==", appointmentId));
+            // Query the diagnosis collection for this appointment
+            const diagnosisCollection = collection(db, "diagnosis");
+            const diagnosisQuery = query(diagnosisCollection, where("appointmentId", "==", appointmentId));
             const diagnosisSnap = await getDocs(diagnosisQuery);
             
-            if (diagnosisSnap.empty()) {
-                document.getElementById('diagnosisContent').innerHTML = `
+            // Check if we got any results
+            if (diagnosisSnap.empty) {
+                contentDiv.innerHTML = `
                     <div style="text-align: center; padding: 40px;">
                         <i class="fas fa-file-medical fa-3x" style="color: #cbd5e1; margin-bottom: 15px;"></i>
                         <p>No diagnosis has been recorded for this appointment yet.</p>
+                        <p style="font-size: 14px; margin-top: 10px;">The doctor needs to complete the diagnosis first.</p>
                     </div>
                 `;
                 return;
             }
 
-            const diagnosisData = diagnosisSnap.docs[0].data();
-            const diagnosisId = diagnosisSnap.docs[0].id;
+            // Get the first diagnosis document (there should be only one per appointment)
+            const diagnosisDoc = diagnosisSnap.docs[0];
+            const diagnosisData = diagnosisDoc.data();
             
+            // Build medications HTML
             let medicationsHtml = '';
-            if (diagnosisData.medications && diagnosisData.medications.length > 0) {
+            if (diagnosisData.medications && Array.isArray(diagnosisData.medications) && diagnosisData.medications.length > 0) {
                 medicationsHtml = `
                     <table class="medication-table">
                         <thead>
-                            <tr><th>Medication</th><th>Dosage</th><th>Frequency</th><th>Duration</th><th>Notes</th><th>Dispense</th></tr>
+                            <tr>
+                                <th>Medication</th>
+                                <th>Dosage</th>
+                                <th>Frequency</th>
+                                <th>Duration</th>
+                                <th>Notes</th>
+                                <th>Action</th>
+                            </tr>
                         </thead>
                         <tbody>
                             ${diagnosisData.medications.map((med, index) => `
                                 <tr id="med-row-${index}">
-                                    <td>${escapeHtml(med.medication)}</td>
-                                    <td>${escapeHtml(med.medicationDetails?.dosage || 'N/A')}</td>
-                                    <td>${escapeHtml(med.frequency)}</td>
-                                    <td>${escapeHtml(med.duration)}</td>
+                                    <td>${escapeHtml(med.medication || 'N/A')}</td>
+                                    <td>${escapeHtml(med.medicationDetails?.dosage || med.dosage || 'N/A')}</td>
+                                    <td>${escapeHtml(med.frequency || 'N/A')}</td>
+                                    <td>${escapeHtml(med.duration || 'N/A')}</td>
                                     <td>${escapeHtml(med.notes || '-')}</td>
                                     <td>
-                                        <button class="dispense-btn" data-medicine="${escapeHtml(med.medication)}" data-stock="${med.medicationDetails?.stock || 0}">
+                                        <button class="dispense-btn" 
+                                            data-medicine="${escapeHtml(med.medication)}" 
+                                            data-stock="${med.medicationDetails?.stock || 0}"
+                                            data-med-id="${med.medicationDetails?.id || ''}">
                                             <i class="fas fa-pills"></i> Dispense
                                         </button>
                                     </td>
@@ -295,17 +331,19 @@
                     </table>
                 `;
             } else {
-                medicationsHtml = '<p>No medications prescribed.</p>';
+                medicationsHtml = '<p style="color: var(--text-muted);">No medications prescribed.</p>';
             }
 
+            // Build MC HTML
             const mcHtml = diagnosisData.mcIssued ? `
                 <div class="info-item">
                     <div class="info-label">Medical Certificate</div>
-                    <div class="info-value">✅ Issued (${diagnosisData.mcDays} days rest recommended)</div>
+                    <div class="info-value">✅ Issued (${diagnosisData.mcDays || 0} days rest recommended)</div>
                 </div>
             ` : '<div class="info-item"><div class="info-label">Medical Certificate</div><div class="info-value">❌ Not issued</div></div>';
 
-            document.getElementById('diagnosisContent').innerHTML = `
+            // Build the full content
+            contentDiv.innerHTML = `
                 <div class="info-grid">
                     <div class="info-item">
                         <div class="info-label">Doctor</div>
@@ -331,43 +369,70 @@
                 ${medicationsHtml}
             `;
 
-            // Attach dispense event listeners
-            document.querySelectorAll('.dispense-btn').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    const medicineName = btn.getAttribute('data-medicine');
-                    const currentStock = parseInt(btn.getAttribute('data-stock'));
-                    
-                    if (currentStock <= 0) {
-                        showToast(`❌ ${medicineName} is out of stock!`, true);
-                        return;
-                    }
-                    
-                    if (confirm(`Dispense ${medicineName} to patient?`)) {
-                        // Update stock in medications collection
-                        const medQuery = query(collection(db, "medications"), where("name", "==", medicineName));
-                        const medSnap = await getDocs(medQuery);
-                        if (!medSnap.empty) {
-                            const medDoc = medSnap.docs[0];
-                            const newStock = currentStock - 1;
-                            await updateDoc(doc(db, "medications", medDoc.id), { stock: newStock });
-                            showToast(`✅ ${medicineName} dispensed successfully! Remaining stock: ${newStock}`);
-                            btn.setAttribute('data-stock', newStock);
-                            btn.textContent = ` Dispense (${newStock} left)`;
-                            if (newStock <= 0) btn.disabled = true;
-                        }
-                    }
-                });
-            });
+            // Attach dispense event listeners after content is loaded
+            attachDispenseListeners();
 
         } catch (error) {
             console.error("Error loading diagnosis:", error);
-            document.getElementById('diagnosisContent').innerHTML = `<div class="error">Error loading data: ${error.message}</div>`;
+            contentDiv.innerHTML = `<div class="error-box">❌ Error loading data: ${error.message}</div>`;
+        }
+    }
+
+    async function attachDispenseListeners() {
+        const dispenseBtns = document.querySelectorAll('.dispense-btn');
+        
+        for (const btn of dispenseBtns) {
+            // Remove any existing listeners to avoid duplicates
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+            
+            newBtn.addEventListener('click', async () => {
+                const medicineName = newBtn.getAttribute('data-medicine');
+                const currentStock = parseInt(newBtn.getAttribute('data-stock'));
+                
+                if (isNaN(currentStock) || currentStock <= 0) {
+                    showToast(`❌ ${medicineName} is out of stock!`, true);
+                    return;
+                }
+                
+                if (confirm(`Dispense "${medicineName}" to patient?`)) {
+                    try {
+                        // Query the medications collection to find the matching medication
+                        const medicationsRef = collection(db, "medications");
+                        const medQuery = query(medicationsRef, where("name", "==", medicineName));
+                        const medSnap = await getDocs(medQuery);
+                        
+                        if (!medSnap.empty) {
+                            const medDoc = medSnap.docs[0];
+                            const medData = medDoc.data();
+                            const newStock = (medData.stock || 0) - 1;
+                            
+                            await updateDoc(doc(db, "medications", medDoc.id), { stock: newStock });
+                            showToast(`✅ ${medicineName} dispensed successfully! Remaining stock: ${newStock}`);
+                            
+                            // Update button attributes and appearance
+                            newBtn.setAttribute('data-stock', newStock);
+                            newBtn.innerHTML = `<i class="fas fa-pills"></i> Dispense (${newStock} left)`;
+                            
+                            if (newStock <= 0) {
+                                newBtn.disabled = true;
+                                newBtn.innerHTML = `<i class="fas fa-ban"></i> Out of Stock`;
+                            }
+                        } else {
+                            showToast(`❌ Could not find "${medicineName}" in inventory`, true);
+                        }
+                    } catch (error) {
+                        console.error("Error dispensing medication:", error);
+                        showToast(`❌ Error dispensing: ${error.message}`, true);
+                    }
+                }
+            });
         }
     }
 
     function escapeHtml(str) {
         if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
+        return String(str).replace(/[&<>]/g, function(m) {
             if (m === '&') return '&amp;';
             if (m === '<') return '&lt;';
             if (m === '>') return '&gt;';
@@ -375,6 +440,7 @@
         });
     }
 
+    // Check authentication
     auth.onAuthStateChanged((user) => {
         if (!user) {
             window.location.href = 'login.html';
