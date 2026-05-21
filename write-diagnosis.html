@@ -1,25 +1,41 @@
+<!-- Sonia Selvaratnam 21/5/2026 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Write Diagnosis - UTM Clinic</title>
-
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    .bg-primary { background-color: #802c44; }
+    .hover\:bg-primary-dark:hover { background-color: #6a2438; }
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: #10b981;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 1000;
+      animation: slideIn 0.3s ease;
+    }
+    .toast.error { background: #ef4444; }
+    .toast.warning { background: #f59e0b; }
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+  </style>
 </head>
-
 <body class="bg-gray-100 font-sans">
 
   <div class="max-w-4xl mx-auto py-10 px-4">
-
-    <button
-      id="backBtn"
-      class="flex items-center gap-2 text-[#802c44] hover:underline mb-6"
-    >
-      <i data-lucide="arrow-left" class="w-4 h-4"></i>
-      Back to Dashboard
+    <button id="backBtn" class="flex items-center gap-2 text-[#802c44] hover:underline mb-6">
+      <i class="fas fa-arrow-left w-4 h-4"></i> Back to Dashboard
     </button>
 
     <div class="mb-8">
@@ -27,265 +43,243 @@
       <p class="text-gray-500" id="appointmentIdDisplay">Loading Appointment...</p>
     </div>
 
+    <!-- Patient Information Card -->
     <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm mb-6">
       <h2 class="text-xl font-semibold mb-4">Patient Information</h2>
-
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <p class="text-sm text-gray-500 mb-1">Patient Name</p>
-          <p class="font-medium" id="patientNameDisplay">Loading...</p>
-        </div>
-
-        <div>
-          <p class="text-sm text-gray-500 mb-1">Matric Number</p>
-          <p class="font-medium" id="matricNumberDisplay">Loading...</p>
-        </div>
-
-        <div>
-          <p class="text-sm text-gray-500 mb-1">Appointment Date</p>
-          <p class="font-medium" id="appointmentDateDisplay">Loading...</p>
-        </div>
-
-        <div>
-          <p class="text-sm text-gray-500 mb-1">Reason for Visit</p>
-          <p class="font-medium" id="reasonDisplay">Loading...</p>
-        </div>
+        <div><p class="text-sm text-gray-500 mb-1">Patient Name</p><p class="font-medium" id="patientNameDisplay">Loading...</p></div>
+        <div><p class="text-sm text-gray-500 mb-1">Matric Number</p><p class="font-medium" id="matricNumberDisplay">Loading...</p></div>
+        <div><p class="text-sm text-gray-500 mb-1">Appointment Date</p><p class="font-medium" id="appointmentDateDisplay">Loading...</p></div>
+        <div><p class="text-sm text-gray-500 mb-1">Reason for Visit</p><p class="font-medium" id="reasonDisplay">Loading...</p></div>
       </div>
     </div>
 
-    <form
-      id="diagnosisForm"
-      class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm"
-    >
+    <form id="diagnosisForm" class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
       <h2 class="text-xl font-semibold mb-6">Diagnosis & Prescription</h2>
 
       <div class="space-y-6">
+        <!-- Diagnosis -->
         <div>
           <label for="diagnosis" class="block mb-2 font-medium">Diagnosis</label>
-          <textarea
-            id="diagnosis"
-            rows="6"
-            placeholder="Enter detailed diagnosis and observations..."
-            required
-            class="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#802c44]"
-          ></textarea>
+          <textarea id="diagnosis" rows="6" placeholder="Enter detailed diagnosis and observations..." required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#802c44]"></textarea>
           <p class="text-xs text-gray-500 mt-1">Include symptoms, examination findings, and diagnosis</p>
         </div>
 
+        <!-- Prescription Medications -->
         <div>
           <div class="flex items-center justify-between mb-4">
             <label class="font-medium">Prescription</label>
-            <button
-              type="button"
-              id="addMedicationBtn"
-              class="flex items-center gap-2 px-4 py-2 bg-[#802c44] text-white rounded-lg hover:bg-[#6d2438] text-sm transition"
-            >
-              <i data-lucide="plus" class="w-4 h-4"></i>
-              Add Medication
+            <button type="button" id="addMedicationBtn" class="flex items-center gap-2 px-4 py-2 bg-[#802c44] text-white rounded-lg hover:bg-[#6d2438] text-sm transition">
+              <i class="fas fa-plus w-4 h-4"></i> Add Medication
             </button>
           </div>
 
-          <div
-            id="emptyMedication"
-            class="p-8 bg-gray-50 rounded-lg text-center text-gray-500 border border-dashed border-gray-300"
-          >
+          <div id="emptyMedication" class="p-8 bg-gray-50 rounded-lg text-center text-gray-500 border border-dashed border-gray-300">
             No medications added yet. Click "Add Medication" to prescribe.
           </div>
-
           <div id="medicationContainer" class="space-y-4"></div>
         </div>
 
+        <!-- Medical Certificate -->
         <div class="border-t pt-6">
           <label class="flex items-center gap-3 mb-4">
             <input type="checkbox" id="mcCheckbox" class="w-5 h-5 rounded" />
             <span class="font-medium">Medical Certificate (MC) Required</span>
           </label>
-
           <div id="mcSection" class="hidden ml-8">
             <label for="mcDays" class="block mb-2 font-medium">Number of Rest Days</label>
-            <input
-              type="number"
-              id="mcDays"
-              min="1"
-              max="14"
-              placeholder="Enter number of days"
-              class="w-full md:w-64 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#802c44]"
-            />
+            <input type="number" id="mcDays" min="1" max="14" placeholder="Enter number of days" class="w-full md:w-64 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#802c44]" />
             <p class="text-xs text-gray-500 mt-1">Maximum 14 days. For longer periods, specify in notes.</p>
           </div>
         </div>
 
+        <!-- Action Buttons -->
         <div class="flex flex-wrap gap-4 pt-6">
-          <button
-            type="submit"
-            class="flex-1 flex items-center justify-center gap-2 bg-[#802c44] text-white px-6 py-3 rounded-lg hover:bg-[#6d2438] transition"
-          >
-            <i data-lucide="save" class="w-5 h-5"></i>
-            Submit Diagnosis
+          <button type="submit" class="flex-1 flex items-center justify-center gap-2 bg-[#802c44] text-white px-6 py-3 rounded-lg hover:bg-[#6d2438] transition">
+            <i class="fas fa-save w-5 h-5"></i> Submit Diagnosis
           </button>
-          <button
-            type="button"
-            id="draftBtn"
-            class="px-6 py-3 rounded-lg border border-gray-300 hover:bg-gray-100 transition"
-          >
-            Save as Draft
-          </button>
-          <button
-            type="button"
-            id="cancelBtn"
-            class="px-6 py-3 rounded-lg border border-gray-300 hover:bg-gray-100 transition"
-          >
-            Cancel
-          </button>
+          <button type="button" id="draftBtn" class="px-6 py-3 rounded-lg border border-gray-300 hover:bg-gray-100 transition">Save as Draft</button>
+          <button type="button" id="cancelBtn" class="px-6 py-3 rounded-lg border border-gray-300 hover:bg-gray-100 transition">Cancel</button>
         </div>
       </div>
     </form>
   </div>
 
   <script type="module">
-    // Import configuration instance from your local path setup
     import { auth, db } from './js/firebase-config.js';
+    import { doc, getDoc, collection, addDoc, updateDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
-    import { 
-      doc, 
-      getDoc, 
-      collection, 
-      addDoc, 
-      updateDoc 
-    } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
-
-    // Initialize Lucide Icons
-    lucide.createIcons();
-
-    // 1. Parse targeted Appointment Key from current page URL query parameters
     const urlParams = new URLSearchParams(window.location.search);
-    const appointmentId = urlParams.get('id'); 
-
+    const appointmentId = urlParams.get('id');
     let globalUserId = "";
+    let medicationsList = [];
 
-    // 2. Load Patient Information from database collections
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = `toast ${type === 'error' ? 'error' : (type === 'warning' ? 'warning' : '')}`;
+      toast.innerHTML = `<i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${message}`;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    // Load medications from Firestore for dropdown
+    async function loadMedicationsForDropdown() {
+      try {
+        const querySnapshot = await getDocs(collection(db, "medications"));
+        medicationsList = [];
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          medicationsList.push({ id: doc.id, ...data });
+        });
+      } catch (error) {
+        console.error("Error loading medications:", error);
+        medicationsList = [];
+      }
+    }
+
     async function loadPatientDetails() {
       if (!appointmentId) {
-        alert("No clear appointment reference target ID found inside web URL string query.");
+        showToast("No appointment ID provided", "error");
         return;
       }
 
       try {
-        // Fetch matching record from 'appointments'
         const appointmentRef = doc(db, "appointments", appointmentId);
         const appointmentSnap = await getDoc(appointmentRef);
-
         if (!appointmentSnap.exists()) {
-          alert("Selected appointment context can no longer be located in records database.");
+          showToast("Appointment not found", "error");
           return;
         }
 
         const appointmentData = appointmentSnap.data();
         globalUserId = appointmentData.userId;
-
-        // Render targets to user layout values
-        document.getElementById('appointmentIdDisplay').textContent = `Appointment #${appointmentId}`;
+        document.getElementById('appointmentIdDisplay').textContent = `Appointment #${appointmentId.substring(0, 8)}`;
         document.getElementById('patientNameDisplay').textContent = appointmentData.patientName || "Unknown Patient";
-        document.getElementById('appointmentDateDisplay').textContent = `${appointmentData.date} at ${appointmentData.time}`;
+        document.getElementById('appointmentDateDisplay').textContent = `${appointmentData.date} at ${appointmentData.time || 'TBD'}`;
         document.getElementById('reasonDisplay').textContent = appointmentData.reason || "General Consultation";
 
-        // Fetch matched user details context structure card item
         if (globalUserId) {
           const userRef = doc(db, "users", globalUserId);
           const userSnap = await getDoc(userRef);
-
-          if (userSnap.exists()) {
-            document.getElementById('matricNumberDisplay').textContent = userSnap.data().matricNumber || "N/A";
-          } else {
-            document.getElementById('matricNumberDisplay').textContent = "User profile missing";
-          }
+          document.getElementById('matricNumberDisplay').textContent = userSnap.exists() ? (userSnap.data().matricNumber || "N/A") : "User profile missing";
         }
       } catch (error) {
-        console.error("Failed to safely read dynamic info values: ", error);
+        console.error("Error loading patient details:", error);
+        showToast("Error loading patient data", "error");
       }
     }
 
-    // Call fetch on script load cycle
-    loadPatientDetails();
+    // Dynamic Medication Selector with stock awareness
+    function addMedicationRow(medicationData = null) {
+      const container = document.getElementById("medicationContainer");
+      const emptyDiv = document.getElementById("emptyMedication");
+      emptyDiv.style.display = "none";
 
-    // Medication Choices Data Matrix array
-    const medications = [
-      { id: 1, name: "Paracetamol", dosage: "500mg", form: "Tablet" },
-      { id: 2, name: "Ibuprofen", dosage: "400mg", form: "Tablet" },
-      { id: 3, name: "Amoxicillin", dosage: "500mg", form: "Capsule" },
-      { id: 4, name: "Omeprazole", dosage: "20mg", form: "Capsule" },
-      { id: 5, name: "Cetirizine", dosage: "10mg", form: "Tablet" },
-      { id: 6, name: "Loratadine", dosage: "10mg", form: "Tablet" },
-      { id: 7, name: "Salbutamol", dosage: "100mcg", form: "Inhaler" },
-    ];
-
-    const medicationContainer = document.getElementById("medicationContainer");
-    const emptyMedication = document.getElementById("emptyMedication");
-
-    // Dynamic Element Injection Logic 
-    window.addMedication = function() {
-      emptyMedication.style.display = "none";
       const medicationDiv = document.createElement("div");
       medicationDiv.className = "p-4 bg-gray-50 rounded-lg relative border border-gray-200 med-item";
 
-      medicationDiv.innerHTML = `
-        <button
-          type="button"
-          class="absolute top-2 right-2 p-1 text-red-600 hover:bg-red-100 rounded"
-          onclick="removeMedication(this)"
-        >
-          <i data-lucide="x" class="w-4 h-4"></i>
-        </button>
+      const stockWarning = (med) => {
+        if (med && med.stock !== undefined && med.stock <= 50) {
+          return `<p class="text-xs text-yellow-600 mt-1">⚠️ Low stock: ${med.stock} units remaining</p>`;
+        }
+        return '';
+      };
 
+      medicationDiv.innerHTML = `
+        <button type="button" class="absolute top-2 right-2 p-1 text-red-600 hover:bg-red-100 rounded" onclick="this.closest('.med-item').remove(); if(document.querySelectorAll('.med-item').length === 0) document.getElementById('emptyMedication').style.display = 'block'">
+          <i class="fas fa-times w-4 h-4"></i>
+        </button>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm mb-1 font-medium">Medication</label>
-            <select required class="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#802c44] text-sm med-select">
+            <select required class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#802c44] text-sm med-select">
               <option value="">Select medication</option>
-              ${medications.map(med => `<option value="${med.name}">${med.name} - ${med.dosage} (${med.form})</option>`).join("")}
+              ${medicationsList.map(med => `<option value="${med.name}" data-med="${JSON.stringify(med)}">${med.name} - ${med.dosage} (${med.form}) ${med.stock <= 50 ? '⚠️ Low stock' : ''}</option>`).join('')}
             </select>
+            <div class="stock-warning text-xs mt-1"></div>
           </div>
           <div>
             <label class="block text-sm mb-1 font-medium">Frequency</label>
-            <input type="text" placeholder="e.g., Twice daily" required class="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#802c44] text-sm med-freq" />
+            <input type="text" placeholder="e.g., Twice daily" required class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#802c44] text-sm med-freq" />
           </div>
           <div>
             <label class="block text-sm mb-1 font-medium">Duration</label>
-            <input type="text" placeholder="e.g., 7 days" required class="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#802c44] text-sm med-duration" />
+            <input type="text" placeholder="e.g., 7 days" required class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#802c44] text-sm med-duration" />
           </div>
           <div>
             <label class="block text-sm mb-1 font-medium">Additional Notes</label>
-            <input type="text" placeholder="Optional directions" class="w-full px-3 py-2 rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-[#802c44] text-sm med-notes" />
+            <input type="text" placeholder="Optional directions" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#802c44] text-sm med-notes" />
           </div>
         </div>
       `;
-      medicationContainer.appendChild(medicationDiv);
-      lucide.createIcons();
-    };
 
-    window.removeMedication = function(button) {
-      button.parentElement.remove();
-      if (medicationContainer.children.length === 0) {
-        emptyMedication.style.display = "block";
+      // Add stock warning listener
+      const selectEl = medicationDiv.querySelector('.med-select');
+      const warningDiv = medicationDiv.querySelector('.stock-warning');
+      selectEl.addEventListener('change', () => {
+        const selectedOption = selectEl.options[selectEl.selectedIndex];
+        if (selectedOption && selectedOption.value) {
+          const medData = JSON.parse(selectedOption.getAttribute('data-med') || '{}');
+          if (medData.stock !== undefined && medData.stock <= 50) {
+            warningDiv.innerHTML = `<span class="text-yellow-600">⚠️ Low stock: ${medData.stock} units remaining. Consider restocking soon.</span>`;
+          } else {
+            warningDiv.innerHTML = '';
+          }
+        }
+      });
+      
+      if (medicationData) {
+        const selectEl = medicationDiv.querySelector('.med-select');
+        for (let i = 0; i < selectEl.options.length; i++) {
+          if (selectEl.options[i].value === medicationData.medication) {
+            selectEl.selectedIndex = i;
+            selectEl.dispatchEvent(new Event('change'));
+            break;
+          }
+        }
+        medicationDiv.querySelector('.med-freq').value = medicationData.frequency || '';
+        medicationDiv.querySelector('.med-duration').value = medicationData.duration || '';
+        medicationDiv.querySelector('.med-notes').value = medicationData.notes || '';
       }
-    };
 
-    // Toggle Handling Elements Interface Visibility 
-    const mcCheckbox = document.getElementById("mcCheckbox");
-    const mcSection = document.getElementById("mcSection");
-    mcCheckbox.addEventListener("change", function () {
-      if (this.checked) mcSection.classList.remove("hidden");
-      else mcSection.classList.add("hidden");
-    });
+      container.appendChild(medicationDiv);
+    }
 
-    // 3. Form Submission handler to post back to Firestore Modular Instance
-    document.getElementById("diagnosisForm").addEventListener("submit", async function (e) {
+    window.addMedicationRow = addMedicationRow;
+
+    // Load draft if exists
+    function loadDraft() {
+      const draft = localStorage.getItem(`diagnosisDraft_${appointmentId}`);
+      if (draft) {
+        const data = JSON.parse(draft);
+        document.getElementById("diagnosis").value = data.diagnosis || '';
+        document.getElementById("mcCheckbox").checked = data.mcIssued || false;
+        if (data.mcIssued) {
+          document.getElementById("mcSection").classList.remove("hidden");
+          document.getElementById("mcDays").value = data.mcDays || '';
+        }
+        if (data.medications && data.medications.length) {
+          data.medications.forEach(med => addMedicationRow(med));
+        }
+        showToast("Draft loaded", "warning");
+      }
+    }
+
+    // Submit diagnosis
+    document.getElementById("diagnosisForm").addEventListener("submit", async (e) => {
       e.preventDefault();
 
       const prescribedMedications = [];
       document.querySelectorAll('.med-item').forEach(item => {
+        const selectEl = item.querySelector('.med-select');
+        const selectedOption = selectEl.options[selectEl.selectedIndex];
+        let selectedMed = null;
+        if (selectedOption && selectedOption.value) {
+          selectedMed = JSON.parse(selectedOption.getAttribute('data-med') || '{}');
+        }
         prescribedMedications.push({
-          medication: item.querySelector('.med-select').value,
+          medication: selectEl.value,
+          medicationDetails: selectedMed,
           frequency: item.querySelector('.med-freq').value,
           duration: item.querySelector('.med-duration').value,
           notes: item.querySelector('.med-notes').value
@@ -293,54 +287,73 @@
       });
 
       const diagnosisData = {
-        appointmentId: appointmentId || "fallback_id",
-        userId: globalUserId || "",
+        appointmentId: appointmentId,
+        userId: globalUserId,
         diagnosisNotes: document.getElementById("diagnosis").value,
         medications: prescribedMedications,
-        mcIssued: mcCheckbox.checked,
-        mcDays: mcCheckbox.checked ? parseInt(document.getElementById("mcDays").value, 10) : 0,
-        createdAt: new Date().toISOString()
+        mcIssued: document.getElementById("mcCheckbox").checked,
+        mcDays: document.getElementById("mcCheckbox").checked ? parseInt(document.getElementById("mcDays").value, 10) : 0,
+        createdAt: new Date().toISOString(),
+        createdBy: auth.currentUser?.uid
       };
 
       try {
-        // Save new log record straight to 'diagnosis' collection
         await addDoc(collection(db, "diagnosis"), diagnosisData);
-
-        // Update appointment status to 'completed'
+        
         if (appointmentId) {
           const appointmentRef = doc(db, "appointments", appointmentId);
           await updateDoc(appointmentRef, { status: "completed" });
         }
 
-        alert("Diagnosis submitted successfully!");
-        goBack();
+        showToast("✅ Diagnosis submitted successfully!");
+        localStorage.removeItem(`diagnosisDraft_${appointmentId}`);
+        setTimeout(() => { window.location.href = "doctor_dashboard.html"; }, 1500);
       } catch (error) {
-        console.error("Write error encountered during document save pipeline: ", error);
-        alert("Failed to submit diagnosis layout form.");
+        console.error("Error:", error);
+        showToast("Failed to submit diagnosis: " + error.message, "error");
       }
     });
 
-    // Routing Navigation Helpers
-    function goBack() {
-      window.location.href = "doctor_dashboard.html";
-    }
-
-    // Attach local scope functions explicitly to button event loops safely
-    document.getElementById("addMedicationBtn").addEventListener("click", window.addMedication);
-    document.getElementById("backBtn").addEventListener("click", goBack);
-    document.getElementById("cancelBtn").addEventListener("click", goBack);
-    document.getElementById("draftBtn").addEventListener("click", () => alert("Draft saved successfully to session variables!"));
-    
+    // Save draft
     document.getElementById("draftBtn").addEventListener("click", () => {
-  const draftData = {
-    diagnosis: document.getElementById("diagnosis").value,
-    mcIssued: document.getElementById("mcCheckbox").checked,
-    mcDays: document.getElementById("mcDays").value
-  };
-  localStorage.setItem(`diagnosisDraft_${appointmentId}`, JSON.stringify(draftData));
-  alert("Draft saved locally! You can safely close this tab.");
-});
-  </script>
+      const medications = [];
+      document.querySelectorAll('.med-item').forEach(item => {
+        medications.push({
+          medication: item.querySelector('.med-select').value,
+          frequency: item.querySelector('.med-freq').value,
+          duration: item.querySelector('.med-duration').value,
+          notes: item.querySelector('.med-notes').value
+        });
+      });
+      const draftData = {
+        diagnosis: document.getElementById("diagnosis").value,
+        mcIssued: document.getElementById("mcCheckbox").checked,
+        mcDays: document.getElementById("mcDays").value,
+        medications: medications
+      };
+      localStorage.setItem(`diagnosisDraft_${appointmentId}`, JSON.stringify(draftData));
+      showToast("Draft saved locally!", "warning");
+    });
 
+    // Event listeners
+    document.getElementById("addMedicationBtn").addEventListener("click", () => addMedicationRow());
+    document.getElementById("backBtn").addEventListener("click", () => window.location.href = "doctor_dashboard.html");
+    document.getElementById("cancelBtn").addEventListener("click", () => window.location.href = "doctor_dashboard.html");
+
+    const mcCheckbox = document.getElementById("mcCheckbox");
+    const mcSection = document.getElementById("mcSection");
+    mcCheckbox.addEventListener("change", () => {
+      mcSection.classList.toggle("hidden", !mcCheckbox.checked);
+    });
+
+    // Initialize
+    auth.onAuthStateChanged(async (user) => {
+      if (!user) { window.location.href = 'login.html'; return; }
+      await loadMedicationsForDropdown();
+      await loadPatientDetails();
+      loadDraft();
+    });
+  </script>
 </body>
 </html>
+<!-- Sonia Selvaratnam 21/5/2026 -->
