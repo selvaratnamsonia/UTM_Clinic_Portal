@@ -21,13 +21,14 @@
             --radius: 12px;
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
             
-            /* Action Button Colors */
             --btn-confirm: #e6f7ed;
             --text-confirm: #15803d;
             --btn-reschedule: #e0f2fe;
             --text-reschedule: #0369a1;
             --btn-cancel: #fee2e2;
             --text-cancel: #dc2626;
+            --btn-dispense: #fef3c7;
+            --text-dispense: #d97706;
         }
 
         * {
@@ -44,7 +45,6 @@
             color: var(--text-dark);
         }
 
-        /* --- Sidebar Navigation --- */
         .sidebar {
             width: 280px;
             background: var(--white);
@@ -93,18 +93,16 @@
         .nav-link:hover { background: var(--primary-light); color: var(--primary); }
         .nav-link.active { background: var(--primary-light); color: var(--primary); font-weight: 600; }
 
-        /* --- Main Content Section --- */
         .main {
             flex: 1;
             padding: 40px 60px;
-            max-width: 1100px;
+            max-width: 1200px;
         }
 
         header { margin-bottom: 30px; }
         h1 { font-size: 28px; font-weight: 700; margin-bottom: 6px; }
         .subtitle { color: var(--text-muted); font-size: 15px; }
 
-        /* --- Filtering Option Tabs --- */
         .filter-tabs {
             display: flex;
             gap: 12px;
@@ -129,14 +127,12 @@
             color: var(--white);
         }
 
-        /* --- Appointment Listing Container --- */
         .appointments-list {
             display: flex;
             flex-direction: column;
             gap: 20px;
         }
 
-        /* Card Frame Structure */
         .appointment-card {
             background: var(--white);
             border-radius: var(--radius);
@@ -159,9 +155,10 @@
             justify-content: space-between;
             align-items: flex-start;
             width: 100%;
+            flex-wrap: wrap;
+            gap: 15px;
         }
 
-        /* Metadata Text Information Block */
         .patient-details {
             display: flex;
             flex-direction: column;
@@ -172,6 +169,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
+            flex-wrap: wrap;
         }
 
         .patient-name {
@@ -180,7 +178,6 @@
             color: var(--text-dark);
         }
 
-        /* Status Pills */
         .badge {
             padding: 4px 10px;
             border-radius: 6px;
@@ -213,10 +210,10 @@
             font-weight: 600;
         }
 
-        /* Interactive Action Elements Panel */
         .action-group {
             display: flex;
             gap: 10px;
+            flex-wrap: wrap;
         }
 
         .action-btn {
@@ -234,14 +231,13 @@
 
         .action-btn.confirm { background: var(--btn-confirm); color: var(--text-confirm); }
         .action-btn.confirm:hover { background: #16a34a; color: var(--white); }
-
         .action-btn.reschedule { background: var(--btn-reschedule); color: var(--text-reschedule); }
         .action-btn.reschedule:hover { background: #0284c7; color: var(--white); }
-
         .action-btn.cancel { background: var(--btn-cancel); color: var(--text-cancel); }
         .action-btn.cancel:hover { background: #dc2626; color: var(--white); }
+        .action-btn.dispense { background: var(--btn-dispense); color: var(--text-dispense); }
+        .action-btn.dispense:hover { background: #d97706; color: var(--white); }
 
-        /* --- Inline Reschedule Panel Component Style Definition --- */
         .reschedule-panel {
             display: none; 
             border-top: 1px solid var(--border-color);
@@ -339,32 +335,16 @@
             font-style: italic;
         }
 
-        .help-trigger {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            width: 40px;
-            height: 40px;
-            background: #1e293b;
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-            font-weight: bold;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-        }
-
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(4px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         @media (max-width: 900px) {
-            .card-top-content { flex-direction: column; gap: 20px; }
+            .card-top-content { flex-direction: column; align-items: stretch; }
             .action-group { width: 100%; justify-content: flex-start; }
             .input-grid { grid-template-columns: 1fr; }
+            .main { padding: 20px; }
         }
     </style>
 </head>
@@ -385,9 +365,6 @@
         <a href="staff-manage-appointments.html" class="nav-link active">
             <i class="fas fa-calendar-check"></i> <span>Manage Appointments</span>
         </a>
-        <a href="#" class="nav-link">
-            <i class="fas fa-file-invoice-dollar"></i> <span>Verify Payments</span>
-        </a>
         <a href="staff-medication-list.html" class="nav-link">
             <i class="fas fa-pills"></i> <span>Medication List</span>
         </a>
@@ -400,13 +377,14 @@
 <main class="main">
     <header>
         <h1>Manage Appointments</h1>
-        <p class="subtitle">Confirm, reschedule, or cancel patient clinic appointments.</p>
+        <p class="subtitle">Confirm, reschedule, cancel, or dispense medications for patient appointments.</p>
     </header>
 
     <div class="filter-tabs">
         <button class="filter-btn active" data-filter="all">All</button>
         <button class="filter-btn" data-filter="pending">Pending</button>
         <button class="filter-btn" data-filter="confirmed">Confirmed</button>
+        <button class="filter-btn" data-filter="completed">Completed</button>
     </div>
 
     <div class="appointments-list" id="appointmentsWrapper">
@@ -414,267 +392,282 @@
     </div>
 </main>
 
-<a href="#" class="help-trigger" title="Help system">?</a>
+<script type="module">
+    import { auth, db } from './js/firebase-config.js';
+    import { signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+    import { collection, getDocs, doc, updateDoc, getDoc, query, where } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
-    <script type="module">
-        import { auth, db } from './js/firebase-config.js';
-        import { signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-        import { collection, getDocs, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+    let localAppointmentsCache = [];
+    let activeFilter = "all";
 
-        let localAppointmentsCache = [];
-        let activeFilter = "all";
+    auth.onAuthStateChanged((user) => {
+        if (!user) {
+            window.location.href = 'login.html';
+            return;
+        }
+        fetchStaffAppointments();
+    });
 
-        // Route verification fallback
-        auth.onAuthStateChanged((user) => {
-            if (!user) {
-                window.location.href = 'login.html';
+    async function fetchStaffAppointments() {
+        try {
+            const wrapper = document.getElementById('appointmentsWrapper');
+            const querySnapshot = await getDocs(collection(db, "appointments"));
+            
+            if (querySnapshot.empty) {
+                wrapper.innerHTML = '<div class="empty-state">No patient appointments have been created yet.</div>';
                 return;
             }
-            fetchStaffAppointments();
-        });
 
-        // Pull full relational items from collections
-        async function fetchStaffAppointments() {
-            try {
-                const wrapper = document.getElementById('appointmentsWrapper');
-                
-                const querySnapshot = await getDocs(collection(db, "appointments"));
-                if (querySnapshot.empty) {
-                    wrapper.innerHTML = '<div class="empty-state">No patient appointments have been created yet.</div>';
-                    return;
-                }
-
-                const rawAppointments = [];
-                querySnapshot.forEach((doc) => {
-                    rawAppointments.push({ id: doc.id, ...doc.data() });
-                });
-
-                const processedList = [];
-                for (let app of rawAppointments) {
-                    let patientName = "Unknown Student";
-                    let matricNo = "N/A";
-
-                    if (app.userId) {
-                        const userDocRef = doc(db, "users", app.userId);
-                        const userSnap = await getDoc(userDocRef);
-                        if (userSnap.exists()) {
-                            const userData = userSnap.data();
-                            patientName = userData.name || patientName;
-                            matricNo = userData.matric || matricNo;
-                        }
-                    }
-
-                    processedList.push({
-                        ...app,
-                        patientName,
-                        matricNo
-                    });
-                }
-
-                processedList.sort((a, b) => new Date(b.date) - new Date(a.date));
-                localAppointmentsCache = processedList;
-
-                renderStaffView();
-
-            } catch (error) {
-                console.error("Staff engine fetch crash:", error);
-                document.getElementById('appointmentsWrapper').innerHTML = 
-                    `<div class="empty-state" style="color:red;">Error connecting to Cloud Database: ${error.message}</div>`;
-            }
-        }
-
-        // Card rendering loop matching interface designs
-        function renderStaffView() {
-            const container = document.getElementById('appointmentsWrapper');
-            if (!container) return;
-
-            const targetData = localAppointmentsCache.filter(item => {
-                if (activeFilter === "all") return true;
-                return item.status && item.status.toLowerCase() === activeFilter;
+            const rawAppointments = [];
+            querySnapshot.forEach((doc) => {
+                rawAppointments.push({ id: doc.id, ...doc.data() });
             });
 
-            if (targetData.length === 0) {
-                container.innerHTML = `<div class="empty-state">No appointments found under category "${activeFilter}".</div>`;
-                return;
+            const processedList = [];
+            for (let app of rawAppointments) {
+                let patientName = "Unknown Student";
+                let matricNo = "N/A";
+
+                if (app.userId) {
+                    const userDocRef = doc(db, "users", app.userId);
+                    const userSnap = await getDoc(userDocRef);
+                    if (userSnap.exists()) {
+                        const userData = userSnap.data();
+                        patientName = userData.name || patientName;
+                        matricNo = userData.matricNumber || userData.matric || matricNo;
+                    }
+                }
+
+                // Check if diagnosis exists
+                const diagnosisQuery = query(collection(db, "diagnosis"), where("appointmentId", "==", app.id));
+                const diagnosisSnap = await getDocs(diagnosisQuery);
+                const hasDiagnosis = !diagnosisSnap.empty;
+
+                processedList.push({
+                    ...app,
+                    patientName,
+                    matricNo,
+                    hasDiagnosis
+                });
             }
 
-            let outputHtml = "";
-            targetData.forEach(item => {
-                const currentStatus = item.status ? item.status.toLowerCase() : 'pending';
-                const timeString = item.time || "10:00 AM";
-                const reasonString = item.reason || "General Checkup";
+            processedList.sort((a, b) => new Date(b.date) - new Date(a.date));
+            localAppointmentsCache = processedList;
+            renderStaffView();
 
-                const isPending = (currentStatus === 'pending');
-                const isConfirmed = (currentStatus === 'confirmed');
-                const isActionable = (isPending || isConfirmed);
+        } catch (error) {
+            console.error("Staff engine fetch crash:", error);
+            document.getElementById('appointmentsWrapper').innerHTML = 
+                `<div class="empty-state" style="color:red;">Error connecting to Cloud Database: ${error.message}</div>`;
+        }
+    }
 
-                outputHtml += `
-                    <div class="appointment-card" id="card-${item.id}">
-                        <div class="card-top-content">
-                            <div class="patient-details">
-                                <div class="name-row">
-                                    <span class="patient-name">${item.patientName}</span>
-                                    <span class="badge ${currentStatus}">${currentStatus}</span>
-                                </div>
-                                <span class="matric-no">${item.matricNo}</span>
-                                <div class="meta-line"><strong>Date & Time:</strong> ${item.date} at ${timeString}</div>
-                                <div class="meta-line"><strong>Reason:</strong> ${reasonString}</div>
+    function renderStaffView() {
+        const container = document.getElementById('appointmentsWrapper');
+        if (!container) return;
+
+        const targetData = localAppointmentsCache.filter(item => {
+            if (activeFilter === "all") return true;
+            return item.status && item.status.toLowerCase() === activeFilter;
+        });
+
+        if (targetData.length === 0) {
+            container.innerHTML = `<div class="empty-state">No appointments found under category "${activeFilter}".</div>`;
+            return;
+        }
+
+        let outputHtml = "";
+        targetData.forEach(item => {
+            const currentStatus = item.status ? item.status.toLowerCase() : 'pending';
+            const timeString = item.time || "10:00 AM";
+            const reasonString = item.reason || "General Checkup";
+
+            const isPending = (currentStatus === 'pending');
+            const isConfirmed = (currentStatus === 'confirmed');
+            const isCompleted = (currentStatus === 'completed');
+            const isActionable = (isPending || isConfirmed);
+
+            outputHtml += `
+                <div class="appointment-card" id="card-${item.id}">
+                    <div class="card-top-content">
+                        <div class="patient-details">
+                            <div class="name-row">
+                                <span class="patient-name">${escapeHtml(item.patientName)}</span>
+                                <span class="badge ${currentStatus}">${currentStatus}</span>
                             </div>
-                            
+                            <span class="matric-no">${escapeHtml(item.matricNo)}</span>
+                            <div class="meta-line"><strong>Date & Time:</strong> ${item.date} at ${timeString}</div>
+                            <div class="meta-line"><strong>Reason:</strong> ${escapeHtml(reasonString)}</div>
+                        </div>
+                        
+                        <div class="action-group">
+                            ${isPending ? `
+                                <button class="action-btn confirm" data-id="${item.id}">
+                                    <i class="fas fa-check"></i> Confirm
+                                </button>
+                            ` : ''}
                             ${isActionable ? `
-                                <div class="action-group">
-                                    ${isPending ? `
-                                        <button class="action-btn confirm" data-id="${item.id}">
-                                            <i class="fas fa-check"></i> Confirm
-                                        </button>
-                                    ` : ''}
-                                    <button class="action-btn reschedule" data-id="${item.id}">
-                                        <i class="fas fa-calendar-alt"></i> Reschedule
-                                    </button>
-                                    <button class="action-btn cancel" data-id="${item.id}">
-                                        <i class="fas fa-times"></i> Cancel
-                                    </button>
-                                </div>
+                                <button class="action-btn reschedule" data-id="${item.id}">
+                                    <i class="fas fa-calendar-alt"></i> Reschedule
+                                </button>
+                                <button class="action-btn cancel" data-id="${item.id}">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                            ` : ''}
+                            ${isCompleted ? `
+                                <button class="action-btn dispense" data-id="${item.id}" data-appointment-id="${item.id}">
+                                    <i class="fas fa-eye"></i> View Diagnosis
+                                </button>
                             ` : ''}
                         </div>
+                    </div>
 
-                        <div class="reschedule-panel" id="reschedule-panel-${item.id}">
-                            <h4 class="panel-title">Reschedule Appointment</h4>
-                            <div class="input-grid">
-                                <div class="input-wrapper">
-                                    <label class="input-label">New Date</label>
-                                    <input type="date" id="input-date-${item.id}" value="${item.date}" class="form-input">
-                                </div>
-                                <div class="input-wrapper">
-                                    <label class="input-label">New Time</label>
-                                    <select id="input-time-${item.id}" class="form-input">
-                                        <option value="09:00 AM" ${timeString === '09:00 AM' ? 'selected' : ''}>09:00 AM</option>
-                                        <option value="10:00 AM" ${timeString === '10:00 AM' ? 'selected' : ''}>10:00 AM</option>
-                                        <option value="11:00 AM" ${timeString === '11:00 AM' ? 'selected' : ''}>11:00 AM</option>
-                                        <option value="11:30 AM" ${timeString === '11:30 AM' ? 'selected' : ''}>11:30 AM</option>
-                                        <option value="02:00 PM" ${timeString === '02:00 PM' ? 'selected' : ''}>02:00 PM</option>
-                                        <option value="03:00 PM" ${timeString === '03:00 PM' ? 'selected' : ''}>03:00 PM</option>
-                                        <option value="04:00 PM" ${timeString === '04:00 PM' ? 'selected' : ''}>04:00 PM</option>
-                                    </select>
-                                </div>
+                    <div class="reschedule-panel" id="reschedule-panel-${item.id}">
+                        <h4 class="panel-title">Reschedule Appointment</h4>
+                        <div class="input-grid">
+                            <div class="input-wrapper">
+                                <label class="input-label">New Date</label>
+                                <input type="date" id="input-date-${item.id}" value="${item.date}" class="form-input">
                             </div>
-
-                            <div class="panel-actions">
-                                <button class="panel-btn save" data-id="${item.id}">Save Changes</button>
-                                <button class="panel-btn close" data-id="${item.id}">Cancel</button>
+                            <div class="input-wrapper">
+                                <label class="input-label">New Time</label>
+                                <select id="input-time-${item.id}" class="form-input">
+                                    <option value="09:00 AM" ${timeString === '09:00 AM' ? 'selected' : ''}>09:00 AM</option>
+                                    <option value="10:00 AM" ${timeString === '10:00 AM' ? 'selected' : ''}>10:00 AM</option>
+                                    <option value="11:00 AM" ${timeString === '11:00 AM' ? 'selected' : ''}>11:00 AM</option>
+                                    <option value="11:30 AM" ${timeString === '11:30 AM' ? 'selected' : ''}>11:30 AM</option>
+                                    <option value="02:00 PM" ${timeString === '02:00 PM' ? 'selected' : ''}>02:00 PM</option>
+                                    <option value="03:00 PM" ${timeString === '03:00 PM' ? 'selected' : ''}>03:00 PM</option>
+                                    <option value="04:00 PM" ${timeString === '04:00 PM' ? 'selected' : ''}>04:00 PM</option>
+                                </select>
                             </div>
                         </div>
+
+                        <div class="panel-actions">
+                            <button class="panel-btn save" data-id="${item.id}">Save Changes</button>
+                            <button class="panel-btn close" data-id="${item.id}">Cancel</button>
+                        </div>
                     </div>
-                `;
-            });
-
-            container.innerHTML = outputHtml;
-        }
-
-        // --- Core Document State Event Actions ---
-
-        async function updateAppointmentStatus(id, targetStatus) {
-            try {
-                const docRef = doc(db, "appointments", id);
-                let updateData = { status: targetStatus };
-
-                await updateDoc(docRef, updateData);
-                alert(`Appointment status updated to ${targetStatus} successfully.`);
-                await fetchStaffAppointments();
-            } catch(e) {
-                alert("Operation failed: " + e.message);
-            }
-        }
-
-        // Database commit save execution logic for inline form values
-        async function commitRescheduleData(id) {
-            const dateValue = document.getElementById(`input-date-${id}`).value;
-            const timeValue = document.getElementById(`input-time-${id}`).value;
-
-            if (!dateValue || !timeValue) {
-                alert("Please provide both date and time parameters.");
-                return;
-            }
-
-            try {
-                const docRef = doc(db, "appointments", id);
-                let updateData = {
-                    date: dateValue,
-                    time: timeValue,
-                    status: "confirmed"
-                };
-
-                await updateDoc(docRef, updateData);
-                alert("Appointment parameters successfully re-allocated.");
-                await fetchStaffAppointments();
-            } catch(e) {
-                alert("Modification transaction rejected: " + e.message);
-            }
-        }
-
-        // Event Registration Initializer Mapping block
-        document.addEventListener('DOMContentLoaded', () => {
-            // Tab control configuration setup
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                    e.target.classList.add('active');
-                    activeFilter = e.target.getAttribute('data-filter');
-                    renderStaffView();
-                });
-            });
-
-            // Card Action Delegation (Using a single event listener for efficiency)
-            const wrapper = document.getElementById('appointmentsWrapper');
-            if (wrapper) {
-                wrapper.addEventListener('click', async (e) => {
-                    const confirmBtn = e.target.closest('.confirm');
-                    const rescheduleBtn = e.target.closest('.reschedule');
-                    const cancelBtn = e.target.closest('.cancel');
-                    
-                    // Inline form panel action buttons
-                    const saveBtn = e.target.closest('.panel-btn.save');
-                    const closeBtn = e.target.closest('.panel-btn.close');
-
-                    if (confirmBtn) {
-                        const id = confirmBtn.getAttribute('data-id');
-                        await updateAppointmentStatus(id, "confirmed");
-                    }
-                    
-                    if (rescheduleBtn) {
-                        const id = rescheduleBtn.getAttribute('data-id');
-                        document.getElementById(`reschedule-panel-${id}`).style.display = 'block';
-                    }
-
-                    if (closeBtn) {
-                        const id = closeBtn.getAttribute('data-id');
-                        document.getElementById(`reschedule-panel-${id}`).style.display = 'none';
-                    }
-
-                    if (saveBtn) {
-                        const id = saveBtn.getAttribute('data-id');
-                        await commitRescheduleData(id);
-                    }
-
-                    if (cancelBtn) {
-                        const id = cancelBtn.getAttribute('data-id');
-                        if (confirm("Are you certain you wish to write off this record as cancelled?")) {
-                            await updateAppointmentStatus(id, "cancelled");
-                        }
-                    }
-                });
-            }
-
-            // Session Logout hook link
-            const logbtn = document.getElementById('staffLogout');
-            if (logbtn) {
-                logbtn.addEventListener('click', async (e) => {
-                    e.preventDefault();
-                    await signOut(auth);
-                    window.location.href = 'login.html';
-                });
-            }
+                </div>
+            `;
         });
-    </script>
+
+        container.innerHTML = outputHtml;
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    async function updateAppointmentStatus(id, targetStatus) {
+        try {
+            const docRef = doc(db, "appointments", id);
+            await updateDoc(docRef, { status: targetStatus });
+            alert(`Appointment status updated to ${targetStatus} successfully.`);
+            await fetchStaffAppointments();
+        } catch(e) {
+            alert("Operation failed: " + e.message);
+        }
+    }
+
+    async function commitRescheduleData(id) {
+        const dateValue = document.getElementById(`input-date-${id}`).value;
+        const timeValue = document.getElementById(`input-time-${id}`).value;
+
+        if (!dateValue || !timeValue) {
+            alert("Please provide both date and time parameters.");
+            return;
+        }
+
+        try {
+            const docRef = doc(db, "appointments", id);
+            await updateDoc(docRef, {
+                date: dateValue,
+                time: timeValue,
+                status: "confirmed"
+            });
+            alert("Appointment parameters successfully re-allocated.");
+            await fetchStaffAppointments();
+        } catch(e) {
+            alert("Modification transaction rejected: " + e.message);
+        }
+    }
+
+    function viewDiagnosis(appointmentId) {
+        window.location.href = `staff-view-diagnosis.html?appointmentId=${appointmentId}`;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                activeFilter = e.target.getAttribute('data-filter');
+                renderStaffView();
+            });
+        });
+
+        const wrapper = document.getElementById('appointmentsWrapper');
+        if (wrapper) {
+            wrapper.addEventListener('click', async (e) => {
+                const confirmBtn = e.target.closest('.confirm');
+                const rescheduleBtn = e.target.closest('.reschedule');
+                const cancelBtn = e.target.closest('.cancel');
+                const dispenseBtn = e.target.closest('.dispense');
+                const saveBtn = e.target.closest('.panel-btn.save');
+                const closeBtn = e.target.closest('.panel-btn.close');
+
+                if (confirmBtn) {
+                    const id = confirmBtn.getAttribute('data-id');
+                    await updateAppointmentStatus(id, "confirmed");
+                }
+                
+                if (rescheduleBtn) {
+                    const id = rescheduleBtn.getAttribute('data-id');
+                    const panel = document.getElementById(`reschedule-panel-${id}`);
+                    if (panel) panel.style.display = 'block';
+                }
+
+                if (closeBtn) {
+                    const id = closeBtn.getAttribute('data-id');
+                    const panel = document.getElementById(`reschedule-panel-${id}`);
+                    if (panel) panel.style.display = 'none';
+                }
+
+                if (saveBtn) {
+                    const id = saveBtn.getAttribute('data-id');
+                    await commitRescheduleData(id);
+                }
+
+                if (cancelBtn) {
+                    const id = cancelBtn.getAttribute('data-id');
+                    if (confirm("Are you certain you wish to cancel this appointment?")) {
+                        await updateAppointmentStatus(id, "cancelled");
+                    }
+                }
+
+                if (dispenseBtn) {
+                    const appointmentId = dispenseBtn.getAttribute('data-id') || dispenseBtn.getAttribute('data-appointment-id');
+                    viewDiagnosis(appointmentId);
+                }
+            });
+        }
+
+        const logbtn = document.getElementById('staffLogout');
+        if (logbtn) {
+            logbtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                await signOut(auth);
+                window.location.href = 'login.html';
+            });
+        }
+    });
+</script>
 </body>
 </html>
