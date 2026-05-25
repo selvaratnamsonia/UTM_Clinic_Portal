@@ -432,6 +432,11 @@
                 id: doc.id,
                 ...doc.data()
             }));
+            // Show MC badge for completed appointments
+const mcBadge = (status === 'completed' && hasMC) ? 
+    `<a href="view-mc.html?diagnosisId=${diagnosisId}" style="margin-left: 10px; background: #e0f2fe; color: #0284c7; padding: 4px 10px; border-radius: 6px; font-size: 11px;">
+        <i class="fas fa-file-medical"></i> MC
+     </a>` : '';
 
             // Update count
             document.getElementById("upcomingCount").innerText =
@@ -486,6 +491,18 @@
 
                     }).join("");
             }
+            // CHECK IF APPOINTMENT HAS MC BY SONIA SELVARATNAM 25/5/2026
+async function checkHasMC(appointmentId) {
+    try {
+        const diagnosisQuery = query(collection(db, "diagnosis"), where("appointmentId", "==", appointmentId));
+        const diagnosisSnap = await getDocs(diagnosisQuery);
+        if (!diagnosisSnap.empty) {
+            const diagnosis = diagnosisSnap.docs[0].data();
+            return diagnosis.mcIssued === true;
+        }
+        return false;
+    } catch(e) { return false; }
+}
 
             // =========================
             // TOTAL CONSULTATIONS

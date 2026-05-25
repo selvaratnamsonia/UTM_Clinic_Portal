@@ -401,6 +401,20 @@
             document.getElementById('appointmentsTableBody').innerHTML = '<tr><td colspan="5" class="empty-row-msg" style="color:red;">Error connecting to medical database. Please refresh and try again.</td></tr>';
         }
     }
+    // Check if appointment is completed and has MC
+let hasMC = false;
+if (currentStatus === 'completed') {
+    // Check if diagnosis exists with MC
+    try {
+        const diagnosisQuery = query(collection(db, "diagnosis"), where("appointmentId", "==", item.id));
+        const diagnosisSnap = await getDocs(diagnosisQuery);
+        if (!diagnosisSnap.empty) {
+            const diagnosis = diagnosisSnap.docs[0].data();
+            hasMC = diagnosis.mcIssued === true;
+        }
+    } catch(e) { console.error(e); }
+}
+
 
     // Format doctor name display
     function getDoctorDisplayName(appointment) {
@@ -415,6 +429,7 @@
 
     // View interface rendering logic
     function renderTable(appointmentsList) {
+        
         const container = document.getElementById('appointmentsTableBody');
         if (!container) return;
 
@@ -422,6 +437,8 @@
             container.innerHTML = `<tr><td colspan="5" class="empty-row-msg">No ${currentTab} appointments found matching your criteria.</td></tr>`;
             return;
         }
+
+        
 
         let html = '';
         appointmentsList.forEach(item => {
@@ -437,17 +454,20 @@
 
             let actionHtml = '';
             if (canCancel) {
-                actionHtml = `<button class="btn-icon cancel-btn" title="Cancel Appointment" data-id="${item.id}">
-                                <i class="fas fa-trash-alt"></i>
-                              </button>`;
-            } else if (isCancelled) {
-                actionHtml = '<span class="no-action">Cancelled</span>';
-            } else if (isCompleted) {
-                actionHtml = '<span class="no-action">Completed</span>';
-            } else {
-                actionHtml = '<span class="no-action">No action</span>';
-            }
-
+    actionHtml = `<button class="btn-icon cancel-btn" title="Cancel Appointment" data-id="${item.id}">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>`;
+} else if (isCancelled) {
+    actionHtml = '<span class="no-action">Cancelled</span>';
+} else if (isCompleted && hasMC) {
+    actionHtml = `<button class="btn-icon view-mc-btn" title="View Medical Certificate" data-diagnosis-id="${diagnosisId}" style="background: #e0f2fe; color: #0284c7;">
+                    <i class="fas fa-file-medical"></i>
+                  </button>`;
+} else if (isCompleted) {
+    actionHtml = '<span class="no-action">Completed</span>';
+} else {
+    actionHtml = '<span class="no-action">No action</span>';
+}
             html += `
                 <tr>
                     <td class="doctor-info">${doctorDisplay}</td>
@@ -461,11 +481,20 @@
         container.innerHTML = html;
         
         // Attach cancel button event listeners
+        // Inside the document.addEventListener, add:
+document.querySelectorAll('.view-mc-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const diagnosisId = btn.getAttribute('data-diagnosis-id');
+        window.location.href = `view-mc.html?diagnosisId=${diagnosisId}`;
+    });
+});
+
         document.querySelectorAll('.cancel-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 e.stopPropagation();
-                const id = btn.getAttribute('data-id');
-                await cancelAppointment(id);
+                const appointmentId = btn.getAttribute('data-id');
+                await cancelAppointment(appointmentId);
             });
         });
     }
