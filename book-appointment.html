@@ -454,6 +454,21 @@
 
     let currentSelectedSlot = null;
     let bookedSlots = [];
+    let isSubmitting = false; // Tracks if a request is actively hitting Firebase
+
+    // Helper function to convert "HH:MM AM/PM" string to a minutes integer (e.g., "09:30 AM" -> 570)
+    function parseTimeToMinutes(timeStr) {
+        const [time, modifier] = timeStr.split(' ');
+        let [hours, minutes] = time.split(':').map(Number);
+        
+        if (hours === 12) {
+            hours = modifier === 'PM' ? 12 : 0;
+        } else if (modifier === 'PM') {
+            hours += 12;
+        }
+        
+        return (hours * 60) + minutes;
+    }
 
     // Auth check and load user data
     auth.onAuthStateChanged((user) => {
@@ -487,7 +502,7 @@
         }
     }
 
-    // Render time slots
+    // Render time slots with dynamic past-time filtering
     async function renderTimeSlots() {
         const date = document.getElementById('date').value;
         const container = document.getElementById('timeSlotsContainer');
@@ -503,11 +518,23 @@
         container.innerHTML = '';
         currentSelectedSlot = null;
         document.getElementById('selectedTime').value = '';
+
+        // Get the system's exact current date and time calculations
+        const now = new Date();
+        const localTodayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+        const currentMinutesNow = (now.getHours() * 60) + now.getMinutes();
         
         TIME_SLOTS.forEach(slot => {
             const slotDiv = document.createElement('div');
             slotDiv.className = 'time-slot';
-            if (bookedSlots.includes(slot)) {
+            
+            // Check 1: Has this time slot already been taken in Firestore?
+            const isBooked = bookedSlots.includes(slot);
+            
+            // Check 2: Is the booking for today, and has this time slot physically passed?
+            const isTimePast = (date === localTodayStr) && (parseTimeToMinutes(slot) <= currentMinutesNow);
+
+            if (isBooked || isTimePast) {
                 slotDiv.classList.add('disabled');
                 slotDiv.innerHTML = `<i class="fas fa-ban" style="font-size: 10px;"></i> ${slot}`;
             } else {
@@ -560,6 +587,17 @@
             return false;
         }
         
+        // Double check time validity against real-time on submission
+        const now = new Date();
+        const localTodayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+        const currentMinutesNow = (now.getHours() * 60) + now.getMinutes();
+
+        if (date === localTodayStr && parseTimeToMinutes(time) <= currentMinutesNow) {
+            showAlert("This time slot has just passed. Please pick a future slot.", "error");
+            await renderTimeSlots();
+            return false;
+        }
+
         const currentBookedSlots = await loadBookedSlots(date);
         if (currentBookedSlots.includes(time)) {
             showAlert("Sorry, this time slot has been taken. Please select another.", "error");
@@ -578,23 +616,37 @@
     document.getElementById('appointmentForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         
-        const isValid = await submitAppointment();
-        if (!isValid) return;
-        
-        const date = document.getElementById('date').value;
-        const reason = document.getElementById('reason').value;
-        const time = document.getElementById('selectedTime').value;
-        const user = auth.currentUser;
+        // 1. Instantly drop out if user has already triggered a click request
+        if (isSubmitting) return;
         
         const submitBtn = document.getElementById('submitBtn');
+        
+        // 2. Lock UI controls before starting asynchronous database calls
+        isSubmitting = true;
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Booking...';
         
         try {
+            // 3. Run validation rules
+            const isValid = await submitAppointment();
+            if (!isValid) {
+                // Release constraints if validation catches an issue
+                isSubmitting = false;
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Confirm Booking';
+                return;
+            }
+            
+            const date = document.getElementById('date').value;
+            const reason = document.getElementById('reason').value;
+            const time = document.getElementById('selectedTime').value;
+            const user = auth.currentUser;
+            
             const userRef = doc(db, "users", user.uid);
             const userSnap = await getDoc(userRef);
             const patientName = userSnap.exists() ? userSnap.data().name : 'Patient';
             
+            // 4. Secure single execution document dispatch
             await addDoc(collection(db, "appointments"), {
                 userId: user.uid,
                 patientName: patientName,
@@ -621,7 +673,9 @@
         } catch (error) {
             console.error("Error booking appointment:", error);
             showAlert("Error: " + error.message, "error");
-        } finally {
+            
+            // Re-enable if structural database write issues break the promise
+            isSubmitting = false;
             submitBtn.disabled = false;
             submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Confirm Booking';
         }
