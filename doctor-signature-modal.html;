@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Signature - Doctor Profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: #f8fafc; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .modal-card { max-width: 600px; width: 100%; background: white; border-radius: 24px; box-shadow: 0 20px 35px -10px rgba(0,0,0,0.1); overflow: hidden; }
+        .modal-header { background: #802c44; padding: 20px 30px; color: white; }
+        .modal-body { padding: 30px; }
+        .signature-area { border: 2px dashed #e2e8f0; border-radius: 16px; padding: 30px; text-align: center; margin-bottom: 20px; background: #fafafc; }
+        .signature-preview { max-width: 300px; max-height: 100px; margin: 15px auto; border: 1px solid #e2e8f0; padding: 10px; background: white; }
+        .btn { padding: 12px 24px; border-radius: 12px; border: none; cursor: pointer; font-weight: 600; transition: all 0.2s; }
+        .btn-primary { background: #802c44; color: white; }
+        .btn-primary:hover { background: #6a2438; transform: translateY(-2px); }
+        .btn-secondary { background: #e2e8f0; color: #1e293b; }
+        .btn-secondary:hover { background: #cbd5e1; }
+        .info-row { margin-bottom: 15px; padding: 12px; background: #f8fafc; border-radius: 12px; }
+        .info-label { font-weight: 600; color: #64748b; width: 140px; display: inline-block; }
+        .info-value { color: #1e293b; font-weight: 500; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 12px; margin-top: 5px; }
+        .success-toast { position: fixed; bottom: 30px; right: 30px; background: #10b981; color: white; padding: 12px 20px; border-radius: 10px; animation: slideIn 0.3s ease; z-index: 1000; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    </style>
+</head>
+<body>
+<div class="modal-card">
+    <div class="modal-header">
+        <h2><i class="fas fa-signature"></i> Medical Certificate Settings</h2>
+        <p style="opacity: 0.8; font-size: 14px;">Your signature will appear on all MCs you issue</p>
+    </div>
+    <div class="modal-body">
+        <div class="info-row">
+            <span class="info-label"><i class="fas fa-user-md"></i> Name:</span>
+            <span class="info-value" id="doctorName">Loading...</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label"><i class="fas fa-graduation-cap"></i> Qualification:</span>
+            <span class="info-value" id="doctorQualification">Loading...</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label"><i class="fas fa-id-card"></i> License No.:</span>
+            <span class="info-value" id="doctorLicense">Loading...</span>
+        </div>
+        
+        <div style="margin: 25px 0;">
+            <label><i class="fas fa-stethoscope"></i> Specialization</label>
+            <input type="text" id="specialization" placeholder="e.g., General Practitioner, Pediatrician, etc.">
+        </div>
+        
+        <div>
+            <label><i class="fas fa-signature"></i> Upload Signature Image</label>
+            <div class="signature-area">
+                <i class="fas fa-cloud-upload-alt" style="font-size: 40px; color: #802c44; opacity: 0.5;"></i>
+                <p style="margin: 10px 0;">Click or drag to upload signature image</p>
+                <input type="file" id="signatureInput" accept="image/png,image/jpeg,image/jpg" style="display: none;">
+                <button id="uploadBtn" class="btn btn-secondary"><i class="fas fa-upload"></i> Choose File</button>
+                <div id="signaturePreview" class="signature-preview" style="display: none;">
+                    <img id="previewImg" style="max-width: 100%; max-height: 80px;" alt="Signature Preview">
+                </div>
+            </div>
+            <p class="text-muted" style="font-size: 12px; color: #64748b; margin-top: 8px;">
+                <i class="fas fa-info-circle"></i> Signature must be clear, PNG or JPG format, on white background
+            </p>
+        </div>
+        
+        <div style="display: flex; gap: 15px; margin-top: 30px;">
+            <button id="saveBtn" class="btn btn-primary"><i class="fas fa-save"></i> Save Changes</button>
+            <button id="cancelBtn" class="btn btn-secondary"><i class="fas fa-times"></i> Cancel</button>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { auth, db, storage } from './js/firebase-config.js';
+    import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+    import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-storage.js";
+
+    async function loadDoctorProfile() {
+        const user = auth.currentUser;
+        if (!user) { window.location.href = 'login.html'; return; }
+        
+        const userRef = doc(db, "users", user.uid);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+            const data = userSnap.data();
+            document.getElementById('doctorName').innerText = data.name || 'Doctor';
+            document.getElementById('doctorQualification').innerText = data.qualification || 'Medical Doctor';
+            document.getElementById('doctorLicense').innerText = data.licenseNumber || 'Pending Registration';
+            document.getElementById('specialization').value = data.specialization || '';
+            if (data.signatureUrl) {
+                document.getElementById('previewImg').src = data.signatureUrl;
+                document.getElementById('signaturePreview').style.display = 'block';
+            }
+        }
+    }
+    
+    document.getElementById('uploadBtn').addEventListener('click', () => {
+        document.getElementById('signatureInput').click();
+    });
+    
+    document.getElementById('signatureInput').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                document.getElementById('previewImg').src = event.target.result;
+                document.getElementById('signaturePreview').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+            window.selectedFile = file;
+        }
+    });
+    
+    document.getElementById('saveBtn').addEventListener('click', async () => {
+        const user = auth.currentUser;
+        if (!user) return;
+        
+        const updateData = {
+            specialization: document.getElementById('specialization').value,
+            updatedAt: new Date().toISOString()
+        };
+        
+        if (window.selectedFile) {
+            const storageRef = ref(storage, `signatures/${user.uid}_${Date.now()}.png`);
+            await uploadBytes(storageRef, window.selectedFile);
+            const signatureUrl = await getDownloadURL(storageRef);
+            updateData.signatureUrl = signatureUrl;
+        }
+        
+        await updateDoc(doc(db, "users", user.uid), updateData);
+        
+        const toast = document.createElement('div');
+        toast.className = 'success-toast';
+        toast.innerHTML = '<i class="fas fa-check-circle"></i> Profile updated successfully!';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+        setTimeout(() => window.location.reload(), 1500);
+    });
+    
+    document.getElementById('cancelBtn').addEventListener('click', () => {
+        window.location.href = 'doctor_dashboard.html';
+    });
+    
+    loadDoctorProfile();
+</script>
+</body>
+</html>

@@ -263,6 +263,7 @@
     // Submit diagnosis to diagnosis table
     document.getElementById("diagnosisForm").addEventListener("submit", async (e) => {
       e.preventDefault();
+      
 
       const prescribedMedications = [];
       document.querySelectorAll('.med-item').forEach(item => {
@@ -283,18 +284,30 @@
         });
       });
 
+      // Get doctor details for diagnosis record (26/4/2026 by Sonia)
       const doctor = auth.currentUser;
-      let doctorName = "Unknown Doctor";
-      if (doctor) {
-        const doctorDoc = await getDoc(doc(db, "users", doctor.uid));
-        if (doctorDoc.exists()) doctorName = doctorDoc.data().name || "Doctor";
-      }
+let doctorData = { name: "Unknown Doctor", specialization: "", signatureUrl: "", licenseNumber: "" };
+if (doctor) {
+    const doctorDoc = await getDoc(doc(db, "users", doctor.uid));
+    if (doctorDoc.exists()) {
+        const docData = doctorDoc.data();
+        doctorData = {
+            name: docData.name || "Doctor",
+            specialization: docData.specialization || "General Practitioner",
+            signatureUrl: docData.signatureUrl || "",
+            licenseNumber: docData.licenseNumber || ""
+        };
+    }
+}
 
       const diagnosisData = {
         appointmentId: appointmentId,
+        doctorName: doctorData.name,
+        doctorSpecialization: doctorData.specialization,
+        doctorSignatureUrl: doctorData.signatureUrl,
+        doctorLicenseNumber: doctorData.licenseNumber,
         userId: globalUserId,
         doctorId: doctor?.uid || "",
-        doctorName: doctorName,
         diagnosisNotes: document.getElementById("diagnosis").value,
         medications: prescribedMedications,
         mcIssued: document.getElementById("mcCheckbox").checked,
