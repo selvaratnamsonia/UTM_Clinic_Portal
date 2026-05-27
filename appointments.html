@@ -7,7 +7,6 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/premium-dialog.css">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
     <style>
@@ -265,6 +264,12 @@
             font-style: italic;
         }
 
+        .no-action.overdue {
+            color: #dc2626;
+            font-weight: 600;
+            font-style: normal;
+        }
+
         .empty-row-msg {
             text-align: center;
             padding: 40px !important;
@@ -393,7 +398,6 @@
             }
             
             allAppointments = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            
             applyFilters(); 
             
         } catch (error) {
@@ -401,20 +405,6 @@
             document.getElementById('appointmentsTableBody').innerHTML = '<tr><td colspan="5" class="empty-row-msg" style="color:red;">Error connecting to medical database. Please refresh and try again.</td></tr>';
         }
     }
-    // Check if appointment is completed and has MC
-let hasMC = false;
-if (currentStatus === 'completed') {
-    // Check if diagnosis exists with MC
-    try {
-        const diagnosisQuery = query(collection(db, "diagnosis"), where("appointmentId", "==", item.id));
-        const diagnosisSnap = await getDocs(diagnosisQuery);
-        if (!diagnosisSnap.empty) {
-            const diagnosis = diagnosisSnap.docs[0].data();
-            hasMC = diagnosis.mcIssued === true;
-        }
-    } catch(e) { console.error(e); }
-}
-
 
     // Format doctor name display
     function getDoctorDisplayName(appointment) {
@@ -428,8 +418,7 @@ if (currentStatus === 'completed') {
     }
 
     // View interface rendering logic
-    function renderTable(appointmentsList) {
-        
+    async function renderTable(appointmentsList) {
         const container = document.getElementById('appointmentsTableBody');
         if (!container) return;
 
@@ -438,36 +427,60 @@ if (currentStatus === 'completed') {
             return;
         }
 
-        
-
         let html = '';
-        appointmentsList.forEach(item => {
+        
+        // Use for...of loop to support sequential asynchronous verification safely
+        for (const item of appointmentsList) {
             const doctorDisplay = getDoctorDisplayName(item);
             const timeStr = item.time || "Time TBD";
             const reasonStr = item.reason || "General Consultation";
             const currentStatus = item.status ? item.status.toLowerCase() : 'pending';
 
-            // FIXED CONDITION: Show cancel icons based on active record status tags directly
-            const canCancel = (currentStatus === 'pending' || currentStatus === 'confirmed');
+            const todayStr = new Date().toISOString().split("T")[0];
+            // An appointment is overdue if its date is older than today, and its status is still pending/confirmed
+            const isOverdue = (item.date < todayStr) && (currentStatus === 'pending' || currentStatus === 'confirmed');
+
+            const canCancel = (currentStatus === 'pending' || currentStatus === 'confirmed') && !isOverdue;
             const isCancelled = currentStatus === 'cancelled';
             const isCompleted = currentStatus === 'completed';
 
+            let hasMC = false;
+            let diagnosisId = "";
+
+            // Safely verify matching diagnosis subcollections inside the map engine loop
+            if (isCompleted) {
+                try {
+                    const diagnosisQuery = query(collection(db, "diagnosis"), where("appointmentId", "==", item.id));
+                    const diagnosisSnap = await getDocs(diagnosisQuery);
+                    if (!diagnosisSnap.empty) {
+                        diagnosisId = diagnosisSnap.docs[0].id;
+                        const diagnosisData = diagnosisSnap.docs[0].data();
+                        hasMC = diagnosisData.mcIssued === true;
+                    }
+                } catch(e) { 
+                    console.error("Diagnosis fetch failure:", e); 
+                }
+            }
+
             let actionHtml = '';
-            if (canCancel) {
-    actionHtml = `<button class="btn-icon cancel-btn" title="Cancel Appointment" data-id="${item.id}">
-                    <i class="fas fa-trash-alt"></i>
-                  </button>`;
-} else if (isCancelled) {
-    actionHtml = '<span class="no-action">Cancelled</span>';
-} else if (isCompleted && hasMC) {
-    actionHtml = `<button class="btn-icon view-mc-btn" title="View Medical Certificate" data-diagnosis-id="${diagnosisId}" style="background: #e0f2fe; color: #0284c7;">
-                    <i class="fas fa-file-medical"></i>
-                  </button>`;
-} else if (isCompleted) {
-    actionHtml = '<span class="no-action">Completed</span>';
-} else {
-    actionHtml = '<span class="no-action">No action</span>';
-}
+            if (isOverdue) {
+                actionHtml = '<span class="no-action overdue">Overdue</span>';
+            } else if (canCancel) {
+                actionHtml = `<button class="btn-icon cancel-btn" title="Cancel Appointment" data-id="${item.id}">
+                                <i class="fas fa-trash-alt"></i>
+                              </button>`;
+            } else if (isCancelled) {
+                actionHtml = '<span class="no-action">Cancelled</span>';
+            } else if (isCompleted && hasMC) {
+                actionHtml = `<button class="btn-icon view-mc-btn" title="View Medical Certificate" data-diagnosis-id="${diagnosisId}" style="background: #e0f2fe; color: #0284c7;">
+                                <i class="fas fa-file-medical"></i>
+                              </button>`;
+            } else if (isCompleted) {
+                actionHtml = '<span class="no-action">Completed</span>';
+            } else {
+                actionHtml = '<span class="no-action">No action</span>';
+            }
+
             html += `
                 <tr>
                     <td class="doctor-info">${doctorDisplay}</td>
@@ -477,18 +490,18 @@ if (currentStatus === 'completed') {
                     <td align="center">${actionHtml}</td>
                 </tr>
             `;
-        });
+        }
+        
         container.innerHTML = html;
         
-        // Attach cancel button event listeners
-        // Inside the document.addEventListener, add:
-document.querySelectorAll('.view-mc-btn').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        const diagnosisId = btn.getAttribute('data-diagnosis-id');
-        window.location.href = `view-mc.html?diagnosisId=${diagnosisId}`;
-    });
-});
+        // Attach interactive layout navigation event triggers
+        document.querySelectorAll('.view-mc-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const diagnosisId = btn.getAttribute('data-diagnosis-id');
+                window.location.href = `view-mc.html?diagnosisId=${diagnosisId}`;
+            });
+        });
 
         document.querySelectorAll('.cancel-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
@@ -539,19 +552,16 @@ document.querySelectorAll('.view-mc-btn').forEach(btn => {
         const keyword = searchInput ? searchInput.value.toLowerCase().trim() : '';
         const filterValue = statusFilter ? statusFilter.value : 'all';
         
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        const todayStr = new Date().toISOString().split("T")[0];
 
-        // First, separate upcoming vs past based on date and status
+        // First, separate upcoming vs past based on date string comparison
         let timelineFiltered = allAppointments.filter(item => {
-            const appointmentDate = new Date(item.date);
-            appointmentDate.setHours(0, 0, 0, 0);
             const status = item.status ? item.status.toLowerCase() : 'pending';
             
             if (currentTab === 'upcoming') {
-                return (appointmentDate >= today) && (status !== 'cancelled' && status !== 'completed');
+                return (item.date >= todayStr) && (status !== 'cancelled' && status !== 'completed');
             } else {
-                return (appointmentDate < today) || (status === 'cancelled' || status === 'completed');
+                return (item.date < todayStr) || (status === 'cancelled' || status === 'completed');
             }
         });
         

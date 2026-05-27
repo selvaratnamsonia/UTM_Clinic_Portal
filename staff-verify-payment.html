@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Payments - UTM Clinic</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .bg-primary { background-color: #802c44; }
+        .text-primary { color: #802c44; }
+        .sidebar { width: 260px; }
+        @media (max-width: 768px) { .sidebar { width: 80px; } .sidebar span { display: none; } }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="flex min-h-screen">
+        <aside class="sidebar bg-white border-r border-gray-200 flex flex-col">
+            <div class="p-6 border-b flex items-center gap-3">
+                <img src="images/utm-logo.png" alt="UTM Logo" class="h-12 mx-auto">
+            </div>
+            <nav class="flex-1 p-4">
+                <a href="staff_dashboard.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 mb-2">
+                    <i class="fas fa-home w-5"></i> <span>Dashboard</span>
+                </a>
+                <a href="staff-manage-appointments.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 mb-2">
+                    <i class="fas fa-calendar-alt w-5"></i> <span>Manage Appointments</span>
+                </a>
+                <a href="staff-verify-payment.html" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-primary text-white mb-2 shadow-sm">
+                    <i class="fas fa-dollar-sign w-5"></i> <span>Verify Payments</span>
+                </a>
+                <a href="staff-medication-list.html" id="medicationLink" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100">
+                    <i class="fas fa-pills w-5"></i> <span>Medication List</span>
+                </a>
+            </nav>
+            <div class="p-4 border-t">
+                <button id="logoutBtn" class="flex items-center gap-3 px-4 py-3 rounded-lg w-full text-gray-700 hover:bg-gray-100 text-left">
+                    <i class="fas fa-sign-out-alt w-5"></i> <span>Logout</span>
+                </button>
+            </div>
+        </aside>
+
+        <main class="flex-1 p-8">
+            <h1 class="text-3xl font-bold text-gray-800">Verify Payments</h1>
+            <p class="text-gray-500 mb-8">Review and confirm payments for masks, snacks, and wellness items.</p>
+
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <div class="flex gap-2 bg-gray-100 p-1.5 rounded-xl">
+                    <button id="tabPending" class="px-5 py-2 text-sm font-semibold rounded-lg bg-primary text-white transition-all">Pending</button>
+                    <button id="tabVerified" class="px-5 py-2 text-sm font-semibold rounded-lg text-gray-600 hover:text-gray-900 transition-all">Verified</button>
+                    <button id="tabAll" class="px-5 py-2 text-sm font-semibold rounded-lg text-gray-600 hover:text-gray-900 transition-all">All</button>
+                </div>
+                
+                <div class="relative w-full sm:w-80">
+                    <i class="fas fa-search absolute left-4 top-3.5 text-gray-400"></i>
+                    <input type="text" id="paymentSearch" placeholder="Search by student name or ID..." class="w-full pl-11 pr-4 py-2.5 rounded-xl border border-gray-200 bg-white focus:outline-none focus:border-[#802c44] text-sm">
+                </div>
+            </div>
+
+            <div id="paymentsContainer" class="space-y-4 mb-8">
+                <div class="text-center py-12 text-gray-400 bg-white rounded-xl border border-gray-100 shadow-sm">
+                    <i class="fas fa-spinner fa-spin text-2xl mb-2 text-gray-300"></i>
+                    <p>Loading transaction logs...</p>
+                </div>
+            </div>
+
+            <div class="bg-blue-50 border border-blue-100 rounded-xl p-6">
+                <h3 class="font-bold text-blue-800 text-base mb-3 flex items-center gap-2">
+                    <i class="fas fa-info-circle"></i> Payment Verification Guidelines
+                </h3>
+                <ul class="list-disc list-inside space-y-1.5 text-sm text-blue-900/90">
+                    <li>All clinic medical consultations are FREE for UTM students and staff.</li>
+                    <li>Payments apply exclusively to optional accessory items (e.g., face masks, hand sanitizers, snacks).</li>
+                    <li>Cross-reference receipt amounts thoroughly against the student's itemized listing before confirmation.</li>
+                </ul>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        import { auth, db } from './js/firebase-config.js';
+        import { signOut } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+        import { collection, query, getDocs, doc, updateDoc, orderBy } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+        let localPaymentsCache = [];
+        let activeTabFilter = 'pending';
+
+        // Check auth state status
+        auth.onAuthStateChanged((user) => {
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            fetchPaymentsData();
+        });
+
+        // Pull collection logs pipeline mapping from database
+        async function fetchPaymentsData() {
+            try {
+                const paymentsQuery = query(collection(db, "payments"), orderBy("date", "desc"));
+                const snap = await getDocs(paymentsQuery);
+                
+                localPaymentsCache = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderPaymentsList();
+            } catch (error) {
+                console.error("Firestore loading failure:", error);
+                document.getElementById('paymentsContainer').innerHTML = `
+                    <div class="text-center py-8 text-red-500 bg-white rounded-xl border">
+                        Failed to retrieve data streams from collection: ${error.message}
+                    </div>`;
+            }
+        }
+
+        // Processing & Dynamic View Compilation Engine
+        function renderPaymentsList() {
+            const container = document.getElementById('paymentsContainer');
+            const searchKeyword = document.getElementById('paymentSearch').value.toLowerCase().trim();
+
+            // Filter state rules
+            let finalDataset = localPaymentsCache.filter(record => {
+                const status = (record.status || 'pending').toLowerCase();
+                if (activeTabFilter === 'pending') return status === 'pending';
+                if (activeTabFilter === 'verified') return status === 'verified';
+                return true;
+            });
+
+            // Filter input values matrix rules
+            if (searchKeyword) {
+                finalDataset = finalDataset.filter(record => {
+                    const studentName = (record.studentName || '').toLowerCase();
+                    const studentId = (record.studentId || '').toLowerCase();
+                    return studentName.includes(searchKeyword) || studentId.includes(searchKeyword);
+                });
+            }
+
+            if (finalDataset.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 text-gray-400 bg-white rounded-xl border border-gray-100">
+                        <i class="fas fa-folder-open text-2xl mb-2 text-gray-300"></i>
+                        <p>No ${activeTabFilter} records found.</p>
+                    </div>`;
+                return;
+            }
+
+            // Interface compiler string builder implementation
+            container.innerHTML = finalDataset.map(item => {
+                const status = (item.status || 'pending').toLowerCase();
+                
+                let badgeStyle = "bg-yellow-100 text-yellow-700";
+                if (status === 'verified') badgeStyle = "bg-green-100 text-green-700";
+                if (status === 'rejected') badgeStyle = "bg-red-100 text-red-700";
+
+                let decisionControls = '';
+                if (status === 'pending') {
+                    decisionControls = `
+                        <button class="btn-action-verify bg-green-500 hover:bg-green-600 text-white font-semibold text-xs px-4 py-2 rounded-lg flex items-center gap-1.5 shadow-sm transition" data-id="${item.id}">
+                            <i class="fas fa-check"></i> Verify
+                        </button>
+                        <button class="btn-action-reject bg-red-50 hover:bg-red-100 text-red-600 font-semibold text-xs px-4 py-2 rounded-lg flex items-center gap-1.5 transition" data-id="${item.id}">
+                            <i class="fas fa-times"></i> Reject
+                        </button>
+                    `;
+                }
+
+                return `
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 transition hover:shadow-md/50">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h3 class="text-lg font-bold text-gray-800">${escapeHtml(item.studentName || 'Unknown Student')}</h3>
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider ${badgeStyle}">
+                                    ${status}
+                                </span>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-1 text-sm text-gray-600">
+                                <div><span class="text-gray-400 font-medium">ID:</span> ${escapeHtml(item.studentId || 'N/A')}</div>
+                                <div><span class="text-gray-400 font-medium">Items:</span> ${escapeHtml(item.items || 'Wellness Items')}</div>
+                                <div><span class="text-gray-400 font-medium">Amount:</span> RM ${(parseFloat(item.amount) || 0.00).toFixed(2)}</div>
+                                <div><span class="text-gray-400 font-medium">Date:</span> ${item.date || 'N/A'}</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 self-end md:self-auto">
+                            <button class="btn-view-proof bg-blue-50 hover:bg-blue-100 text-blue-600 font-semibold text-xs px-4 py-2 rounded-lg flex items-center gap-1.5 transition" data-url="${item.receiptUrl || item.proofUrl || '#'}" ${(!item.receiptUrl && !item.proofUrl) ? 'disabled style="opacity:0.4; cursor:not-allowed;"' : ''}>
+                                <i class="fas fa-file-alt"></i> View Proof
+                            </button>
+                            ${decisionControls}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            bindDynamicActionListeners();
+        }
+
+        // Dynamic Runtime Node Wiring Elements
+        function bindDynamicActionListeners() {
+            document.querySelectorAll('.btn-view-proof').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const url = btn.getAttribute('data-url');
+                    if (url && url !== '#') window.open(url, '_blank');
+                });
+            });
+
+            document.querySelectorAll('.btn-action-verify').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const id = btn.getAttribute('data-id');
+                    if (confirm("Confirm verification for this payment entry?")) {
+                        await updatePaymentStatus(id, 'verified');
+                    }
+                });
+            });
+
+            document.querySelectorAll('.btn-action-reject').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const id = btn.getAttribute('data-id');
+                    if (confirm("Are you sure you want to REJECT this payment entry?")) {
+                        await updatePaymentStatus(id, 'rejected');
+                    }
+                });
+            });
+        }
+
+        // Central Firestore Document Modifier Action Routing
+        async function updatePaymentStatus(recordId, newStatus) {
+            try {
+                const docReference = doc(db, "payments", recordId);
+                await updateDoc(docReference, { status: newStatus });
+                alert(`Payment row status updated to ${newStatus} successfully.`);
+                fetchPaymentsData(); // Reload live array streams
+            } catch (error) {
+                console.error("Status modify pipeline break:", error);
+                alert("Error configuring new transaction state: " + error.message);
+            }
+        }
+
+        // Sanitation Escaper helper logic
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text.replace(/[&<>]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[char] || char));
+        }
+
+        // Global Navigation Events setup
+        document.getElementById('paymentSearch').addEventListener('input', renderPaymentsList);
+
+        const tabPending = document.getElementById('tabPending');
+        const tabVerified = document.getElementById('tabVerified');
+        const tabAll = document.getElementById('tabAll');
+
+        function switchTabs(targetTab, activeBtn, inactiveBtn1, inactiveBtn2) {
+            activeTabFilter = targetTab;
+            
+            // Manage dynamic tab color states
+            activeBtn.className = "px-5 py-2 text-sm font-semibold rounded-lg bg-primary text-white transition-all";
+            inactiveBtn1.className = "px-5 py-2 text-sm font-semibold rounded-lg text-gray-600 hover:text-gray-900 transition-all";
+            inactiveBtn2.className = "px-5 py-2 text-sm font-semibold rounded-lg text-gray-600 hover:text-gray-900 transition-all";
+            
+            renderPaymentsList();
+        }
+
+        tabPending.addEventListener('click', () => switchTabs('pending', tabPending, tabVerified, tabAll));
+        tabVerified.addEventListener('click', () => switchTabs('verified', tabVerified, tabPending, tabAll));
+        tabAll.addEventListener('click', () => switchTabs('all', tabAll, tabPending, tabVerified));
+
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            if(confirm("Log out of session?")) {
+                await signOut(auth);
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
+</body>
+</html>

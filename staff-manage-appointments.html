@@ -438,7 +438,6 @@
                     }
                 }
 
-                // Check if diagnosis exists
                 const diagnosisQuery = query(collection(db, "diagnosis"), where("appointmentId", "==", app.id));
                 const diagnosisSnap = await getDocs(diagnosisQuery);
                 const hasDiagnosis = !diagnosisSnap.empty;
@@ -603,71 +602,67 @@
         window.location.href = `staff-view-diagnosis.html?appointmentId=${appointmentId}`;
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-                activeFilter = e.target.getAttribute('data-filter');
-                renderStaffView();
-            });
+    // Attach Event Listeners globally directly to document or structural DOM nodes
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            activeFilter = e.target.getAttribute('data-filter');
+            renderStaffView();
         });
+    });
 
-        const wrapper = document.getElementById('appointmentsWrapper');
-        if (wrapper) {
-            wrapper.addEventListener('click', async (e) => {
-                const confirmBtn = e.target.closest('.confirm');
-                const rescheduleBtn = e.target.closest('.reschedule');
-                const cancelBtn = e.target.closest('.cancel');
-                const dispenseBtn = e.target.closest('.dispense');
-                const saveBtn = e.target.closest('.panel-btn.save');
-                const closeBtn = e.target.closest('.panel-btn.close');
+    document.addEventListener('click', async (e) => {
+        const confirmBtn = e.target.closest('.confirm');
+        const rescheduleBtn = e.target.closest('.reschedule');
+        const cancelBtn = e.target.closest('.cancel');
+        const dispenseBtn = e.target.closest('.dispense');
+        const saveBtn = e.target.closest('.panel-btn.save');
+        const closeBtn = e.target.closest('.panel-btn.close');
 
-                if (confirmBtn) {
-                    const id = confirmBtn.getAttribute('data-id');
-                    await updateAppointmentStatus(id, "confirmed");
-                }
-                
-                if (rescheduleBtn) {
-                    const id = rescheduleBtn.getAttribute('data-id');
-                    const panel = document.getElementById(`reschedule-panel-${id}`);
-                    if (panel) panel.style.display = 'block';
-                }
-
-                if (closeBtn) {
-                    const id = closeBtn.getAttribute('data-id');
-                    const panel = document.getElementById(`reschedule-panel-${id}`);
-                    if (panel) panel.style.display = 'none';
-                }
-
-                if (saveBtn) {
-                    const id = saveBtn.getAttribute('data-id');
-                    await commitRescheduleData(id);
-                }
-
-                if (cancelBtn) {
-                    const id = cancelBtn.getAttribute('data-id');
-                    if (confirm("Are you certain you wish to cancel this appointment?")) {
-                        await updateAppointmentStatus(id, "cancelled");
-                    }
-                }
-
-                if (dispenseBtn) {
-                    const appointmentId = dispenseBtn.getAttribute('data-id') || dispenseBtn.getAttribute('data-appointment-id');
-                    viewDiagnosis(appointmentId);
-                }
-            });
+        if (confirmBtn) {
+            const id = confirmBtn.getAttribute('data-id');
+            await updateAppointmentStatus(id, "confirmed");
+        }
+        
+        if (rescheduleBtn) {
+            const id = rescheduleBtn.getAttribute('data-id');
+            const panel = document.getElementById(`reschedule-panel-${id}`);
+            if (panel) panel.style.display = 'block';
         }
 
-        const logbtn = document.getElementById('staffLogout');
-        if (logbtn) {
-            logbtn.addEventListener('click', async (e) => {
-                e.preventDefault();
-                await signOut(auth);
-                window.location.href = 'login.html';
-            });
+        if (closeBtn) {
+            const id = closeBtn.getAttribute('data-id');
+            const panel = document.getElementById(`reschedule-panel-${id}`);
+            if (panel) panel.style.display = 'none';
+        }
+
+        if (saveBtn) {
+            const id = saveBtn.getAttribute('data-id');
+            await commitRescheduleData(id);
+        }
+
+        if (cancelBtn) {
+            const id = cancelBtn.getAttribute('data-id');
+            if (confirm("Are you certain you wish to cancel this appointment?")) {
+                await updateAppointmentStatus(id, "cancelled");
+            }
+        }
+
+        if (dispenseBtn) {
+            const appointmentId = dispenseBtn.getAttribute('data-id') || dispenseBtn.getAttribute('data-appointment-id');
+            viewDiagnosis(appointmentId);
         }
     });
+
+    const logbtn = document.getElementById('staffLogout');
+    if (logbtn) {
+        logbtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            await signOut(auth);
+            window.location.href = 'login.html';
+        });
+    }
 </script>
 </body>
 </html>

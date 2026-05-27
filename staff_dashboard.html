@@ -3,208 +3,585 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Staff Dashboard - UTM Clinic</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <title>Verify Payments - UTM Clinic Staff</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/premium-dialog.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
     <style>
-        .bg-primary { background-color: #802c44; }
-        .text-primary { color: #802c44; }
-        .sidebar { width: 260px; }
-        @media (max-width: 768px) { .sidebar { width: 80px; } .sidebar span { display: none; } }
-    </style>
-</head>
-<body class="bg-gray-50">
-    <div class="flex min-h-screen">
-        <aside class="sidebar bg-white border-r border-gray-200 flex flex-col">
-            <div class="p-6 border-b flex items-center gap-3">
-                <img src="images/utm-logo.png" alt="UTM Logo" class="h-12 mx-auto">
-            </div>
-            <nav class="flex-1 p-4">
-                <a href="staff_dashboard.html" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-primary text-white mb-2 shadow-sm">
-                    <i class="fas fa-home w-5"></i> <span>Dashboard</span>
-                </a>
-                <a href="staff-manage-appointments.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 mb-2">
-                    <i class="fas fa-calendar-alt w-5"></i> <span>Manage Appointments</span>
-                </a>
-                <a href="verify-payments.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 mb-2">
-                    <i class="fas fa-dollar-sign w-5"></i> <span>Verify Payments</span>
-                </a>
-                <a href="staff-medication-list.html" id="medicationLink" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100">
-                    <i class="fas fa-pills w-5"></i> <span>Medication List</span>
-                </a>
-            </nav>
-            <div class="p-4 border-t">
-                <button id="logoutBtn" class="flex items-center gap-3 px-4 py-3 rounded-lg w-full text-gray-700 hover:bg-gray-100 text-left">
-                    <i class="fas fa-sign-out-alt w-5"></i> <span>Logout</span>
-                </button>
-            </div>
-        </aside>
-
-        <main class="flex-1 p-8">
-            <h1 class="text-3xl font-bold text-gray-800">Staff Dashboard</h1>
-            <p class="text-gray-500 mb-8">Welcome, <span id="staffName" class="font-medium text-gray-700">Clinic Staff</span></p>
-
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between">
-                    <div>
-                        <div class="w-10 h-10 rounded-lg bg-pink-50 flex items-center justify-center mb-4">
-                            <i class="fas fa-calendar text-primary text-xl"></i>
-                        </div>
-                        <h3 class="text-3xl font-bold text-gray-800" id="todayCount">0</h3>
-                        <p class="text-sm text-gray-500 mt-1">Today's Appointments</p>
-                    </div>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between">
-                    <div>
-                        <div class="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center mb-4">
-                            <i class="fas fa-check-circle text-green-600 text-xl"></i>
-                        </div>
-                        <h3 class="text-3xl font-bold text-gray-800" id="confirmedCount">0</h3>
-                        <p class="text-sm text-gray-500 mt-1">Confirmed</p>
-                    </div>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between">
-                    <div>
-                        <div class="w-10 h-10 rounded-lg bg-yellow-50 flex items-center justify-center mb-4">
-                            <i class="fas fa-user-clock text-yellow-600 text-xl"></i>
-                        </div>
-                        <h3 class="text-3xl font-bold text-gray-800" id="pendingCount">0</h3>
-                        <p class="text-sm text-gray-500 mt-1">Pending Confirmation</p>
-                    </div>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 bg-amber-500 text-white flex flex-col justify-between">
-                    <div>
-                        <div class="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center mb-4">
-                            <i class="fas fa-dollar-sign text-white text-xl"></i>
-                        </div>
-                        <h3 class="text-3xl font-bold text-white" id="paymentCount">0</h3>
-                        <p class="text-sm text-white/90 mt-1">Payments to Verify</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-xl font-bold text-gray-800">Today's Appointments</h2>
-                    <a href="staff-manage-appointments.html" class="text-sm text-primary font-medium hover:underline">View All</a>
-                </div>
-                <div id="appointmentsList" class="space-y-3">
-                    <div class="text-center py-6 text-gray-400">Loading schedule...</div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <script type="module">
-        import { auth, db } from './js/firebase-config.js';
-        import { signOut } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
-        import { collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
-
-        // Page Access Protection Verification Gate
-        auth.onAuthStateChanged(async (user) => {
-            if (!user) {
-                window.location.href = 'login.html';
-                return;
-            }
+        :root {
+            --primary: #802c44;
+            --primary-light: #f4e8ec;
+            --primary-hover: #6a2438;
+            --bg-body: #f8fafc;
+            --white: #ffffff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --radius: 16px;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
             
-            const userDoc = await getDoc(doc(db, "users", user.uid));
-            if (userDoc.exists()) {
-                document.getElementById('staffName').innerText = userDoc.data().name || 'Clinic Staff';
-            }
-            loadTodayStats();
-        });
-
-        // Compute Metric Totals & Fetch Lists Content Row Arrays
-        async function loadTodayStats() {
-            try {
-                const today = new Date().toISOString().slice(0, 10);
-                
-                // 1. Fetch Today's Total Appointments Metric Counters
-                const todayQuery = query(collection(db, "appointments"), where("date", "==", today));
-                const todaySnap = await getDocs(todayQuery);
-                const appointments = todaySnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-                // 2. Fetch Global Counter Balances
-                const allQuery = query(collection(db, "appointments"));
-                const allSnap = await getDocs(allQuery);
-                const globalApts = allSnap.docs.map(doc => doc.data());
-
-                const confirmed = globalApts.filter(a => a.status === 'confirmed').length;
-                const pending = globalApts.filter(a => a.status === 'pending').length;
-
-                // 3. Populate Live Counters
-                document.getElementById('todayCount').innerText = appointments.length;
-                document.getElementById('confirmedCount').innerText = confirmed;
-                document.getElementById('pendingCount').innerText = pending;
-
-                // 4. Query pending payment logs
-                const paymentQuery = query(collection(db, "payments"), where("status", "==", "pending"));
-                try {
-                    const paymentSnap = await getDocs(paymentQuery);
-                    document.getElementById('paymentCount').innerText = paymentSnap.size;
-                } catch(e) {
-                    document.getElementById('paymentCount').innerText = "3"; 
-                }
-
-                // Render Dynamic Context Rows Elements
-                const container = document.getElementById('appointmentsList');
-                if (appointments.length === 0) {
-                    container.innerHTML = `
-                        <div class="text-center py-8 text-gray-400 border border-dashed rounded-lg bg-gray-50">
-                            <i class="fas fa-calendar-check text-2xl mb-2 text-gray-300"></i>
-                            <p>No appointments booked for today.</p>
-                        </div>`;
-                    return;
-                }
-
-                appointments.sort((a, b) => (a.time || "").localeCompare(b.time || ""));
-
-                container.innerHTML = '';
-                for (const apt of appointments) {
-                    let patientName = 'Registered Patient';
-                    if (apt.userId) {
-                        const patientDoc = await getDoc(doc(db, "users", apt.userId));
-                        if (patientDoc.exists()) patientName = patientDoc.data().name;
-                    }
-
-                    const div = document.createElement('div');
-                    div.className = 'p-4 bg-gray-50 border border-gray-100 rounded-xl flex justify-between items-center transition hover:bg-gray-100/70';
-                    
-                    div.innerHTML = `
-                        <div class="flex items-center gap-6">
-                            <div class="text-sm font-bold text-gray-700 bg-white px-3 py-1.5 rounded-lg border shadow-sm font-mono min-w-[90px] text-center">
-                                ${apt.time || '09:00 AM'}
-                            </div>
-                            <div>
-                                <p class="font-semibold text-gray-800">${patientName}</p>
-                                <p class="text-xs text-gray-400 mt-0.5">with ${apt.doctorName || 'Assigned UTM Practitioner'}</p>
-                            </div>
-                        </div>
-                        <span class="px-3 py-1 rounded-full text-xs font-semibold ${
-                            apt.status === 'confirmed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-                        }">
-                            ${apt.status}
-                        </span>
-                    `;
-                    container.appendChild(div);
-                }
-            } catch (error) {
-                console.error(error);
-                document.getElementById('appointmentsList').innerHTML = '<p class="text-red-500 text-center">Error reading data path logs.</p>';
-            }
+            --success: #22c55e;
+            --success-light: #dcfce7;
+            --success-hover: #16a34a;
+            --danger: #ef4444;
+            --danger-light: #fee2e2;
+            --danger-hover: #dc2626;
+            --warning: #f59e0b;
+            --warning-light: #fef3c7;
         }
 
-        // Forced Fail-Safe Redirection Bypass for Sidebar Nav Link
-        document.getElementById('medicationLink').addEventListener('click', (e) => {
-            e.preventDefault();
-            window.location.href = 'staff-medication-list.html';
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            background: var(--bg-body);
+            color: var(--text-dark);
+        }
+
+        /* --- Sidebar Navigation --- */
+        .sidebar {
+            width: 280px;
+            background: var(--white);
+            border-right: 1px solid var(--border-color);
+            padding: 30px 0;
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 25px 40px;
+        }
+
+        .logo-box {
+            width: 42px;
+            height: 42px;
+            background: var(--primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-img { width: 80%; height: 80%; object-fit: contain; }
+        .logo-text { font-size: 22px; font-weight: 700; color: var(--primary); }
+
+        .nav-links { display: flex; flex-direction: column; gap: 5px; padding: 0 15px; }
+
+        .nav-link {
+            padding: 12px 18px;
+            color: var(--text-muted);
+            border-radius: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .nav-link:hover { background: var(--primary-light); color: var(--primary); }
+        .nav-link.active { background: var(--primary-light); color: var(--primary); font-weight: 600; }
+
+        /* --- Main Layout --- */
+        .main {
+            flex: 1;
+            padding: 40px 60px;
+            max-width: 1400px;
+        }
+
+        header { margin-bottom: 35px; }
+        h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+        .subtitle { color: var(--text-muted); font-size: 15px; }
+
+        /* --- Custom Filters Bar --- */
+        .controls-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tabs-wrapper {
+            display: flex;
+            gap: 8px;
+            background: #f1f5f9;
+            padding: 6px;
+            border-radius: 10px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 8px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn:hover { color: var(--text-dark); }
+        .tab-btn.active-tab {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .search-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 360px;
+        }
+
+        .search-wrapper i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .search-wrapper input {
+            width: 100%;
+            padding: 11px 16px 11px 40px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            background: #fff;
+            outline: none;
+            transition: 0.2s;
+            font-size: 14px;
+        }
+
+        .search-wrapper input:focus { border-color: var(--primary); }
+
+        /* --- Payment Record Container Cards --- */
+        .payments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-bottom: 35px;
+        }
+
+        .payment-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            padding: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            transition: transform 0.2s ease;
+        }
+
+        .payment-card:hover { transform: translateY(-2px); }
+
+        .payment-details { flex: 1; }
+        
+        .student-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .student-name { font-size: 18px; font-weight: 700; color: var(--text-dark); }
+        
+        .badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .badge.pending { background: var(--warning-light); color: #b45309; }
+        .badge.verified { background: var(--success-light); color: #15803d; }
+        .badge.rejected { background: var(--danger-light); color: #b22b2b; }
+
+        .meta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-dark);
+        }
+
+        .meta-item strong { color: var(--text-muted); font-weight: 500; }
+
+        /* --- Action Control Triggers --- */
+        .actions-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .btn-proof { background: #e0f2fe; color: #0369a1; }
+        .btn-proof:hover { background: #bae6fd; }
+
+        .btn-verify { background: var(--success-light); color: #15803d; }
+        .btn-verify:hover { background: var(--success); color: var(--white); }
+
+        .btn-reject { background: var(--danger-light); color: #dc2626; }
+        .btn-reject:hover { background: var(--danger); color: var(--white); }
+
+        /* --- Static Informative Rule Card --- */
+        .guidelines-card {
+            background: #f0f7ff;
+            border: 1px solid #e0effe;
+            border-radius: var(--radius);
+            padding: 24px;
+        }
+
+        .guidelines-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0369a1;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .guidelines-list {
+            list-style-position: inside;
+            color: #0c4a6e;
+            font-size: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar { width: 80px; }
+            .logo-text, .nav-link span { display: none; }
+            .main { padding: 30px; }
+        }
+
+        @media (max-width: 768px) {
+            .payment-card { flex-direction: column; align-items: flex-start; }
+            .actions-wrapper { width: 100%; justify-content: flex-end; }
+        }
+    </style>
+</head>
+<body>
+
+<aside class="sidebar">
+    <div class="logo-container">
+        <div class="logo-box">
+            <img src="images/Clinic-logo.png" alt="Logo" class="logo-img">
+        </div>
+        <div class="logo-text">UTM Clinic</div>
+    </div>
+
+    <nav class="nav-links">
+        <a href="staff_dashboard.html" class="nav-link">
+            <i class="fas fa-columns"></i> <span>Dashboard</span>
+        </a>
+        <a href="staff-manage-appointments.html" class="nav-link">
+            <i class="fas fa-calendar-check"></i> <span>Manage Appointments</span>
+        </a>
+        <a href="staff_verify_payments.html" class="nav-link active">
+            <i class="fas fa-money-check-dollar"></i> <span>Verify Payments</span>
+        </a>
+        <a href="medication_list.html" class="nav-link">
+            <i class="fas fa-pills"></i> <span>Medication List</span>
+        </a>
+        <a href="#" id="logoutLink" class="nav-link" style="margin-top: auto; color: #ef4444;">
+            <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
+        </a>
+    </nav>
+</aside>
+
+<main class="main">
+    <header>
+        <h1>Verify Payments</h1>
+        <p class="subtitle">Review and confirm payments for masks, snacks, and wellness items.</p>
+    </header>
+
+    <div class="controls-row">
+        <div class="tabs-wrapper">
+            <button class="tab-btn active-tab" id="tabPending">Pending</button>
+            <button class="tab-btn" id="tabVerified">Verified</button>
+            <button class="tab-btn" id="tabAll">All</button>
+        </div>
+
+        <div class="search-wrapper">
+            <i class="fas fa-search"></i>
+            <input type="text" id="studentSearch" placeholder="Search by student name or ID...">
+        </div>
+    </div>
+
+    <div class="payments-list" id="paymentsContainer">
+        <div class="empty-state">Loading payment collection transactions...</div>
+    </div>
+
+    <div class="guidelines-card">
+        <div class="guidelines-title">
+            <i class="fas fa-info-circle"></i> Payment Verification Guidelines
+        </div>
+        <ul class="guidelines-list">
+            <li>All clinic consultations are FREE for UTM students and staff.</li>
+            <li>Payments are only for additional items: masks, hand sanitizer, snacks, wellness products.</li>
+            <li>Verify that the amount matches the purchased items.</li>
+            <li>Check that the payment receipt shows the correct transaction date.</li>
+        </ul>
+    </div>
+</main>
+
+<script type="module">
+    import { showConfirm } from "./js/premium-dialog.js";
+    import { auth, db } from './js/firebase-config.js';
+    import { signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+    import { collection, query, getDocs, doc, updateDoc, orderBy } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+    let rawPaymentsData = [];
+    let activeFilterTab = 'pending';
+
+    // Route guard validation security logic
+    auth.onAuthStateChanged((user) => {
+        if (!user) {
+            window.location.href = 'login.html';
+            return;
+        }
+        loadPaymentsRecords();
+    });
+
+    // Extract records raw compilation pipeline from backend Cloud Firestore
+    async function loadPaymentsRecords() {
+        try {
+            const container = document.getElementById('paymentsContainer');
+            
+            // Query documents collection ordered by chronological dates
+            const paymentsQuery = query(collection(db, "payments"), orderBy("date", "desc"));
+            const snap = await getDocs(paymentsQuery);
+
+            if (snap.empty) {
+                container.innerHTML = '<div class="empty-state">No payment records found in database.</div>';
+                rawPaymentsData = [];
+                return;
+            }
+
+            rawPaymentsData = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            filterAndRenderUI();
+
+        } catch (error) {
+            console.error("Firestore loading failure context:", error);
+            document.getElementById('paymentsContainer').innerHTML = 
+                `<div class="empty-state" style="color: var(--danger);">Failed to sync live transaction records: ${error.message}</div>`;
+        }
+    }
+
+    // Interactive rendering engine processing layout configuration elements
+    function filterAndRenderUI() {
+        const container = document.getElementById('paymentsContainer');
+        const searchInput = document.getElementById('studentSearch');
+        const keyword = searchInput ? searchInput.value.toLowerCase().trim() : '';
+
+        // 1. Structural Tab Filtration Logic Check
+        let filtered = rawPaymentsData.filter(item => {
+            const currentStatus = (item.status || 'pending').toLowerCase();
+            if (activeFilterTab === 'pending') return currentStatus === 'pending';
+            if (activeFilterTab === 'verified') return currentStatus === 'verified';
+            return true; // Return all parameters
         });
 
-        // Account Logout sequence
-        document.getElementById('logoutBtn').addEventListener('click', async () => {
-            await signOut(auth);
-            window.location.href = 'login.html';
+        // 2. Continuous Input Query Match Matrix filter routing
+        if (keyword !== '') {
+            filtered = filtered.filter(item => {
+                const sName = (item.studentName || '').toLowerCase();
+                const sId = (item.studentId || '').toLowerCase();
+                return sName.includes(keyword) || sId.includes(keyword);
+            });
+        }
+
+        if (filtered.length === 0) {
+            container.innerHTML = `<div class="empty-state">No ${activeFilterTab} payment records found matching criteria.</div>`;
+            return;
+        }
+
+        // 3. Document Building Block iteration loop configurations
+        container.innerHTML = filtered.map(item => {
+            const currentStatus = (item.status || 'pending').toLowerCase();
+            
+            // Build action buttons layout logic based on transaction status state parameters
+            let operationalButtons = '';
+            if (currentStatus === 'pending') {
+                operationalButtons = `
+                    <button class="btn btn-verify" data-id="${item.id}">
+                        <i class="fas fa-check"></i> Verify
+                    </button>
+                    <button class="btn btn-reject" data-id="${item.id}">
+                        <i class="fas fa-times"></i> Reject
+                    </button>
+                `;
+            }
+
+            return `
+                <div class="payment-card">
+                    <div class="payment-details">
+                        <div class="student-header">
+                            <span class="student-name">${escapeHtml(item.studentName || 'Unknown Student')}</span>
+                            <span class="badge ${currentStatus}">${currentStatus}</span>
+                        </div>
+                        <div class="meta-grid">
+                            <div class="meta-item"><strong>ID:</strong> ${escapeHtml(item.studentId || 'N/A')}</div>
+                            <div class="meta-item"><strong>Items:</strong> ${escapeHtml(item.items || 'General Wellness Items')}</div>
+                            <div class="meta-item"><strong>Amount:</strong> RM ${(parseFloat(item.amount) || 0.00).toFixed(2)}</div>
+                            <div class="meta-item"><strong>Date:</strong> ${item.date || 'TBD'}</div>
+                        </div>
+                    </div>
+                    <div class="actions-wrapper">
+                        <button class="btn btn-proof" data-url="${item.receiptUrl || item.proofUrl || '#'}" ${(!item.receiptUrl && !item.proofUrl) ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''}>
+                            <i class="fas fa-file-invoice-dollar"></i> View Proof
+                        </button>
+                        ${operationalButtons}
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        attachActionEventListeners();
+    }
+
+    // Document node dynamic configuration routing mapping system controls
+    function attachActionEventListeners() {
+        // View proof file attachment triggers
+        document.querySelectorAll('.btn-proof').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const targetUrl = btn.getAttribute('data-url');
+                if(targetUrl && targetUrl !== '#') {
+                    window.open(targetUrl, '_blank');
+                }
+            });
         });
-    </script>
+
+        // Verification Event update routing processors
+        document.querySelectorAll('.btn-verify').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const recordId = btn.getAttribute('data-id');
+                await updatePaymentStatus(recordId, 'verified');
+            });
+        });
+
+        // Rejection Document Action interface triggers
+        document.querySelectorAll('.btn-reject').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const recordId = btn.getAttribute('data-id');
+                await updatePaymentStatus(recordId, 'rejected');
+            });
+        });
+    }
+
+    // Central Transaction Action Pipeline state modifier engine using standard updateDoc rules
+    async function updatePaymentStatus(id, targetState) {
+        const titleText = targetState === 'verified' ? "Confirm Verification" : "Reject Payment Record";
+        const messageText = targetState === 'verified' 
+            ? "Are you sure you want to mark this receipt as verified and clean?" 
+            : "Are you sure you want to flag and reject this student payment receipt file?";
+        const iconStyle = targetState === 'verified' ? "fa-check-circle" : "fa-times-circle";
+
+        const confirmed = await showConfirm(titleText, messageText, iconStyle);
+        if (!confirmed) return;
+
+        try {
+            const documentRef = doc(db, "payments", id);
+            await updateDoc(documentRef, { status: targetState });
+            
+            await showConfirm("Status Altered", `Transaction status systematically set to ${targetState}.`, "fa-info-circle");
+            await loadPaymentsRecords(); // Force pipeline refresh matrix array
+        } catch (error) {
+            console.error("Status manipulation network drop context failure:", error);
+            await showConfirm("Network Error", "Could not complete transactional state shift execution logic: " + error.message, "fa-exclamation-triangle");
+        }
+    }
+
+    // Security cross-scripting sanitation engine mapping rule logic processing block
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m] || m));
+    }
+
+    // Dynamic UI listener wiring blocks configuration patterns
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchElement = document.getElementById('studentSearch');
+        if (searchElement) searchElement.addEventListener('input', filterAndRenderUI);
+
+        const tabPending = document.getElementById('tabPending');
+        const tabVerified = document.getElementById('tabVerified');
+        const tabAll = document.getElementById('tabAll');
+
+        const activeToggleHandler = (tabKey, activeBtn, auxiliaryBtn1, auxiliaryBtn2) => {
+            activeFilterTab = tabKey;
+            activeBtn.classList.add('active-tab');
+            auxiliaryBtn1.classList.remove('active-tab');
+            auxiliaryBtn2.classList.remove('active-tab');
+            filterAndRenderUI();
+        };
+
+        if (tabPending && tabVerified && tabAll) {
+            tabPending.addEventListener('click', () => activeToggleHandler('pending', tabPending, tabVerified, tabAll));
+            tabVerified.addEventListener('click', () => activeToggleHandler('verified', tabVerified, tabPending, tabAll));
+            tabAll.addEventListener('click', () => activeToggleHandler('all', tabAll, tabPending, tabVerified));
+        }
+
+        // Global System Exit Operations Event wiring module structures
+        const logoutLink = document.getElementById('logoutLink');
+        if (logoutLink) {
+            logoutLink.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const confirmLogout = await showConfirm("Logout Session", "Are you sure you want to close this administrative staff interface?", "fa-sign-out-alt");
+                if (confirmLogout) {
+                    await signOut(auth);
+                    window.location.href = 'login.html';
+                }
+            });
+        }
+    });
+</script>
 </body>
 </html>
