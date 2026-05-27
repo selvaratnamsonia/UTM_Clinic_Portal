@@ -369,40 +369,33 @@
         query,
         where,
         getDocs,
-        orderBy,
         doc,
-        getDoc,
-        limit
+        getDoc
     } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
     // =========================
     // AUTH CHECK
     // =========================
     auth.onAuthStateChanged(async (user) => {
-
         if (!user) {
             window.location.href = "login.html";
             return;
         }
 
         try {
-
-            // Load user profile
             const userRef = doc(db, "users", user.uid);
             const userSnap = await getDoc(userRef);
 
             if (userSnap.exists()) {
                 const userData = userSnap.data();
-
                 document.getElementById("welcomeMessage").innerHTML =
                     `Welcome back, ${userData.name || "Patient"}! 👋`;
             }
 
-            // Load dashboard
             await loadDashboardData(user.uid);
 
         } catch (error) {
-            console.error("Dashboard error:", error);
+            console.error("Dashboard profile load error:", error);
         }
     });
 
@@ -410,240 +403,154 @@
     // LOAD DASHBOARD DATA
     // =========================
     async function loadDashboardData(userId) {
-
-        const today = new Date().toISOString().split("T")[0];
+        // Get current date string in YYYY-MM-DD format based on local time
+        const todayStr = new Date().toISOString().split("T")[0];
 
         try {
-
             // =========================
-            // UPCOMING APPOINTMENTS
+            // FETCH ALL APPOINTMENTS FOR THIS USER
             // =========================
-            const upcomingQuery = query(
+            // Using a simple single-field query avoids any complex index errors
+            const baseQuery = query(
                 collection(db, "appointments"),
-                where("userId", "==", userId),
-                where("date", ">=", today),
-                where("status", "in", ["pending", "confirmed"]),
-                orderBy("date", "asc")
+                where("userId", "==", userId)
             );
 
-            const upcomingSnap = await getDocs(upcomingQuery);
+            const querySnapshot = await getDocs(baseQuery);
+            const allAppointments = [];
+            
+            querySnapshot.forEach((doc) => {
+                allAppointments.push({ id: doc.id, ...doc.data() });
+            });
 
-            const upcomingAppointments = upcomingSnap.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-            // Show MC badge for completed appointments
-const mcBadge = (status === 'completed' && hasMC) ? 
-    `<a href="view-mc.html?diagnosisId=${diagnosisId}" style="margin-left: 10px; background: #e0f2fe; color: #0284c7; padding: 4px 10px; border-radius: 6px; font-size: 11px;">
-        <i class="fas fa-file-medical"></i> MC
-     </a>` : '';
-
-            // Update count
-            document.getElementById("upcomingCount").innerText =
-                upcomingAppointments.length;
-
-            // Render appointments
-            const upcomingContainer =
-                document.getElementById("upcomingAppointmentsList");
-
-            if (upcomingAppointments.length === 0) {
-
-                upcomingContainer.innerHTML = `
-                    <div class="empty-message">
-                        No upcoming appointments
-                    </div>
-                `;
-
-            } else {
-
-                upcomingContainer.innerHTML =
-                    upcomingAppointments.map(apt => {
-
-                        const doctorName =
-                            apt.doctorName && apt.doctorName.trim() !== ""
-                                ? apt.doctorName
-                                : "Awaiting clinic confirmation";
-
-                        return `
-                            <div class="appointment-item">
-                                <div class="appointment-top">
-
-                                    <div>
-                                        <div class="doctor-name">
-                                            ${doctorName}
-                                        </div>
-
-                                        <div class="appointment-date">
-                                            ${apt.reason || "General Consultation"}
-                                            •
-                                            ${formatDate(apt.date)}
-                                            ${apt.time ? `• ${apt.time}` : ""}
-                                        </div>
-                                    </div>
-
-                                    <div class="status status-${apt.status}">
-                                        ${apt.status}
-                                    </div>
-
-                                </div>
-                            </div>
-                        `;
-
-                    }).join("");
-            }
-            // CHECK IF APPOINTMENT HAS MC BY SONIA SELVARATNAM 25/5/2026
-async function checkHasMC(appointmentId) {
-    try {
-        const diagnosisQuery = query(collection(db, "diagnosis"), where("appointmentId", "==", appointmentId));
-        const diagnosisSnap = await getDocs(diagnosisQuery);
-        if (!diagnosisSnap.empty) {
-            const diagnosis = diagnosisSnap.docs[0].data();
-            return diagnosis.mcIssued === true;
-        }
-        return false;
-    } catch(e) { return false; }
-}
+            // Sort all records locally by date descending (latest first)
+            allAppointments.sort((a, b) => new Date(b.date) - new Date(a.date));
 
             // =========================
-            // TOTAL CONSULTATIONS
+            // 1. STATS: UPCOMING APPOINTMENTS
             // =========================
-            const completedQuery = query(
-                collection(db, "appointments"),
-                where("userId", "==", userId),
-                where("status", "==", "completed")
+            // Filters records matching active status whose appointment date is today or in the future
+            const upcomingAppointments = allAppointments.filter(apt => 
+                (apt.status === "pending" || apt.status === "confirmed") && 
+                apt.date >= todayStr
             );
-
-            const completedSnap = await getDocs(completedQuery);
-
-            document.getElementById("totalVisits").innerText =
-                completedSnap.size;
+            document.getElementById("upcomingCount").innerText = upcomingAppointments.length;
 
             // =========================
-            // ACTIVE MC COUNT
+            // 2. STATS: TOTAL CONSULTATIONS DONE BY DOCTOR
             // =========================
-            const mcQuery = query(
-                collection(db, "medicalCertificates"),
-                where("userId", "==", userId),
-                where("status", "==", "active")
-            );
+            // Counts appointments that have been successfully processed and completed by medical staff
+            const completedAppointments = allAppointments.filter(apt => apt.status === "completed");
+            document.getElementById("totalVisits").innerText = completedAppointments.size || completedAppointments.length;
 
+            // =========================
+            // 3. STATS: ACTIVE CERTIFICATES (MC)
+            // =========================
+            // Fetches certificates and validates their real-time expiry range
+            const mcQuery = query(collection(db, "medicalCertificates"), where("userId", "==", userId));
             const mcSnap = await getDocs(mcQuery);
+            let activeMcCount = 0;
 
-            document.getElementById("mcCount").innerText =
-                mcSnap.size;
+            mcSnap.forEach((doc) => {
+                const mcData = doc.data();
+                if (mcData.status === "active" && mcData.endDate && mcData.endDate >= todayStr) {
+                    activeMcCount++;
+                }
+            });
+            document.getElementById("mcCount").innerText = activeMcCount;
 
             // =========================
-            // RECENT ACTIVITY
+            // RENDER LATEST UPCOMING APPOINTMENT LIST
             // =========================
-            const recentQuery = query(
-                collection(db, "appointments"),
-                where("userId", "==", userId),
-                orderBy("createdAt", "desc"),
-                limit(5)
-            );
-
-            const recentSnap = await getDocs(recentQuery);
-
-            const recentActivities = recentSnap.docs.map(doc => ({
-                id: doc.id,
-                ...doc.data()
-            }));
-
-            const recentContainer =
-                document.getElementById("recentActivityList");
-
-            if (recentActivities.length === 0) {
-
-                recentContainer.innerHTML = `
-                    <div class="empty-message">
-                        No recent activity
-                    </div>
-                `;
-
+            const upcomingContainer = document.getElementById("upcomingAppointmentsList");
+            
+            if (upcomingAppointments.length === 0) {
+                upcomingContainer.innerHTML = `<div class="empty-message">No upcoming appointments found</div>`;
             } else {
+                upcomingContainer.innerHTML = upcomingAppointments.map(apt => {
+                    const doctorName = apt.doctorName && apt.doctorName.trim() !== ""
+                        ? apt.doctorName
+                        : "Awaiting clinic confirmation";
 
-                recentContainer.innerHTML =
-                    recentActivities.map(activity => {
-
-                        let activityText = "";
-
-                        switch (activity.status) {
-
-                            case "pending":
-                                activityText =
-                                    "Appointment submitted and waiting for approval";
-                                break;
-
-                            case "confirmed":
-                                activityText =
-                                    "Appointment confirmed by clinic";
-                                break;
-
-                            case "completed":
-                                activityText =
-                                    "Consultation completed";
-                                break;
-
-                            case "cancelled":
-                                activityText =
-                                    "Appointment cancelled";
-                                break;
-
-                            default:
-                                activityText =
-                                    "Appointment updated";
-                        }
-
-                        return `
-                            <div class="appointment-item">
-
+                    return `
+                        <div class="appointment-item">
+                            <div class="appointment-top">
                                 <div>
-                                    <div class="doctor-name">
-                                        ${activity.reason || "General Consultation"}
-                                    </div>
-
+                                    <div class="doctor-name">${doctorName}</div>
                                     <div class="appointment-date">
-                                        ${activityText}
+                                        ${apt.reason || "General Consultation"} • ${formatDate(apt.date)} ${apt.time ? `• ${apt.time}` : ""}
                                     </div>
                                 </div>
-
-                                <div class="appointment-date">
-                                    ${formatDate(activity.date)}
+                                <div class="status status-${apt.status}">
+                                    ${apt.status}
                                 </div>
-
                             </div>
-                        `;
+                        </div>
+                    `;
+                }).join("");
+            }
 
-                    }).join("");
+            // =========================
+            // RENDER RECENT ACTIVITY FEED
+            // =========================
+            const recentContainer = document.getElementById("recentActivityList");
+            
+            if (allAppointments.length === 0) {
+                recentContainer.innerHTML = `<div class="empty-message">No recent activity found</div>`;
+            } else {
+                // Slice the top 5 most recent actions from the sorted dataset
+                const recentActivities = allAppointments.slice(0, 5);
+                
+                recentContainer.innerHTML = recentActivities.map(activity => {
+                    let activityText = "";
+                    switch (activity.status) {
+                        case "pending":
+                            activityText = "Appointment submitted and waiting for approval";
+                            break;
+                        case "confirmed":
+                            activityText = "Appointment confirmed by clinic";
+                            break;
+                        case "completed":
+                            activityText = "Consultation completed";
+                            break;
+                        case "cancelled":
+                            activityText = "Appointment cancelled";
+                            break;
+                        default:
+                            activityText = "Appointment updated";
+                    }
+
+                    return `
+                        <div class="appointment-item">
+                            <div>
+                                <div class="doctor-name">${activity.reason || "General Consultation"}</div>
+                                <div class="appointment-date">${activityText}</div>
+                            </div>
+                            <div class="appointment-date">
+                                ${formatDate(activity.date)}
+                            </div>
+                        </div>
+                    `;
+                }).join("");
             }
 
         } catch (error) {
-
-            console.error("Error loading dashboard:", error);
-
+            console.error("Error displaying dashboard data cards:", error);
             document.getElementById("upcomingAppointmentsList").innerHTML = `
-                <div class="empty-message">
-                    Failed to load appointments
-                </div>
+                <div class="empty-message">Failed to load system appointments.</div>
             `;
-
             document.getElementById("recentActivityList").innerHTML = `
-                <div class="empty-message">
-                    Failed to load activity
-                </div>
+                <div class="empty-message">Failed to load system activity.</div>
             `;
         }
     }
 
     // =========================
-    // FORMAT DATE
+    // HELPER: FORMAT DATE
     // =========================
     function formatDate(dateString) {
-
         if (!dateString) return "-";
-
         const date = new Date(dateString);
-
         return date.toLocaleDateString("en-MY", {
             day: "numeric",
             month: "short",
@@ -652,22 +559,17 @@ async function checkHasMC(appointmentId) {
     }
 
     // =========================
-    // LOGOUT
+    // LOGOUT ACTION
     // =========================
-    document.getElementById("logoutLink")
-        .addEventListener("click", async (e) => {
-
-            e.preventDefault();
-
-            try {
-
-                await signOut(auth);
-
-                window.location.href = "login.html";
-
-            } catch (error) {
-
-                console.error("Logout error:", error);
-            }
-        });
+    document.getElementById("logoutLink").addEventListener("click", async (e) => {
+        e.preventDefault();
+        try {
+            await signOut(auth);
+            window.location.href = "login.html";
+        } catch (error) {
+            console.error("Logout error:", error);
+        }
+    });
 </script>
+</body>
+</html>
