@@ -335,6 +335,107 @@
             font-style: italic;
         }
 
+        /* --- Premium Custom Dialog Modal Styles --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-box {
+            background: var(--white);
+            width: 100%;
+            max-width: 400px;
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .modal-overlay.active .modal-box {
+            transform: scale(1);
+        }
+
+        .modal-icon {
+            width: 56px;
+            height: 56px;
+            background: #fee2e2;
+            color: #dc2626;
+            font-size: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 18px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+
+        .modal-message {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+
+        .modal-btn-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 11px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        .modal-btn.confirm-cancel {
+            background: #dc2626;
+            color: var(--white);
+        }
+
+        .modal-btn.confirm-cancel:hover {
+            background: #b91c1c;
+        }
+
+        .modal-btn.abort-cancel {
+            background: #f1f5f9;
+            color: var(--text-dark);
+        }
+
+        .modal-btn.abort-cancel:hover {
+            background: #e2e8f0;
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(4px); }
             to { opacity: 1; transform: translateY(0); }
@@ -365,6 +466,9 @@
         <a href="staff-manage-appointments.html" class="nav-link active">
             <i class="fas fa-calendar-check"></i> <span>Manage Appointments</span>
         </a>
+        <a href="staff-verify-payment.html" class="nav-link">
+            <i class="fas fa-dollar-sign"></i> <span>Verify Payments</span>
+        </a>
         <a href="staff-medication-list.html" class="nav-link">
             <i class="fas fa-pills"></i> <span>Medication List</span>
         </a>
@@ -392,6 +496,20 @@
     </div>
 </main>
 
+<div class="modal-overlay" id="cancelModalOverlay">
+    <div class="modal-box">
+        <div class="modal-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="modal-title">Cancel Appointment</div>
+        <div class="modal-message">Are you certain you wish to cancel this appointment? This action will set the status to cancelled.</div>
+        <div class="modal-btn-group">
+            <button class="modal-btn abort-cancel" id="abortCancelBtn">No, Keep It</button>
+            <button class="modal-btn confirm-cancel" id="confirmCancelBtn">Yes, Cancel</button>
+        </div>
+    </div>
+</div>
+
 <script type="module">
     import { auth, db } from './js/firebase-config.js';
     import { signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
@@ -399,6 +517,7 @@
 
     let localAppointmentsCache = [];
     let activeFilter = "all";
+    let pendingCancellationId = null; // Track which item is queued for cancellation
 
     auth.onAuthStateChanged((user) => {
         if (!user) {
@@ -602,7 +721,6 @@
         window.location.href = `staff-view-diagnosis.html?appointmentId=${appointmentId}`;
     }
 
-    // Attach Event Listeners globally directly to document or structural DOM nodes
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -612,6 +730,30 @@
         });
     });
 
+    // --- Modal Control Functions ---
+    const modalOverlay = document.getElementById('cancelModalOverlay');
+    
+    function showCancelModal(appointmentId) {
+        pendingCancellationId = appointmentId;
+        modalOverlay.classList.add('active');
+    }
+
+    function hideCancelModal() {
+        pendingCancellationId = null;
+        modalOverlay.classList.remove('active');
+    }
+
+    // Modal Button Listeners
+    document.getElementById('abortCancelBtn').addEventListener('click', hideCancelModal);
+    document.getElementById('confirmCancelBtn').addEventListener('click', async () => {
+        if (pendingCancellationId) {
+            const idToCancel = pendingCancellationId;
+            hideCancelModal(); // Close window quickly for smooth UX
+            await updateAppointmentStatus(idToCancel, "cancelled");
+        }
+    });
+
+    // Main interaction router
     document.addEventListener('click', async (e) => {
         const confirmBtn = e.target.closest('.confirm');
         const rescheduleBtn = e.target.closest('.reschedule');
@@ -644,9 +786,8 @@
 
         if (cancelBtn) {
             const id = cancelBtn.getAttribute('data-id');
-            if (confirm("Are you certain you wish to cancel this appointment?")) {
-                await updateAppointmentStatus(id, "cancelled");
-            }
+            // Replaced legacy confirm dialog with premium layout
+            showCancelModal(id);
         }
 
         if (dispenseBtn) {

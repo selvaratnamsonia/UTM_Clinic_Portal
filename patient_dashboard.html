@@ -399,18 +399,38 @@
         }
     });
 
+    // =========================================================================
+    // HELPER: COMBINE "YYYY-MM-DD" AND "HH:MM AM/PM" INTO ACCURATE JS DATE OBJECT
+    // =========================================================================
+    function parseAppointmentDateTime(dateStr, timeStr) {
+        if (!dateStr) return new Date(0);
+        if (!timeStr || timeStr === "Time TBD") return new Date(`${dateStr}T00:00:00`);
+
+        // Parses time string segments safely (e.g., "04:30 PM")
+        const [time, modifier] = timeStr.split(' ');
+        let [hours, minutes] = time.split(':');
+        hours = parseInt(hours, 10);
+
+        if (modifier === 'PM' && hours < 12) hours += 12;
+        if (modifier === 'AM' && hours === 12) hours = 0;
+
+        const formattedHours = String(hours).padStart(2, '0');
+        const formattedMinutes = String(minutes).padStart(2, '0');
+
+        return new Date(`${dateStr}T${formattedHours}:${formattedMinutes}:00`);
+    }
+
     // =========================
     // LOAD DASHBOARD DATA
     // =========================
     async function loadDashboardData(userId) {
-        // Get current date string in YYYY-MM-DD format based on local time
         const todayStr = new Date().toISOString().split("T")[0];
+        const now = new Date(); // Precise current moment tracking for comparison
 
         try {
             // =========================
             // FETCH ALL APPOINTMENTS FOR THIS USER
             // =========================
-            // Using a simple single-field query avoids any complex index errors
             const baseQuery = query(
                 collection(db, "appointments"),
                 where("userId", "==", userId)
@@ -427,26 +447,30 @@
             allAppointments.sort((a, b) => new Date(b.date) - new Date(a.date));
 
             // =========================
-            // 1. STATS: UPCOMING APPOINTMENTS
+            // 1. STATS: UPCOMING APPOINTMENTS (Fitted with accurate time comparisons)
             // =========================
-            // Filters records matching active status whose appointment date is today or in the future
-            const upcomingAppointments = allAppointments.filter(apt => 
-                (apt.status === "pending" || apt.status === "confirmed") && 
-                apt.date >= todayStr
-            );
+            const upcomingAppointments = allAppointments.filter(apt => {
+                const statusValid = (apt.status === "pending" || apt.status === "confirmed");
+                const aptDateTime = parseAppointmentDateTime(apt.date, apt.time);
+                
+                // Must be active status and scheduled in the future
+                return statusValid && aptDateTime >= now;
+            });
+            
+            // Sort the array ascendingly (soonest upcoming appointment shows up on top)
+            upcomingAppointments.sort((a, b) => parseAppointmentDateTime(a.date, a.time) - parseAppointmentDateTime(b.date, b.time));
+            
             document.getElementById("upcomingCount").innerText = upcomingAppointments.length;
 
             // =========================
             // 2. STATS: TOTAL CONSULTATIONS DONE BY DOCTOR
             // =========================
-            // Counts appointments that have been successfully processed and completed by medical staff
             const completedAppointments = allAppointments.filter(apt => apt.status === "completed");
-            document.getElementById("totalVisits").innerText = completedAppointments.size || completedAppointments.length;
+            document.getElementById("totalVisits").innerText = completedAppointments.length;
 
             // =========================
             // 3. STATS: ACTIVE CERTIFICATES (MC)
             // =========================
-            // Fetches certificates and validates their real-time expiry range
             const mcQuery = query(collection(db, "medicalCertificates"), where("userId", "==", userId));
             const mcSnap = await getDocs(mcQuery);
             let activeMcCount = 0;
@@ -498,7 +522,6 @@
             if (allAppointments.length === 0) {
                 recentContainer.innerHTML = `<div class="empty-message">No recent activity found</div>`;
             } else {
-                // Slice the top 5 most recent actions from the sorted dataset
                 const recentActivities = allAppointments.slice(0, 5);
                 
                 recentContainer.innerHTML = recentActivities.map(activity => {

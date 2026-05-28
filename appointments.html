@@ -417,6 +417,25 @@
         return "Awaiting Doctor Assignment";
     }
 
+    // Helper to accurately parse "YYYY-MM-DD" and "HH:MM AM/PM" into a comparable Date Object
+    function parseAppointmentDateTime(dateStr, timeStr) {
+        if (!dateStr) return new Date(0);
+        if (!timeStr || timeStr === "Time TBD") return new Date(`${dateStr}T00:00:00`);
+
+        // Convert "04:30 PM" to 24h variables
+        const [time, modifier] = timeStr.split(' ');
+        let [hours, minutes] = time.split(':');
+        hours = parseInt(hours, 10);
+
+        if (modifier === 'PM' && hours < 12) hours += 12;
+        if (modifier === 'AM' && hours === 12) hours = 0;
+
+        const formattedHours = String(hours).padStart(2, '0');
+        const formattedMinutes = String(minutes).padStart(2, '0');
+
+        return new Date(`${dateStr}T${formattedHours}:${formattedMinutes}:00`);
+    }
+
     // View interface rendering logic
     async function renderTable(appointmentsList) {
         const container = document.getElementById('appointmentsTableBody');
@@ -428,17 +447,17 @@
         }
 
         let html = '';
+        const now = new Date();
         
-        // Use for...of loop to support sequential asynchronous verification safely
         for (const item of appointmentsList) {
             const doctorDisplay = getDoctorDisplayName(item);
             const timeStr = item.time || "Time TBD";
             const reasonStr = item.reason || "General Consultation";
             const currentStatus = item.status ? item.status.toLowerCase() : 'pending';
 
-            const todayStr = new Date().toISOString().split("T")[0];
-            // An appointment is overdue if its date is older than today, and its status is still pending/confirmed
-            const isOverdue = (item.date < todayStr) && (currentStatus === 'pending' || currentStatus === 'confirmed');
+            // Compare specific datetime timestamps to assess accurate past-due items
+            const aptDateTime = parseAppointmentDateTime(item.date, item.time);
+            const isOverdue = (aptDateTime < now) && (currentStatus === 'pending' || currentStatus === 'confirmed');
 
             const canCancel = (currentStatus === 'pending' || currentStatus === 'confirmed') && !isOverdue;
             const isCancelled = currentStatus === 'cancelled';
@@ -447,7 +466,6 @@
             let hasMC = false;
             let diagnosisId = "";
 
-            // Safely verify matching diagnosis subcollections inside the map engine loop
             if (isCompleted) {
                 try {
                     const diagnosisQuery = query(collection(db, "diagnosis"), where("appointmentId", "==", item.id));
@@ -494,7 +512,6 @@
         
         container.innerHTML = html;
         
-        // Attach interactive layout navigation event triggers
         document.querySelectorAll('.view-mc-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -512,7 +529,6 @@
         });
     }
     
-    // Simple escape to prevent XSS
     function escapeHtml(str) {
         if (!str) return '';
         return str.replace(/[&<>]/g, function(m) {
@@ -523,7 +539,6 @@
         });
     }
 
-    // Cancel appointment in Firestore with Premium Dialog Integration
     async function cancelAppointment(appointmentId) {
         const confirmCancel = await showConfirm(
             "Cancel Appointment",
@@ -552,24 +567,27 @@
         const keyword = searchInput ? searchInput.value.toLowerCase().trim() : '';
         const filterValue = statusFilter ? statusFilter.value : 'all';
         
-        const todayStr = new Date().toISOString().split("T")[0];
+        const now = new Date();
 
-        // First, separate upcoming vs past based on date string comparison
+        // Separate upcoming vs past based on precise composite datetime calculation instances
         let timelineFiltered = allAppointments.filter(item => {
             const status = item.status ? item.status.toLowerCase() : 'pending';
+            const aptDateTime = parseAppointmentDateTime(item.date, item.time);
             
             if (currentTab === 'upcoming') {
-                return (item.date >= todayStr) && (status !== 'cancelled' && status !== 'completed');
+                // Must be in the future AND neither cancelled nor completed
+                return (aptDateTime >= now) && (status !== 'cancelled' && status !== 'completed');
             } else {
-                return (item.date < todayStr) || (status === 'cancelled' || status === 'completed');
+                // Is in the past OR has explicitly closed/finished statuses
+                return (aptDateTime < now) || (status === 'cancelled' || status === 'completed');
             }
         });
         
         // Sort timeline lists
         if (currentTab === 'upcoming') {
-            timelineFiltered.sort((a, b) => new Date(a.date) - new Date(b.date));
+            timelineFiltered.sort((a, b) => parseAppointmentDateTime(a.date, a.time) - parseAppointmentDateTime(b.date, b.time));
         } else {
-            timelineFiltered.sort((a, b) => new Date(b.date) - new Date(a.date));
+            timelineFiltered.sort((a, b) => parseAppointmentDateTime(b.date, b.time) - parseAppointmentDateTime(a.date, a.time));
         }
         
         // Apply search and status filters

@@ -17,6 +17,7 @@
             --border-color: #e2e8f0;
             --radius: 16px;
             --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+            --success: #10b981;
         }
 
         * {
@@ -74,6 +75,7 @@
         .section-title {
             font-size: 18px;
             font-weight: 700;
+            margin-top: 30px;
             margin-bottom: 15px;
             display: flex;
             align-items: center;
@@ -115,19 +117,20 @@
             margin-bottom: 20px;
         }
 
-        .medication-table {
+        .medication-table, .billing-table {
             width: 100%;
             border-collapse: collapse;
+            margin-bottom: 15px;
         }
 
-        .medication-table th,
-        .medication-table td {
+        .medication-table th, .billing-table th,
+        .medication-table td, .billing-table td {
             padding: 12px;
             text-align: left;
             border-bottom: 1px solid var(--border-color);
         }
 
-        .medication-table th {
+        .medication-table th, .billing-table th {
             background: #f8fafc;
             font-weight: 600;
             color: var(--text-muted);
@@ -135,7 +138,7 @@
             text-transform: uppercase;
         }
 
-        .dispense-btn {
+        .dispense-btn, .btn-primary {
             background: var(--primary);
             color: white;
             border: none;
@@ -146,14 +149,68 @@
             transition: background 0.2s;
         }
 
-        .dispense-btn:hover {
+        .dispense-btn:hover, .btn-primary:hover {
             background: #6a2438;
         }
 
-        .dispense-btn:disabled {
+        .btn-secondary {
             background: #cbd5e1;
-            color: #64748b;
-            cursor: not-allowed;
+            color: var(--text-dark);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .flex-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Billing Summary Highlight Box */
+        .total-summary-box {
+            background: var(--primary-light);
+            border: 1px solid var(--primary);
+            padding: 15px;
+            border-radius: 12px;
+            text-align: right;
+            margin-top: 15px;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        /* Form Row Layout inside Form container */
+        .form-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 10px;
+            background: #f1f5f9;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .form-group label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .form-control {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
         }
 
         .toast {
@@ -213,10 +270,11 @@
 
 <script type="module">
     import { auth, db } from './js/firebase-config.js';
-    import { doc, getDoc, collection, query, where, getDocs, updateDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+    import { doc, getDoc, collection, query, where, getDocs, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
     const urlParams = new URLSearchParams(window.location.search);
     const appointmentId = urlParams.get('appointmentId');
+    let dynamicDiagnosisDocId = null; // Store document key reference for updates
 
     function showToast(message, isError = false) {
         const toast = document.createElement('div');
@@ -235,7 +293,6 @@
         }
 
         try {
-            // 1. Verify the appointment exists
             const appointmentRef = doc(db, "appointments", appointmentId);
             const appointmentSnap = await getDoc(appointmentRef);
             
@@ -246,7 +303,6 @@
 
             const appointmentData = appointmentSnap.data();
             
-            // 2. Fetch patient profile details
             let patientName = "Unknown Patient";
             let matricNumber = "N/A";
             if (appointmentData.userId) {
@@ -261,7 +317,6 @@
             document.getElementById('patientInfo').innerHTML = `${escapeHtml(patientName)} • ${escapeHtml(matricNumber)}`;
             document.getElementById('pageTitle').innerHTML = `Diagnosis for ${escapeHtml(patientName)}`;
 
-            // 3. Query the diagnosis collection for this exact appointment
             const diagnosisCollection = collection(db, "diagnosis");
             const diagnosisQuery = query(diagnosisCollection, where("appointmentId", "==", appointmentId));
             const diagnosisSnap = await getDocs(diagnosisQuery);
@@ -278,12 +333,12 @@
             }
 
             const diagnosisDoc = diagnosisSnap.docs[0];
-            const diagnosisData = diagnosisDoc.data();
+            dynamicDiagnosisDocId = diagnosisDoc.id; // Save to global scope variable
+            const diagnosisData = diagnosisDoc.id ? diagnosisDoc.data() : {};
             
-            // 4. Doctor Name Recovery System -> Hardcoded fallback override to match your screen requirements perfectly!
             let finalDoctorName = "Dr. Sia Jun Yu"; 
 
-            // 5. Build medications HTML table component
+            // Build medications HTML table component
             let medicationsHtml = '';
             if (diagnosisData.medications && Array.isArray(diagnosisData.medications) && diagnosisData.medications.length > 0) {
                 medicationsHtml = `
@@ -300,9 +355,7 @@
                         </thead>
                         <tbody>
                             ${diagnosisData.medications.map((med, index) => {
-                                // Defaulting to a baseline stock count so it never shows disabled unless required
                                 const initialStock = 10; 
-                                
                                 return `
                                 <tr id="med-row-${index}">
                                     <td>${escapeHtml(med.medication || 'N/A')}</td>
@@ -326,7 +379,39 @@
                 medicationsHtml = '<p style="color: var(--text-muted);">No medications prescribed.</p>';
             }
 
-            // 6. Build Medical Certificate (MC) section element
+            // Build Additional Items Table Section
+            let totalCostAccumulated = 0;
+            let additionalItemsHtml = `
+                <table class="billing-table">
+                    <thead>
+                        <tr>
+                            <th>Item Name</th>
+                            <th>Unit Cost (RM)</th>
+                            <th>Quantity</th>
+                            <th>Total Subtotal (RM)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            if (diagnosisData.additionalItems && Array.isArray(diagnosisData.additionalItems) && diagnosisData.additionalItems.length > 0) {
+                diagnosisData.additionalItems.forEach(item => {
+                    const subtotal = parseFloat(item.cost || 0) * parseInt(item.quantity || 1);
+                    totalCostAccumulated += subtotal;
+                    additionalItemsHtml += `
+                        <tr>
+                            <td>${escapeHtml(item.itemName)}</td>
+                            <td>RM ${parseFloat(item.cost).toFixed(2)}</td>
+                            <td>${item.quantity}</td>
+                            <td><strong>RM ${subtotal.toFixed(2)}</strong></td>
+                        </tr>
+                    `;
+                });
+            } else {
+                additionalItemsHtml += `<tr><td colspan="4" style="text-align: center; color: var(--text-muted);">No extra billing charges appended yet.</td></tr>`;
+            }
+            additionalItemsHtml += `</tbody></table>`;
+
             const mcHtml = diagnosisData.mcIssued ? `
                 <div class="info-item">
                     <div class="info-label">Medical Certificate</div>
@@ -334,7 +419,7 @@
                 </div>
             ` : '<div class="info-item"><div class="info-label">Medical Certificate</div><div class="info-value">❌ Not issued</div></div>';
 
-            // 7. Inject everything directly into view container DOM
+            // Inject core layout and view nodes
             contentDiv.innerHTML = `
                 <div class="info-grid">
                     <div class="info-item">
@@ -359,10 +444,50 @@
                     <i class="fas fa-prescription-bottle"></i> Prescribed Medications
                 </div>
                 ${medicationsHtml}
+
+                <div class="section-title flex-header">
+                    <span><i class="fas fa-receipt"></i> Additional Non-Medicine Items (Patient Charges)</span>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Item Description / Selection</label>
+                        <select id="newItemName" class="form-control">
+                            <option value="Face Mask (3-ply)">Face Mask (3-ply)</option>
+                            <option value="N95 Medical Mask">N95 Medical Mask</option>
+                            <option value="Crepe Bandage (7.5cm)">Crepe Bandage (7.5cm)</option>
+                            <option value="Arm Sling Support">Arm Sling Support</option>
+                            <option value="Instant Cold Ice Pack">Instant Cold Ice Pack</option>
+                            <option value="Medical Certificate Copy Fee">Medical Certificate Copy Fee</option>
+                            <option value="Blood Glucose Strip + Test">Blood Glucose Strip + Test</option>
+                            <option value="Sterile Dressing Tray Kit">Sterile Dressing Tray Kit</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Unit Cost (RM)</label>
+                        <input type="number" id="newItemCost" class="form-control" value="1.00" step="0.01" min="0">
+                    </div>
+                    <div class="form-group" style="flex-direction: row; align-items: flex-end; gap: 10px;">
+                        <div style="flex: 1;">
+                            <label>Qty</label>
+                            <input type="number" id="newItemQty" class="form-control" value="1" min="1">
+                        </div>
+                        <button type="button" id="addItemBtn" class="btn-primary" style="height: 38px;">
+                            <i class="fas fa-plus"></i> 
+                        </button>
+                    </div>
+                </div>
+
+                ${additionalItemsHtml}
+
+                <div class="total-summary-box">
+                    Total Amount Due: RM ${totalCostAccumulated.toFixed(2)}
+                </div>
             `;
 
-            // Setup button interactions
+            // Setup programmatic context event handlers
             attachDispenseListeners();
+            attachBillingFormListeners();
 
         } catch (error) {
             console.error("Error loading diagnosis workflow:", error);
@@ -370,16 +495,60 @@
         }
     }
 
+    function attachBillingFormListeners() {
+        const addItemBtn = document.getElementById('addItemBtn');
+        if (!addItemBtn) return;
+
+        addItemBtn.addEventListener('click', async () => {
+            const name = document.getElementById('newItemName').value;
+            const cost = parseFloat(document.getElementById('newItemCost').value);
+            const qty = parseInt(document.getElementById('newItemQty').value);
+
+            if (!name || isNaN(cost) || isNaN(qty) || qty < 1) {
+                showToast("❌ Please complete valid form values.", true);
+                return;
+            }
+
+            try {
+                addItemBtn.disabled = true;
+                addItemBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+                // Locate structural instance document path inside Firestore
+                const diagnosisDocRef = doc(db, "diagnosis", dynamicDiagnosisDocId);
+
+                const payloadItem = {
+                    itemName: name,
+                    cost: cost,
+                    quantity: qty,
+                    addedAt: new Date().toISOString()
+                };
+
+                // Atomic array inject statement execution
+                await updateDoc(diagnosisDocRef, {
+                    additionalItems: arrayUnion(payloadItem)
+                });
+
+                showToast(`✅ Added ${name} successfully to patient bill!`);
+                
+                // Live hot refresh payload framework update view instantly
+                loadDiagnosis();
+            } catch (err) {
+                console.error("Failed executing database update push: ", err);
+                showToast(`❌ Database Write Error: ${err.message}`, true);
+                addItemBtn.disabled = false;
+                addItemBtn.innerHTML = '<i class="fas fa-plus"></i> Add Item';
+            }
+        });
+    }
+
     async function attachDispenseListeners() {
         const dispenseBtns = document.querySelectorAll('.dispense-btn');
-        
         for (const btn of dispenseBtns) {
             const newBtn = btn.cloneNode(true);
             btn.parentNode.replaceChild(newBtn, btn);
             
             newBtn.addEventListener('click', async () => {
                 const medicineName = newBtn.getAttribute('data-medicine');
-                
                 if (confirm(`Dispense "${medicineName}" to patient?`)) {
                     try {
                         const medicationsRef = collection(db, "medications");
@@ -389,12 +558,11 @@
                         if (!medSnap.empty) {
                             const medDoc = medSnap.docs[0];
                             const medData = medDoc.data();
-                            
                             const currentDbStock = medData.stock !== undefined ? parseInt(medData.stock) : 0;
                             const newStock = currentDbStock - 1;
                             
                             if (currentDbStock <= 0) {
-                                showToast(`❌ Inventory synchronization failure. "${medicineName}" is out of stock in database.`, true);
+                                showToast(`❌ Inventory synchronization failure. "${medicineName}" is out of stock.`, true);
                                 return;
                             }
 

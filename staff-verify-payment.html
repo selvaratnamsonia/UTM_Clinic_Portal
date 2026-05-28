@@ -78,9 +78,12 @@
     </div>
 
     <script type="module">
-        import { auth, db } from './js/firebase-config.js';
-        import { signOut } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
-        import { collection, query, getDocs, doc, updateDoc, orderBy } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+        // 1. Aligned to your exact config file and its automated UI wrapper functions
+        import { auth, db, autoGetDocs, autoUpdateDoc } from './js/firebase-config.js';
+        
+        // 2. Updated CDN import paths to match version 12.13.0 perfectly
+        import { signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+        import { collection, query, doc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
         let localPaymentsCache = [];
         let activeTabFilter = 'pending';
@@ -97,10 +100,16 @@
         // Pull collection logs pipeline mapping from database
         async function fetchPaymentsData() {
             try {
-                const paymentsQuery = query(collection(db, "payments"), orderBy("date", "desc"));
-                const snap = await getDocs(paymentsQuery);
+                const paymentsQuery = query(collection(db, "payments"));
+                
+                // Using your new automated loading wrapper that hooks into global-loader.js!
+                const snap = await autoGetDocs(paymentsQuery);
                 
                 localPaymentsCache = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                
+                // Sort array locally safely
+                localPaymentsCache.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+                
                 renderPaymentsList();
             } catch (error) {
                 console.error("Firestore loading failure:", error);
@@ -162,8 +171,19 @@
                     `;
                 }
 
+                // Handle item array mapping cleanly
+                let displayItems = 'Wellness Items';
+                if (Array.isArray(item.items)) {
+                    displayItems = item.items.map(i => `${i.itemName} (x${i.quantity || 1})`).join(', ');
+                } else if (typeof item.items === 'string' && item.items) {
+                    displayItems = item.items;
+                }
+
+                // Balance field checks
+                const costAmount = parseFloat(item.amountDue || item.amount || 0);
+
                 return `
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 transition hover:shadow-md/50">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 transition hover:shadow-md">
                         <div class="flex-1">
                             <div class="flex items-center gap-3 mb-2">
                                 <h3 class="text-lg font-bold text-gray-800">${escapeHtml(item.studentName || 'Unknown Student')}</h3>
@@ -173,9 +193,9 @@
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-1 text-sm text-gray-600">
                                 <div><span class="text-gray-400 font-medium">ID:</span> ${escapeHtml(item.studentId || 'N/A')}</div>
-                                <div><span class="text-gray-400 font-medium">Items:</span> ${escapeHtml(item.items || 'Wellness Items')}</div>
-                                <div><span class="text-gray-400 font-medium">Amount:</span> RM ${(parseFloat(item.amount) || 0.00).toFixed(2)}</div>
-                                <div><span class="text-gray-400 font-medium">Date:</span> ${item.date || 'N/A'}</div>
+                                <div class="truncate max-w-[200px]" title="${escapeHtml(displayItems)}"><span class="text-gray-400 font-medium">Items:</span> ${escapeHtml(displayItems)}</div>
+                                <div class="font-semibold text-gray-900"><span class="text-gray-400 font-medium font-normal">Amount:</span> RM ${costAmount.toFixed(2)}</div>
+                                <div><span class="text-gray-400 font-medium">Appt ID:</span> ${escapeHtml(item.appointmentId || 'N/A')}</div>
                             </div>
                         </div>
                         <div class="flex items-center gap-2 self-end md:self-auto">
@@ -198,6 +218,14 @@
                     const url = btn.getAttribute('data-url');
                     if (url && url !== '#') window.open(url, '_blank');
                 });
+            });
+
+            // Prevent target element duplicate binding triggers
+            document.querySelectorAll('.btn-action-verify').forEach(btn => {
+                btn.replaceWith(btn.cloneNode(true));
+            });
+            document.querySelectorAll('.btn-action-reject').forEach(btn => {
+                btn.replaceWith(btn.cloneNode(true));
             });
 
             document.querySelectorAll('.btn-action-verify').forEach(btn => {
@@ -223,22 +251,23 @@
         async function updatePaymentStatus(recordId, newStatus) {
             try {
                 const docReference = doc(db, "payments", recordId);
-                await updateDoc(docReference, { status: newStatus });
+                
+                // Using your new automated updating wrapper function
+                await autoUpdateDoc(docReference, { status: newStatus });
+                
                 alert(`Payment row status updated to ${newStatus} successfully.`);
-                fetchPaymentsData(); // Reload live array streams
+                fetchPaymentsData(); 
             } catch (error) {
                 console.error("Status modify pipeline break:", error);
                 alert("Error configuring new transaction state: " + error.message);
             }
         }
 
-        // Sanitation Escaper helper logic
         function escapeHtml(text) {
             if (!text) return '';
             return text.replace(/[&<>]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[char] || char));
         }
 
-        // Global Navigation Events setup
         document.getElementById('paymentSearch').addEventListener('input', renderPaymentsList);
 
         const tabPending = document.getElementById('tabPending');
@@ -247,12 +276,9 @@
 
         function switchTabs(targetTab, activeBtn, inactiveBtn1, inactiveBtn2) {
             activeTabFilter = targetTab;
-            
-            // Manage dynamic tab color states
             activeBtn.className = "px-5 py-2 text-sm font-semibold rounded-lg bg-primary text-white transition-all";
             inactiveBtn1.className = "px-5 py-2 text-sm font-semibold rounded-lg text-gray-600 hover:text-gray-900 transition-all";
             inactiveBtn2.className = "px-5 py-2 text-sm font-semibold rounded-lg text-gray-600 hover:text-gray-900 transition-all";
-            
             renderPaymentsList();
         }
 
