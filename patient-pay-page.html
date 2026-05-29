@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Checkout - UTM Clinic</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/premium-dialog.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #802c44;
+            --primary-light: #f4e8ec;
+            --primary-hover: #6a2438;
+            --bg-body: #f8fafc;
+            --white: #ffffff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+            
+            /* Payment Colors */
+            --success: #10b981;
+            --tng-blue: #0052b4;
+            --fpx-teal: #009688;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            background: var(--bg-body);
+            color: var(--text-dark);
+        }
+
+        /* --- Sidebar Navigation --- */
+        .sidebar {
+            width: 280px;
+            background: var(--white);
+            border-right: 1px solid var(--border-color);
+            padding: 30px 0;
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 25px 40px;
+        }
+
+        .logo-box {
+            width: 42px;
+            height: 42px;
+            background: var(--primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-img { width: 80%; height: 80%; object-fit: contain; }
+        .logo-text { font-size: 22px; font-weight: 700; color: var(--primary); }
+        .nav-links { display: flex; flex-direction: column; gap: 5px; padding: 0 15px; }
+
+        .nav-link {
+            padding: 12px 18px;
+            color: var(--text-muted);
+            border-radius: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .nav-link:hover { background: var(--primary-light); color: var(--primary); }
+        .nav-link.active { background: var(--primary-light); color: var(--primary); font-weight: 600; }
+
+        /* --- Main Layout --- */
+        .main {
+            flex: 1;
+            padding: 40px 60px;
+            max-width: 1400px;
+        }
+
+        header { margin-bottom: 35px; }
+        h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+        .subtitle { color: var(--text-muted); }
+
+        .checkout-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.3fr;
+            gap: 30px;
+            align-items: start;
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-dark);
+        }
+
+        /* --- Summary Item Breakdown --- */
+        .summary-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 12px;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+        .item-details h4 { font-size: 15px; font-weight: 600; color: var(--text-dark); }
+        .item-details p { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+        .item-price { font-weight: 600; color: var(--text-dark); font-size: 15px; text-align: right; }
+
+        .total-box {
+            background: var(--primary-light);
+            padding: 20px;
+            border-radius: var(--radius-md);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .total-box span { font-weight: 700; color: var(--primary); font-size: 16px; }
+        .total-price { font-size: 24px; font-weight: 800; color: var(--primary); }
+
+        /* --- Modern Radio Payment Selectors --- */
+        .payment-methods {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .method-option {
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .method-option:hover {
+            border-color: var(--primary);
+            background-color: #fafafb;
+        }
+
+        .method-option.selected {
+            border-color: var(--primary);
+            background-color: var(--primary-light);
+        }
+
+        .method-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .method-icon-frame {
+            width: 45px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            background: #f1f5f9;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .method-info h4 { font-size: 15px; font-weight: 600; }
+        .method-info p { font-size: 12px; color: var(--text-muted); }
+
+        /* Custom Radio Style */
+        .custom-radio {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+
+        .method-option.selected .custom-radio {
+            border-color: var(--primary);
+        }
+
+        .method-option.selected .custom-radio::after {
+            content: '';
+            width: 10px;
+            height: 10px;
+            background: var(--primary);
+            border-radius: 50%;
+        }
+
+        /* --- Dynamic Form Panels --- */
+        .payment-panel {
+            display: none;
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid var(--border-color);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .payment-panel.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .form-group label { font-size: 14px; font-weight: 600; color: var(--text-dark); }
+        
+        .select-input, .text-input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            outline: none;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        .select-input:focus, .text-input:focus { border-color: var(--primary); }
+
+        /* QR Framework Styling */
+        .qr-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: var(--radius-md);
+            border: 1px dashed var(--border-color);
+        }
+
+        .qr-box {
+            width: 180px;
+            height: 180px;
+            background: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            margin-bottom: 12px;
+        }
+        .qr-box img { width: 100%; height: 100%; object-fit: contain; }
+
+        /* --- Checkout Action Buttons --- */
+        .btn-submit-payment {
+            width: 100%;
+            background: var(--primary);
+            color: var(--white);
+            border: none;
+            padding: 16px;
+            border-radius: var(--radius-md);
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+            margin-top: 15px;
+        }
+
+        .btn-submit-payment:hover { background: var(--primary-hover); }
+
+        /* --- Responsive Queries --- */
+        @media (max-width: 1024px) {
+            .sidebar { width: 80px; }
+            .logo-text, .nav-link span { display: none; }
+            .main { padding: 30px; }
+            .checkout-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<aside class="sidebar">
+    <div class="logo-container">
+        <div class="logo-box">
+            <img src="images/Clinic-logo.png" alt="Logo" class="logo-img">
+        </div>
+        <div class="logo-text">UTM Clinic</div>
+    </div>
+
+    <nav class="nav-links">
+        <a href="patient_dashboard.html" class="nav-link"><i class="fas fa-columns"></i> <span>Dashboard</span></a>
+        <a href="appointments.html" class="nav-link active"><i class="fas fa-calendar-alt"></i> <span>My Appointments</span></a>
+        <a href="book-appointment.html" class="nav-link"><i class="fas fa-plus-circle"></i> <span>Book Appointment</span></a>
+        <a href="patient-profile.html" class="nav-link"><i class="fas fa-user-circle"></i> <span>Profile</span></a>
+        <a href="#" id="logoutLink" class="nav-link" style="margin-top: auto; color: #ef4444;"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
+    </nav>
+</aside>
+
+<main class="main">
+    <header>
+        <h1>Secure Payment Checkout</h1>
+        <p class="subtitle">Complete your payment securely via our integrated gateway systems.</p>
+    </header>
+
+    <div class="checkout-grid">
+        <div class="card">
+            <div class="card-title">
+                <i class="fas fa-receipt" style="color: var(--primary)"></i> Items to Pay
+            </div>
+            
+            <div class="summary-list" id="itemsBreakdownContainer">
+                <div class="summary-item">
+                    <div class="item-details">
+                        <h4>Retrieving Billing Ledger...</h4>
+                        <p>Synchronizing details with the UTM clinic database core.</p>
+                    </div>
+                    <div class="item-price">RM 0.00</div>
+                </div>
+            </div>
+
+            <div class="total-box">
+                <span>Total Amount Due</span>
+                <div class="total-price" id="checkoutTotalDisplay">RM 0.00</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">
+                <i class="fas fa-wallet" style="color: var(--primary)"></i> Select Payment Method
+            </div>
+
+            <div class="payment-methods">
+                <div class="method-option" data-target="tng-panel">
+                    <div class="method-left">
+                        <div class="method-icon-frame" style="color: var(--tng-blue); background-color: #e0f2fe;">TnG</div>
+                        <div class="method-info">
+                            <h4>Touch 'n Go eWallet</h4>
+                            <p>Scan QR code instantly inside your mobile wallet app</p>
+                        </div>
+                    </div>
+                    <div class="custom-radio"></div>
+                </div>
+
+                <div class="method-option" data-target="fpx-panel">
+                    <div class="method-left">
+                        <div class="method-icon-frame" style="color: var(--fpx-teal); background-color: #ccfbf1;">FPX</div>
+                        <div class="method-info">
+                            <h4>FPX Direct Debit</h4>
+                            <p>Instant transfer via your active bank credentials</p>
+                        </div>
+                    </div>
+                    <div class="custom-radio"></div>
+                </div>
+
+                <div class="method-option" data-target="banking-panel">
+                    <div class="method-left">
+                        <div class="method-icon-frame" style="color: var(--primary); background-color: var(--primary-light);"><i class="fas fa-university"></i></div>
+                        <div class="method-info">
+                            <h4>Manual Online Banking Transfer</h4>
+                            <p>Direct bank-in transfer and upload verification screenshot receipt</p>
+                        </div>
+                    </div>
+                    <div class="custom-radio"></div>
+                </div>
+            </div>
+
+            <div id="tng-panel" class="payment-panel">
+                <div class="qr-container">
+                    <div class="qr-box">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=UTMClinic_PaymentGateway_Mock" alt="TnG Gateway QR Code">
+                    </div>
+                    <p style="font-size: 13px; font-weight: 600; color: var(--text-dark);">Scan using your Touch 'n Go App</p>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Once complete, click the process payment button below to verify.</p>
+                </div>
+            </div>
+
+            <div id="fpx-panel" class="payment-panel">
+                <div class="form-group">
+                    <label for="fpxBankSelect">Choose your Bank</label>
+                    <select id="fpxBankSelect" class="select-input">
+                        <option value="">-- Choose preferred bank portal --</option>
+                        <option value="maybank">Maybank2u</option>
+                        <option value="cimb">CIMB Clicks</option>
+                        <option value="public">Public Bank Online</option>
+                        <option value="rhb">RHB Now</option>
+                        <option value="ambank">AmBank Online</option>
+                        <option value="bankislam">Bank Islam</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="banking-panel" class="payment-panel">
+                <div style="background-color: #f8fafc; padding: 16px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 16px; font-size: 13px; line-height: 1.5;">
+                    <strong style="color: var(--primary);">UTM Clinic Official Account Details:</strong><br>
+                    Bank Name: <strong>RHB BANK</strong><br>
+                    Account Number: <strong>15146900000789</strong><br>
+                    Recipient Reference: <strong id="bankingReferenceId">UTM-APT-PENDING</strong>
+                </div>
+                <div class="form-group">
+                    <label for="receiptUrlField">Transaction Receipt Image Link</label>
+                    <input type="text" id="receiptUrlField" class="text-input" placeholder="Paste your hosted image URL path or receipt reference ID here...">
+                </div>
+            </div>
+
+            <button type="button" class="btn-submit-payment" id="processPaymentBtn" disabled style="opacity: 0.5; cursor: not-allowed;">
+                <i class="fas fa-shield-alt"></i> Complete Secure Payment
+            </button>
+        </div>
+    </div>
+</main>
+
+<script type="module">
+    import { showConfirm } from "./js/premium-dialog.js";
+    import { auth, db } from './js/firebase-config.js';
+    import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+    let currentAppointmentId = "";
+    let selectedMethod = "";
+
+    // Parse URL Parameters to find appointment references
+    function checkUrlParameters() {
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // Dynamic lookup capturing standard key architectures ('aptId' fallback to 'appointmentId')
+        const aptId = urlParams.get('aptId') || urlParams.get('appointmentId');
+        
+        if (aptId) {
+            currentAppointmentId = aptId;
+            document.getElementById('bankingReferenceId').innerText = `UTM-APT-${aptId.substring(0,8).toUpperCase()}`;
+            loadTargetAppointmentDetails(aptId);
+        } else {
+            console.log("No dynamic appointment parameters detected. Displaying standard presentation layout.");
+            document.getElementById('processPaymentBtn').removeAttribute('disabled');
+            document.getElementById('processPaymentBtn').style.opacity = "1";
+            document.getElementById('processPaymentBtn').style.cursor = "pointer";
+        }
+    }
+
+    // Dynamic database loader injects values directly from Firestore
+    async function loadTargetAppointmentDetails(aptId) {
+        try {
+            const docRef = doc(db, "appointments", aptId);
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                const container = document.getElementById('itemsBreakdownContainer');
+                
+                // Clear out the loading/placeholder states safely
+                container.innerHTML = '';
+                
+                let combinedTotal = 0;
+
+                // 1. Consultation Fee (Defaulting to RM 0.00 as consultations are covered for UTM students/staff)
+                const baseConsultationCost = data.feeCost !== undefined ? parseFloat(data.feeCost) : 0.00;
+                combinedTotal += baseConsultationCost;
+
+                let consultationDesc = "Standard General Practitioner Consultation";
+                if (data.reason) {
+                    consultationDesc = `Symptom Profile: ${data.reason}`;
+                }
+
+                container.innerHTML += `
+                    <div class="summary-item">
+                        <div class="item-details">
+                            <h4>Clinic Consultation Fee</h4>
+                            <p>${consultationDesc}</p>
+                        </div>
+                        <div class="item-price">RM ${baseConsultationCost.toFixed(2)}</div>
+                    </div>
+                `;
+
+                // 2. Loop through Prescribed Medications
+                if (data.prescriptions && data.prescriptions.length > 0) {
+                    data.prescriptions.forEach(med => {
+                        const medicineCost = med.cost ? parseFloat(med.cost) : 0.00;
+                        combinedTotal += medicineCost;
+
+                        const dosageInfo = med.dosage && med.dosage !== 'N/A' ? `, Dosage: ${med.dosage}` : '';
+                        const notesInfo = med.notes && med.notes.trim() !== '' ? ` (${med.notes})` : '';
+
+                        container.innerHTML += `
+                            <div class="summary-item">
+                                <div class="item-details">
+                                    <h4>Medication: ${med.name}</h4>
+                                    <p>Frequency: ${med.frequency}x daily, Duration: ${med.duration} days${dosageInfo}${notesInfo}</p>
+                                </div>
+                                <div class="item-price">RM ${medicineCost.toFixed(2)}</div>
+                            </div>
+                        `;
+                    });
+                }
+
+                // 3. Loop through Non-Medicine Accessory Items / Additional Patient Charges
+                const physicalItemsList = data.additionalItems || data.patientCharges || [];
+                if (physicalItemsList.length > 0) {
+                    physicalItemsList.forEach(item => {
+                        const itemSubtotal = item.totalSubtotal ? parseFloat(item.totalSubtotal) : (parseFloat(item.unitCost || 0) * parseInt(item.quantity || 1));
+                        combinedTotal += itemSubtotal;
+
+                        container.innerHTML += `
+                            <div class="summary-item">
+                                <div class="item-details">
+                                    <h4>${item.itemName || item.itemDescription}</h4>
+                                    <p>Unit Cost: RM ${parseFloat(item.unitCost || 0).toFixed(2)} × Qty: ${item.quantity || 1}</p>
+                                </div>
+                                <div class="item-price">RM ${itemSubtotal.toFixed(2)}</div>
+                            </div>
+                        `;
+                    });
+                }
+
+                // Render dynamically calculated balance total sum output string wrapper
+                document.getElementById('checkoutTotalDisplay').innerText = `RM ${combinedTotal.toFixed(2)}`;
+            } else {
+                console.warn("Target medical billing item reference documentation record not found inside database schema.");
+            }
+        } catch (error) {
+            console.error("Error reading appointment properties array loops:", error);
+        }
+    }
+
+    // Setup interactive payment option click systems
+    document.querySelectorAll('.method-option').forEach(element => {
+        element.addEventListener('click', () => {
+            // Clear prior states
+            document.querySelectorAll('.method-option').forEach(opt => opt.classList.remove('selected'));
+            document.querySelectorAll('.payment-panel').forEach(panel => panel.classList.remove('active'));
+
+            // Set new state selection 
+            element.classList.add('selected');
+            selectedMethod = element.getAttribute('data-target');
+            
+            const targetedPanel = document.getElementById(selectedMethod);
+            if (targetedPanel) targetedPanel.classList.add('active');
+
+            // Toggle checkout processor availability action state
+            const submitBtn = document.getElementById('processPaymentBtn');
+            submitBtn.removeAttribute('disabled');
+            submitBtn.style.opacity = "1";
+            submitBtn.style.cursor = "pointer";
+        });
+    });
+
+    // Handle Payment Action Submissions
+    document.getElementById('processPaymentBtn').addEventListener('click', async () => {
+        if (!selectedMethod) return;
+
+        // Validation for FPX
+        if (selectedMethod === 'fpx-panel') {
+            const bankVal = document.getElementById('fpxBankSelect').value;
+            if (!bankVal) {
+                await showConfirm("Selection Error", "Please select your online banking financial institution before moving forward.", "fa-exclamation-circle");
+                return;
+            }
+        }
+
+        // Validation for Manual Receipts
+        if (selectedMethod === 'banking-panel') {
+            const receiptLink = document.getElementById('receiptUrlField').value.trim();
+            if (!receiptLink) {
+                await showConfirm("Receipt Missing", "Please provide a valid reference code or receipt link verifying your manual transaction.", "fa-exclamation-circle");
+                return;
+            }
+        }
+
+        const proceed = await showConfirm(
+            "Confirm Checkout", 
+            "Are you ready to finalize transaction authorization for this medical billing charge?", 
+            "fa-credit-card"
+        );
+        
+        if (!proceed) return;
+
+        // Sync with Live Firestore structures
+        if (currentAppointmentId) {
+            try {
+                const docRef = doc(db, "appointments", currentAppointmentId);
+                
+                // Update targeted status metrics
+                await updateDoc(docRef, {
+                    paymentStatus: "Paid",
+                    paymentChannel: selectedMethod.replace('-panel', '').toUpperCase(),
+                    paidAt: new Date().toISOString()
+                });
+
+                await showConfirm("Payment Received", "Your transaction was successfully processed! Your medical billing ledger has been resolved.", "fa-check-circle");
+                window.location.href = "appointments.html";
+                
+            } catch (err) {
+                console.error("Payment processing fault error:", err);
+                await showConfirm("Transaction Error", "Could not write verification parameter updates back to the clinic server. Try again.", "fa-times-circle");
+            }
+        } else {
+            // Interactive UI Presentation Alert Demo Fallback
+            await showConfirm("Demo Authorization Success", "The processing framework completed successfully without connection exceptions.", "fa-check-circle");
+        }
+    });
+
+    // Initialize configuration constraints
+    auth.onAuthStateChanged((user) => {
+        if (!user && window.location.hostname !== 'localhost') {
+            window.location.href = 'login.html';
+            return;
+        }
+        checkUrlParameters();
+    });
+</script>
+</body>
+</html>
