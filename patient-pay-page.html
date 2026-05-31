@@ -105,7 +105,7 @@
 
         .checkout-grid {
             display: grid;
-            grid-template-columns: 1fr 1.3fr;
+            grid-template-columns: 1.2fr 1fr;
             gap: 30px;
             align-items: start;
         }
@@ -129,25 +129,46 @@
             color: var(--text-dark);
         }
 
-        /* --- Summary Item Breakdown --- */
-        .summary-list {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
+        /* --- Appointment Overview Row --- */
+        .appointment-header-info {
+            background-color: #fafbfc;
+            padding: 16px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-color);
             margin-bottom: 20px;
         }
+        .appointment-header-info h3 { font-size: 15px; font-weight: 700; color: var(--primary); margin-bottom: 4px; }
+        .appointment-header-info p { font-size: 13px; color: var(--text-muted); line-height: 1.4; }
 
-        .summary-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 12px;
-            border-bottom: 1px dashed var(--border-color);
+        /* --- Item Breakdown Frame --- */
+        .items-charged-container {
+            margin-top: 15px;
+            margin-bottom: 25px;
         }
-
-        .item-details h4 { font-size: 15px; font-weight: 600; color: var(--text-dark); }
-        .item-details p { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
-        .item-price { font-weight: 600; color: var(--text-dark); font-size: 15px; text-align: right; }
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+        .items-table th {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            padding: 10px 12px;
+            background-color: #f8fafc;
+            border-bottom: 2px solid var(--border-color);
+        }
+        .items-table td {
+            padding: 14px 12px;
+            font-size: 14px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+        .item-row-title { font-weight: 600; color: var(--text-dark); }
+        .item-row-subtitle { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
 
         .total-box {
             background: var(--primary-light);
@@ -162,13 +183,8 @@
         .total-box span { font-weight: 700; color: var(--primary); font-size: 16px; }
         .total-price { font-size: 24px; font-weight: 800; color: var(--primary); }
 
-        /* --- Modern Radio Payment Selectors --- */
-        .payment-methods {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-
+        /* --- Payment Options --- */
+        .payment-methods { display: flex; flex-direction: column; gap: 14px; }
         .method-option {
             border: 2px solid var(--border-color);
             border-radius: var(--radius-md);
@@ -179,144 +195,49 @@
             cursor: pointer;
             transition: all 0.2s ease;
         }
-
-        .method-option:hover {
-            border-color: var(--primary);
-            background-color: #fafafb;
-        }
-
-        .method-option.selected {
-            border-color: var(--primary);
-            background-color: var(--primary-light);
-        }
-
-        .method-left {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
+        .method-option:hover { border-color: var(--primary); background-color: #fafafb; }
+        .method-option.selected { border-color: var(--primary); background-color: var(--primary-light); }
+        .method-left { display: flex; align-items: center; gap: 16px; }
         .method-icon-frame {
-            width: 45px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 6px;
-            background: #f1f5f9;
-            font-size: 14px;
-            font-weight: 700;
+            width: 45px; height: 32px; display: flex; align-items: center; justify-content: center;
+            border-radius: 6px; background: #f1f5f9; font-size: 14px; font-weight: 700;
         }
-
         .method-info h4 { font-size: 15px; font-weight: 600; }
         .method-info p { font-size: 12px; color: var(--text-muted); }
-
-        /* Custom Radio Style */
         .custom-radio {
-            width: 20px;
-            height: 20px;
-            border: 2px solid var(--border-color);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.2s;
+            width: 20px; height: 20px; border: 2px solid var(--border-color); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; transition: 0.2s;
         }
-
-        .method-option.selected .custom-radio {
-            border-color: var(--primary);
-        }
-
+        .method-option.selected .custom-radio { border-color: var(--primary); }
         .method-option.selected .custom-radio::after {
-            content: '';
-            width: 10px;
-            height: 10px;
-            background: var(--primary);
-            border-radius: 50%;
+            content: ''; width: 10px; height: 10px; background: var(--primary); border-radius: 50%;
         }
 
         /* --- Dynamic Form Panels --- */
         .payment-panel {
-            display: none;
-            margin-top: 25px;
-            padding-top: 25px;
-            border-top: 1px solid var(--border-color);
-            animation: fadeIn 0.3s ease;
+            display: none; margin-top: 25px; padding-top: 25px; border-top: 1px solid var(--border-color); animation: fadeIn 0.3s ease;
         }
-
         .payment-panel.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-
+        .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
         .form-group label { font-size: 14px; font-weight: 600; color: var(--text-dark); }
-        
         .select-input, .text-input {
-            width: 100%;
-            padding: 12px 16px;
-            border-radius: 10px;
-            border: 1px solid var(--border-color);
-            outline: none;
-            font-size: 14px;
-            transition: 0.2s;
+            width: 100%; padding: 12px 16px; border-radius: 10px; border: 1px solid var(--border-color); outline: none; font-size: 14px; transition: 0.2s;
         }
-
         .select-input:focus, .text-input:focus { border-color: var(--primary); }
 
-        /* QR Framework Styling */
         .qr-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            background: #f8fafc;
-            padding: 20px;
-            border-radius: var(--radius-md);
-            border: 1px dashed var(--border-color);
+            display: flex; flex-direction: column; align-items: center; text-align: center; background: #f8fafc; padding: 20px; border-radius: var(--radius-md); border: 1px dashed var(--border-color);
         }
-
-        .qr-box {
-            width: 180px;
-            height: 180px;
-            background: #fff;
-            padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-            margin-bottom: 12px;
-        }
+        .qr-box { width: 180px; height: 180px; background: #fff; padding: 10px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); margin-bottom: 12px; }
         .qr-box img { width: 100%; height: 100%; object-fit: contain; }
 
-        /* --- Checkout Action Buttons --- */
         .btn-submit-payment {
-            width: 100%;
-            background: var(--primary);
-            color: var(--white);
-            border: none;
-            padding: 16px;
-            border-radius: var(--radius-md);
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: all 0.2s ease;
-            margin-top: 15px;
+            width: 100%; background: var(--primary); color: var(--white); border: none; padding: 16px; border-radius: var(--radius-md); font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s ease; margin-top: 15px;
         }
-
         .btn-submit-payment:hover { background: var(--primary-hover); }
 
-        /* --- Responsive Queries --- */
         @media (max-width: 1024px) {
             .sidebar { width: 80px; }
             .logo-text, .nav-link span { display: none; }
@@ -334,7 +255,6 @@
         </div>
         <div class="logo-text">UTM Clinic</div>
     </div>
-
     <nav class="nav-links">
         <a href="patient_dashboard.html" class="nav-link"><i class="fas fa-columns"></i> <span>Dashboard</span></a>
         <a href="appointments.html" class="nav-link active"><i class="fas fa-calendar-alt"></i> <span>My Appointments</span></a>
@@ -353,17 +273,31 @@
     <div class="checkout-grid">
         <div class="card">
             <div class="card-title">
-                <i class="fas fa-receipt" style="color: var(--primary)"></i> Items to Pay
+                <i class="fas fa-receipt" style="color: var(--primary)"></i> Billing Invoice Details
             </div>
             
-            <div class="summary-list" id="itemsBreakdownContainer">
-                <div class="summary-item">
-                    <div class="item-details">
-                        <h4>Retrieving Billing Ledger...</h4>
-                        <p>Synchronizing details with the UTM clinic database core.</p>
-                    </div>
-                    <div class="item-price">RM 0.00</div>
-                </div>
+            <div class="appointment-header-info" id="appointmentHeaderBox">
+                <h3 id="visitingReasonTitle">Retrieving Billing Ledger...</h3>
+                <p id="visitingReasonDetails">Synchronizing diagnostics log data with the database core...</p>
+            </div>
+
+            <div class="items-charged-container">
+                <table class="items-table">
+                    <thead>
+                        <tr>
+                            <th>Item Charged Details</th>
+                            <th class="text-center" style="width: 70px;">Qty</th>
+                            <th class="text-right" style="width: 110px;">Cost</th>
+                        </tr>
+                    </thead>
+                    <tbody id="itemsChargedTableBody">
+                        <tr>
+                            <td colspan="3" style="text-align: center; color: var(--text-muted); font-size: 13px; padding: 20px;">
+                                <i class="fas fa-spinner fa-spin"></i> Reading live clinical entries...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
 
             <div class="total-box">
@@ -415,10 +349,9 @@
             <div id="tng-panel" class="payment-panel">
                 <div class="qr-container">
                     <div class="qr-box">
-                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=UTMClinic_PaymentGateway_Mock" alt="TnG Gateway QR Code">
+                        <img src="images/touchngo.jpg" alt="TnG Gateway QR Code">
                     </div>
                     <p style="font-size: 13px; font-weight: 600; color: var(--text-dark);">Scan using your Touch 'n Go App</p>
-                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Once complete, click the process payment button below to verify.</p>
                 </div>
             </div>
 
@@ -431,22 +364,20 @@
                         <option value="cimb">CIMB Clicks</option>
                         <option value="public">Public Bank Online</option>
                         <option value="rhb">RHB Now</option>
-                        <option value="ambank">AmBank Online</option>
-                        <option value="bankislam">Bank Islam</option>
                     </select>
                 </div>
             </div>
 
             <div id="banking-panel" class="payment-panel">
-                <div style="background-color: #f8fafc; padding: 16px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 16px; font-size: 13px; line-height: 1.5;">
-                    <strong style="color: var(--primary);">UTM Clinic Official Account Details:</strong><br>
+                <div style="background-color: #f8fafc; padding: 14px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 16px; font-size: 13px; line-height: 1.5;">
+                    <strong style="color: var(--primary);">Official Account Details:</strong><br>
                     Bank Name: <strong>RHB BANK</strong><br>
                     Account Number: <strong>15146900000789</strong><br>
                     Recipient Reference: <strong id="bankingReferenceId">UTM-APT-PENDING</strong>
                 </div>
                 <div class="form-group">
-                    <label for="receiptUrlField">Transaction Receipt Image Link</label>
-                    <input type="text" id="receiptUrlField" class="text-input" placeholder="Paste your hosted image URL path or receipt reference ID here...">
+                    <label for="receiptUrlField">Transaction Reference Code</label>
+                    <input type="text" id="receiptUrlField" class="text-input" placeholder="Enter transfer transaction index reference...">
                 </div>
             </div>
 
@@ -460,129 +391,140 @@
 <script type="module">
     import { showConfirm } from "./js/premium-dialog.js";
     import { auth, db } from './js/firebase-config.js';
-    import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+    import { signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+    import { 
+        doc, 
+        getDoc, 
+        updateDoc, 
+        collection, 
+        addDoc,
+        query,
+        where,
+        getDocs 
+    } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
     let currentAppointmentId = "";
     let selectedMethod = "";
+    let appointmentSnapshotData = null; 
 
-    // Parse URL Parameters to find appointment references
     function checkUrlParameters() {
         const urlParams = new URLSearchParams(window.location.search);
-        
-        // Dynamic lookup capturing standard key architectures ('aptId' fallback to 'appointmentId')
         const aptId = urlParams.get('aptId') || urlParams.get('appointmentId');
         
         if (aptId) {
             currentAppointmentId = aptId;
             document.getElementById('bankingReferenceId').innerText = `UTM-APT-${aptId.substring(0,8).toUpperCase()}`;
             loadTargetAppointmentDetails(aptId);
-        } else {
-            console.log("No dynamic appointment parameters detected. Displaying standard presentation layout.");
-            document.getElementById('processPaymentBtn').removeAttribute('disabled');
-            document.getElementById('processPaymentBtn').style.opacity = "1";
-            document.getElementById('processPaymentBtn').style.cursor = "pointer";
         }
     }
 
-    // Dynamic database loader injects values directly from Firestore
     async function loadTargetAppointmentDetails(aptId) {
         try {
-            const docRef = doc(db, "appointments", aptId);
-            const docSnap = await getDoc(docRef);
+            const tableBody = document.getElementById('itemsChargedTableBody');
+            if (!tableBody) return;
+            tableBody.innerHTML = ''; 
+            
+            let cumulativeTotal = 0;
+            let itemsFound = false;
 
-            if (docSnap.exists()) {
-                const data = docSnap.data();
-                const container = document.getElementById('itemsBreakdownContainer');
+            const aptRef = doc(db, "appointments", aptId);
+            const aptSnap = await getDoc(aptRef);
+
+            if (aptSnap.exists()) {
+                appointmentSnapshotData = aptSnap.data();
                 
-                // Clear out the loading/placeholder states safely
-                container.innerHTML = '';
-                
-                let combinedTotal = 0;
+                document.getElementById('visitingReasonTitle').innerText = "Itemized Clinic Invoice";
+                document.getElementById('visitingReasonDetails').innerText = appointmentSnapshotData.reason ? 
+                    `Symptom Log: ${appointmentSnapshotData.reason}` : "General Outpatient Procedural Charges";
 
-                // 1. Consultation Fee (Defaulting to RM 0.00 as consultations are covered for UTM students/staff)
-                const baseConsultationCost = data.feeCost !== undefined ? parseFloat(data.feeCost) : 0.00;
-                combinedTotal += baseConsultationCost;
+                if (appointmentSnapshotData.prescriptions && appointmentSnapshotData.prescriptions.length > 0) {
+                    appointmentSnapshotData.prescriptions.forEach(med => {
+                        let price = med.cost ? parseFloat(med.cost) : 0.00;
+                        if (price > 0) {
+                            let qty = med.quantity ? parseInt(med.quantity) : 1;
+                            let sub = price * qty;
+                            cumulativeTotal += sub;
+                            itemsFound = true;
 
-                let consultationDesc = "Standard General Practitioner Consultation";
-                if (data.reason) {
-                    consultationDesc = `Symptom Profile: ${data.reason}`;
-                }
-
-                container.innerHTML += `
-                    <div class="summary-item">
-                        <div class="item-details">
-                            <h4>Clinic Consultation Fee</h4>
-                            <p>${consultationDesc}</p>
-                        </div>
-                        <div class="item-price">RM ${baseConsultationCost.toFixed(2)}</div>
-                    </div>
-                `;
-
-                // 2. Loop through Prescribed Medications
-                if (data.prescriptions && data.prescriptions.length > 0) {
-                    data.prescriptions.forEach(med => {
-                        const medicineCost = med.cost ? parseFloat(med.cost) : 0.00;
-                        combinedTotal += medicineCost;
-
-                        const dosageInfo = med.dosage && med.dosage !== 'N/A' ? `, Dosage: ${med.dosage}` : '';
-                        const notesInfo = med.notes && med.notes.trim() !== '' ? ` (${med.notes})` : '';
-
-                        container.innerHTML += `
-                            <div class="summary-item">
-                                <div class="item-details">
-                                    <h4>Medication: ${med.name}</h4>
-                                    <p>Frequency: ${med.frequency}x daily, Duration: ${med.duration} days${dosageInfo}${notesInfo}</p>
-                                </div>
-                                <div class="item-price">RM ${medicineCost.toFixed(2)}</div>
-                            </div>
-                        `;
+                            tableBody.innerHTML += `
+                                <tr class="db-item-row" data-name="Medication: ${med.name}" data-cost="${price}" data-qty="${qty}">
+                                   <td>
+                                        <div class="item-row-title">Medication: ${med.name}</div>
+                                        <div class="item-row-subtitle">${med.instructions || 'Prescribed item'}</div>
+                                   </td>
+                                   <td class="text-center">${qty}</td>
+                                   <td class="text-right item-row-subtotal">RM ${sub.toFixed(2)}</td>
+                                </tr>
+                            `;
+                        }
                     });
                 }
-
-                // 3. Loop through Non-Medicine Accessory Items / Additional Patient Charges
-                const physicalItemsList = data.additionalItems || data.patientCharges || [];
-                if (physicalItemsList.length > 0) {
-                    physicalItemsList.forEach(item => {
-                        const itemSubtotal = item.totalSubtotal ? parseFloat(item.totalSubtotal) : (parseFloat(item.unitCost || 0) * parseInt(item.quantity || 1));
-                        combinedTotal += itemSubtotal;
-
-                        container.innerHTML += `
-                            <div class="summary-item">
-                                <div class="item-details">
-                                    <h4>${item.itemName || item.itemDescription}</h4>
-                                    <p>Unit Cost: RM ${parseFloat(item.unitCost || 0).toFixed(2)} × Qty: ${item.quantity || 1}</p>
-                                </div>
-                                <div class="item-price">RM ${itemSubtotal.toFixed(2)}</div>
-                            </div>
-                        `;
-                    });
-                }
-
-                // Render dynamically calculated balance total sum output string wrapper
-                document.getElementById('checkoutTotalDisplay').innerText = `RM ${combinedTotal.toFixed(2)}`;
-            } else {
-                console.warn("Target medical billing item reference documentation record not found inside database schema.");
             }
+
+            const diagnosisQuery = query(collection(db, "diagnosis"), where("appointmentId", "==", aptId));
+            const diagnosisSnapshot = await getDocs(diagnosisQuery);
+
+            diagnosisSnapshot.forEach((docSnapshot) => {
+                const diagnosisData = docSnapshot.data();
+                const extraItems = diagnosisData.additionalItems || [];
+
+                if (extraItems.length > 0) {
+                    extraItems.forEach(item => {
+                        let name = item.itemName || "Medical Material Support";
+                        let price = item.cost !== undefined ? parseFloat(item.cost) : 0.00;
+                        let qty = item.quantity !== undefined ? parseInt(item.quantity) : 1;
+                        let sub = price * qty;
+
+                        cumulativeTotal += sub;
+                        itemsFound = true;
+
+                        tableBody.innerHTML += `
+                            <tr class="db-item-row" data-name="${name}" data-cost="${price}" data-qty="${qty}">
+                               <td>
+                                    <div class="item-row-title">${name}</div>
+                                    <div class="item-row-subtitle">Clinical treatment supply item</div>
+                               </td>
+                               <td class="text-center">${qty}</td>
+                               <td class="text-right item-row-subtotal">RM ${sub.toFixed(2)}</td>
+                            </tr>
+                        `;
+                    });
+                }
+            });
+
+            if (!itemsFound) {
+                let fallbackFee = 5.00;
+                cumulativeTotal += fallbackFee;
+                tableBody.innerHTML = `
+                    <tr class="db-item-row" data-name="Standard Outpatient Service Fee" data-cost="${fallbackFee}" data-qty="1">
+                        <td>
+                            <div class="item-row-title">Standard Outpatient Service Fee</div>
+                            <div class="item-row-subtitle">Assigned diagnostic medical check rate</div>
+                        </td>
+                        <td class="text-center">1</td>
+                        <td class="text-right item-row-subtotal">RM ${fallbackFee.toFixed(2)}</td>
+                    </tr>
+                `;
+            }
+
+            document.getElementById('checkoutTotalDisplay').innerText = `RM ${cumulativeTotal.toFixed(2)}`;
+
         } catch (error) {
-            console.error("Error reading appointment properties array loops:", error);
+            console.error("Failed to perform cross-collection relational sync query:", error);
         }
     }
 
-    // Setup interactive payment option click systems
     document.querySelectorAll('.method-option').forEach(element => {
         element.addEventListener('click', () => {
-            // Clear prior states
             document.querySelectorAll('.method-option').forEach(opt => opt.classList.remove('selected'));
             document.querySelectorAll('.payment-panel').forEach(panel => panel.classList.remove('active'));
 
-            // Set new state selection 
             element.classList.add('selected');
             selectedMethod = element.getAttribute('data-target');
             
             const targetedPanel = document.getElementById(selectedMethod);
             if (targetedPanel) targetedPanel.classList.add('active');
 
-            // Toggle checkout processor availability action state
             const submitBtn = document.getElementById('processPaymentBtn');
             submitBtn.removeAttribute('disabled');
             submitBtn.style.opacity = "1";
@@ -590,62 +532,101 @@
         });
     });
 
-    // Handle Payment Action Submissions
     document.getElementById('processPaymentBtn').addEventListener('click', async () => {
-        if (!selectedMethod) return;
+        if (!selectedMethod || !appointmentSnapshotData) return;
 
-        // Validation for FPX
+        let details = {};
         if (selectedMethod === 'fpx-panel') {
-            const bankVal = document.getElementById('fpxBankSelect').value;
-            if (!bankVal) {
-                await showConfirm("Selection Error", "Please select your online banking financial institution before moving forward.", "fa-exclamation-circle");
-                return;
-            }
+            details.selectedBank = document.getElementById('fpxBankSelect').value;
+            if (!details.selectedBank) return;
+        } else if (selectedMethod === 'banking-panel') {
+            details.receiptUrlOrRef = document.getElementById('receiptUrlField').value.trim();
+            if (!details.receiptUrlOrRef) return;
         }
 
-        // Validation for Manual Receipts
-        if (selectedMethod === 'banking-panel') {
-            const receiptLink = document.getElementById('receiptUrlField').value.trim();
-            if (!receiptLink) {
-                await showConfirm("Receipt Missing", "Please provide a valid reference code or receipt link verifying your manual transaction.", "fa-exclamation-circle");
-                return;
-            }
-        }
-
-        const proceed = await showConfirm(
-            "Confirm Checkout", 
-            "Are you ready to finalize transaction authorization for this medical billing charge?", 
-            "fa-credit-card"
-        );
-        
+        const proceed = await showConfirm("Confirm Payment", "Finalize payment execution parameters?", "fa-credit-card");
         if (!proceed) return;
 
-        // Sync with Live Firestore structures
-        if (currentAppointmentId) {
-            try {
-                const docRef = doc(db, "appointments", currentAppointmentId);
+        try {
+            const finalItemsList = [];
+            let billingSum = 0;
+            
+            document.querySelectorAll('#itemsChargedTableBody .db-item-row').forEach(row => {
+                const name = row.getAttribute('data-name');
+                const cost = parseFloat(row.getAttribute('data-cost') || 0);
+                const qty = parseInt(row.getAttribute('data-qty') || 1);
+                const sub = cost * qty;
                 
-                // Update targeted status metrics
-                await updateDoc(docRef, {
-                    paymentStatus: "Paid",
-                    paymentChannel: selectedMethod.replace('-panel', '').toUpperCase(),
-                    paidAt: new Date().toISOString()
+                billingSum += sub;
+                finalItemsList.push({
+                    itemName: name,
+                    unitCost: cost,
+                    quantity: qty,
+                    subtotal: sub
                 });
+            });
 
-                await showConfirm("Payment Received", "Your transaction was successfully processed! Your medical billing ledger has been resolved.", "fa-check-circle");
+            const isManualVerificationRequired = (selectedMethod === 'tng-panel' || selectedMethod === 'banking-panel');
+            const calculatedStatus = isManualVerificationRequired ? "pending" : "verified";
+            const updatedAppointmentStatus = isManualVerificationRequired ? "pending-payment-verification" : "completed";
+
+            // Keys are completely matched to staff script data variables
+            const paymentRecordDocument = {
+                appointmentId: currentAppointmentId,
+                studentName: appointmentSnapshotData.patientName || "SIA JUN YU",
+                studentId: appointmentSnapshotData.matricNo || appointmentSnapshotData.matricNumber || "A24DW0420", 
+                appointmentDate: appointmentSnapshotData.date || "2026-05-22",
+                appointmentTime: appointmentSnapshotData.time || "09:00 AM",
+                items: finalItemsList,
+                amount: billingSum,
+                paymentChannel: selectedMethod.replace('-panel', '').toUpperCase(),
+                status: calculatedStatus, 
+                transactionReference: details.receiptUrlOrRef || "",
+                createdAt: new Date() 
+            };
+
+            await addDoc(collection(db, "payments"), paymentRecordDocument);
+
+            const docRef = doc(db, "appointments", currentAppointmentId);
+            await updateDoc(docRef, {
+                status: updatedAppointmentStatus,
+                paymentStatus: calculatedStatus
+            });
+
+            if (isManualVerificationRequired) {
+                await showConfirm("Verification Submitted", "Your transaction is pending administrative review.", "fa-clock");
+                window.location.href = "staff-verify-payment.html";
+            } else {
+                await showConfirm("Transaction Complete", "Receipt details recorded inside your ledger!", "fa-check-circle");
                 window.location.href = "appointments.html";
-                
-            } catch (err) {
-                console.error("Payment processing fault error:", err);
-                await showConfirm("Transaction Error", "Could not write verification parameter updates back to the clinic server. Try again.", "fa-times-circle");
             }
-        } else {
-            // Interactive UI Presentation Alert Demo Fallback
-            await showConfirm("Demo Authorization Success", "The processing framework completed successfully without connection exceptions.", "fa-check-circle");
+
+        } catch (err) {
+            console.error("Critical error saving history log snapshot collection data:", err);
         }
     });
 
-    // Initialize configuration constraints
+    const logoutLink = document.getElementById('logoutLink');
+    if (logoutLink) {
+        logoutLink.addEventListener('click', async (e) => {
+            e.preventDefault(); 
+            
+            const confirmLogout = await showConfirm(
+                "Account Logout", 
+                "Are you sure you want to log out of your UTM Clinic session?", 
+                "fa-sign-out-alt"
+            );
+            if (!confirmLogout) return;
+
+            try {
+                await signOut(auth);
+                window.location.href = 'login.html';
+            } catch (error) {
+                console.error("Error signing out from platform server context:", error);
+            }
+        });
+    }
+
     auth.onAuthStateChanged((user) => {
         if (!user && window.location.hostname !== 'localhost') {
             window.location.href = 'login.html';

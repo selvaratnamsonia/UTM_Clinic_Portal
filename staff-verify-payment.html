@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verify Payments - UTM Clinic</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/premium-dialog.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         .bg-primary { background-color: #802c44; }
@@ -78,17 +79,14 @@
     </div>
 
     <script type="module">
-        // 1. Aligned to your exact config file and its automated UI wrapper functions
+        import { showConfirm } from "./js/premium-dialog.js";
         import { auth, db, autoGetDocs, autoUpdateDoc } from './js/firebase-config.js';
-        
-        // 2. Updated CDN import paths to match version 12.13.0 perfectly
         import { signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
         import { collection, query, doc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
         let localPaymentsCache = [];
         let activeTabFilter = 'pending';
 
-        // Check auth state status
         auth.onAuthStateChanged((user) => {
             if (!user) {
                 window.location.href = 'login.html';
@@ -97,17 +95,12 @@
             fetchPaymentsData();
         });
 
-        // Pull collection logs pipeline mapping from database
         async function fetchPaymentsData() {
             try {
                 const paymentsQuery = query(collection(db, "payments"));
-                
-                // Using your new automated loading wrapper that hooks into global-loader.js!
                 const snap = await autoGetDocs(paymentsQuery);
                 
                 localPaymentsCache = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                
-                // Sort array locally safely
                 localPaymentsCache.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
                 
                 renderPaymentsList();
@@ -120,24 +113,21 @@
             }
         }
 
-        // Processing & Dynamic View Compilation Engine
         function renderPaymentsList() {
             const container = document.getElementById('paymentsContainer');
             const searchKeyword = document.getElementById('paymentSearch').value.toLowerCase().trim();
 
-            // Filter state rules
             let finalDataset = localPaymentsCache.filter(record => {
-                const status = (record.status || 'pending').toLowerCase();
+                const status = (record.status || record.paymentStatus || 'pending').toLowerCase();
                 if (activeTabFilter === 'pending') return status === 'pending';
                 if (activeTabFilter === 'verified') return status === 'verified';
                 return true;
             });
 
-            // Filter input values matrix rules
             if (searchKeyword) {
                 finalDataset = finalDataset.filter(record => {
-                    const studentName = (record.studentName || '').toLowerCase();
-                    const studentId = (record.studentId || '').toLowerCase();
+                    const studentName = (record.studentName || record.patientName || '').toLowerCase();
+                    const studentId = (record.studentId || record.metricNumber || record.matricNo || '').toLowerCase();
                     return studentName.includes(searchKeyword) || studentId.includes(searchKeyword);
                 });
             }
@@ -151,12 +141,11 @@
                 return;
             }
 
-            // Interface compiler string builder implementation
             container.innerHTML = finalDataset.map(item => {
-                const status = (item.status || 'pending').toLowerCase();
+                const status = (item.status || item.paymentStatus || 'pending').toLowerCase();
                 
                 let badgeStyle = "bg-yellow-100 text-yellow-700";
-                if (status === 'verified') badgeStyle = "bg-green-100 text-green-700";
+                if (status === 'verified' || status === 'paid') badgeStyle = "bg-green-100 text-green-700";
                 if (status === 'rejected') badgeStyle = "bg-red-100 text-red-700";
 
                 let decisionControls = '';
@@ -171,38 +160,55 @@
                     `;
                 }
 
-                // Handle item array mapping cleanly
-                let displayItems = 'Wellness Items';
-                if (Array.isArray(item.items)) {
-                    displayItems = item.items.map(i => `${i.itemName} (x${i.quantity || 1})`).join(', ');
-                } else if (typeof item.items === 'string' && item.items) {
-                    displayItems = item.items;
+                // Generates itemized rows displaying names, quantities, and prices dynamically
+                let itemsListHtml = '';
+                const itemsList = item.items || item.itemsCharged;
+                
+                if (Array.isArray(itemsList) && itemsList.length > 0) {
+                    itemsListHtml = itemsList.map(i => `
+                        <div class="flex justify-between items-center text-xs text-gray-600 bg-gray-50 px-3 py-1.5 rounded-md border border-gray-100">
+                            <span class="font-medium text-gray-700">${escapeHtml(i.itemName || 'Medical Item')} <span class="text-gray-400 text-[11px] ml-1">x${i.quantity || 1}</span></span>
+                            <span class="font-mono font-semibold text-gray-900">RM ${(parseFloat(i.subtotal || i.unitCost || 0)).toFixed(2)}</span>
+                        </div>
+                    `).join('');
+                } else {
+                    itemsListHtml = `
+                        <div class="text-xs text-gray-500 bg-gray-50 px-3 py-1.5 rounded-md italic border border-gray-100">
+                            Standard Outpatient Consultation Fee
+                        </div>`;
                 }
 
-                // Balance field checks
-                const costAmount = parseFloat(item.amountDue || item.amount || 0);
+                const costAmount = parseFloat(item.amount !== undefined ? item.amount : (item.amountDue || item.totalFee || 0));
+                const studentDisplayName = item.studentName || item.patientName || 'Unknown Student';
+                const studentDisplayId = item.studentId || item.metricNumber || item.matricNo || 'N/A';
 
                 return `
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4 transition hover:shadow-md">
-                        <div class="flex-1">
-                            <div class="flex items-center gap-3 mb-2">
-                                <h3 class="text-lg font-bold text-gray-800">${escapeHtml(item.studentName || 'Unknown Student')}</h3>
-                                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider ${badgeStyle}">
-                                    ${status}
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-4 transition hover:shadow-md">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-3 mb-2">
+                                    <h3 class="text-lg font-bold text-gray-800">${escapeHtml(studentDisplayName)}</h3>
+                                    <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider ${badgeStyle}">
+                                        ${status}
                                 </span>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-1 text-sm text-gray-600">
+                                    <div><span class="text-gray-400 font-medium">ID:</span> ${escapeHtml(studentDisplayId)}</div>
+                                    <div><span class="text-gray-400 font-medium">Appt ID:</span> ${escapeHtml(item.appointmentId || 'N/A')}</div>
+                                    <div class="font-bold text-primary"><span class="text-gray-400 font-medium font-normal">Total Amount:</span> RM ${costAmount.toFixed(2)}</div>
+                                </div>
                             </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-1 text-sm text-gray-600">
-                                <div><span class="text-gray-400 font-medium">ID:</span> ${escapeHtml(item.studentId || 'N/A')}</div>
-                                <div class="truncate max-w-[200px]" title="${escapeHtml(displayItems)}"><span class="text-gray-400 font-medium">Items:</span> ${escapeHtml(displayItems)}</div>
-                                <div class="font-semibold text-gray-900"><span class="text-gray-400 font-medium font-normal">Amount:</span> RM ${costAmount.toFixed(2)}</div>
-                                <div><span class="text-gray-400 font-medium">Appt ID:</span> ${escapeHtml(item.appointmentId || 'N/A')}</div>
+                            <div class="flex items-center gap-2 self-end md:self-auto">
+                                ${decisionControls}
                             </div>
                         </div>
-                        <div class="flex items-center gap-2 self-end md:self-auto">
-                            <button class="btn-view-proof bg-blue-50 hover:bg-blue-100 text-blue-600 font-semibold text-xs px-4 py-2 rounded-lg flex items-center gap-1.5 transition" data-url="${item.receiptUrl || item.proofUrl || '#'}" ${(!item.receiptUrl && !item.proofUrl) ? 'disabled style="opacity:0.4; cursor:not-allowed;"' : ''}>
-                                <i class="fas fa-file-alt"></i> View Proof
-                            </button>
-                            ${decisionControls}
+                        
+                        <!-- Beautiful Expanded Breakdown Section -->
+                        <div class="border-t border-gray-100 pt-3">
+                            <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2"><i class="fas fa-list-ul"></i> Itemized Statement Breakdown</div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                                ${itemsListHtml}
+                            </div>
                         </div>
                     </div>
                 `;
@@ -211,16 +217,7 @@
             bindDynamicActionListeners();
         }
 
-        // Dynamic Runtime Node Wiring Elements
         function bindDynamicActionListeners() {
-            document.querySelectorAll('.btn-view-proof').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const url = btn.getAttribute('data-url');
-                    if (url && url !== '#') window.open(url, '_blank');
-                });
-            });
-
-            // Prevent target element duplicate binding triggers
             document.querySelectorAll('.btn-action-verify').forEach(btn => {
                 btn.replaceWith(btn.cloneNode(true));
             });
@@ -231,7 +228,12 @@
             document.querySelectorAll('.btn-action-verify').forEach(btn => {
                 btn.addEventListener('click', async () => {
                     const id = btn.getAttribute('data-id');
-                    if (confirm("Confirm verification for this payment entry?")) {
+                    const proceed = await showConfirm(
+                        "Verify Payment", 
+                        "Confirm validation for this invoice ledger transaction?", 
+                        "fa-check-circle"
+                    );
+                    if (proceed) {
                         await updatePaymentStatus(id, 'verified');
                     }
                 });
@@ -240,26 +242,36 @@
             document.querySelectorAll('.btn-action-reject').forEach(btn => {
                 btn.addEventListener('click', async () => {
                     const id = btn.getAttribute('data-id');
-                    if (confirm("Are you sure you want to REJECT this payment entry?")) {
+                    const proceed = await showConfirm(
+                        "Reject Payment", 
+                        "Are you sure you want to flag this entry as rejected?", 
+                        "fa-times-circle"
+                    );
+                    if (proceed) {
                         await updatePaymentStatus(id, 'rejected');
                     }
                 });
             });
         }
 
-        // Central Firestore Document Modifier Action Routing
         async function updatePaymentStatus(recordId, newStatus) {
             try {
                 const docReference = doc(db, "payments", recordId);
                 
-                // Using your new automated updating wrapper function
-                await autoUpdateDoc(docReference, { status: newStatus });
+                await autoUpdateDoc(docReference, { 
+                    status: newStatus,
+                    paymentStatus: newStatus.toUpperCase()
+                });
                 
-                alert(`Payment row status updated to ${newStatus} successfully.`);
+                await showConfirm(
+                    "Status Saved", 
+                    `The transaction log has been modified to: ${newStatus}`, 
+                    "fa-info-circle"
+                );
                 fetchPaymentsData(); 
             } catch (error) {
                 console.error("Status modify pipeline break:", error);
-                alert("Error configuring new transaction state: " + error.message);
+                await showConfirm("Update Failed", "Error writing new status parameter: " + error.message, "fa-exclamation-triangle");
             }
         }
 
@@ -287,7 +299,12 @@
         tabAll.addEventListener('click', () => switchTabs('all', tabAll, tabPending, tabVerified));
 
         document.getElementById('logoutBtn').addEventListener('click', async () => {
-            if(confirm("Log out of session?")) {
+            const confirmLogout = await showConfirm(
+                "Account Logout", 
+                "Are you sure you want to terminate your staff console workspace session?", 
+                "fa-sign-out-alt"
+            );
+            if (confirmLogout) {
                 await signOut(auth);
                 window.location.href = 'login.html';
             }
