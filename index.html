@@ -9,14 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <!-- Font Awesome -->
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
-    
-    <style>
-        .bg-utm { background-color: #802c44; }
-        .text-utm { color: #802c44; }
-        .hover-utm:hover { background-color: #612134; }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
 </head>
 
 <body class="bg-white text-gray-900">
@@ -28,9 +21,8 @@
 
                 <!-- Logo -->
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-utm rounded-lg flex items-center justify-center overflow-hidden">
-                        <!-- Updated path for Firebase/Standard HTML -->
-                        <img src="images/Clinic-logo.png" alt="Clinic Logo" class="w-8 h-8 object-contain brightness-0 invert">
+                    <div class="w-10 h-10 bg-[#802c44] rounded-lg flex items-center justify-center overflow-hidden">
+                        <img src="images/Clinic-logo.png" alt="Clinic Logo" class="w-8 h-8 object-contain">
                     </div>
                     <div>
                         <h1 class="font-bold text-xl">UTM Clinic</h1>
@@ -40,14 +32,14 @@
 
                 <!-- Navigation -->
                 <nav class="hidden md:flex gap-8">
-                    <a href="#services" class="text-gray-600 hover:text-utm transition-colors">Services</a>
-                    <a href="#about" class="text-gray-600 hover:text-utm transition-colors">About</a>
-                    <a href="#contact" class="text-gray-600 hover:text-utm transition-colors">Contact</a>
+                    <a href="#services" class="text-gray-600 hover:text-[#802c44] transition-colors">Services</a>
+                    <a href="#about" class="text-gray-600 hover:text-[#802c44] transition-colors">About</a>
+                    <a href="#contact" class="text-gray-600 hover:text-[#802c44] transition-colors">Contact</a>
                 </nav>
 
-                <!-- Sign In Button redirected to login.html -->
+                <!-- Sign In -->
                 <a href="login.html">
-                    <button class="bg-utm hover-utm text-white px-5 py-2 rounded-lg transition font-semibold">
+                    <button class="bg-[#802c44] hover:bg-[#9b3b57] text-white px-5 py-2 rounded-lg transition">
                         Sign In
                     </button>
                 </a>
@@ -64,8 +56,7 @@
                 <!-- Left Content -->
                 <div>
                     <h2 class="text-5xl font-bold mb-6 leading-tight">
-                        Your Health, <br>
-                        <span class="text-utm">Our Priority</span>
+                        Your Health, <span class="text-[#802c44]">Our Priority</span>
                     </h2>
 
                     <p class="text-xl text-gray-600 mb-8">
@@ -74,134 +65,160 @@
                         with healthcare professionals — all in one place.
                     </p>
 
-                    <!-- Buttons -->
+                    <!-- Buttons (FIXED: Resolved broken link nestings) -->
                     <div class="flex gap-4 flex-wrap">
-                        <!-- CHANGED: This now points to login.html -->
                         <a href="login.html">
-                            <button class="bg-utm hover-utm text-white px-8 py-3 rounded-lg transition shadow-lg font-bold">
+                            <button class="bg-[#802c44] hover:bg-[#9b3b57] text-white px-6 py-3 rounded-lg transition">
                                 Book Appointment
                             </button>
                         </a>
-
-                        <button class="border border-gray-300 bg-white hover:bg-gray-100 px-8 py-3 rounded-lg transition font-bold">
-                            Learn More
-                        </button>
+                        <a href="learn-more.html">
+                            <button class="border border-gray-300 hover:bg-gray-100 px-6 py-3 rounded-lg transition">
+                                Learn More
+                            </button>
+                        </a>
                     </div>
 
                     <!-- Stats -->
                     <div class="grid grid-cols-3 gap-4 mt-12">
                         <div class="text-center">
-                            <div class="text-3xl font-bold text-utm">500+</div>
+                            <div class="text-3xl font-bold text-[#802c44]">500+</div>
                             <div class="text-sm text-gray-600">Patients Served</div>
                         </div>
                         <div class="text-center">
-                            <div class="text-3xl font-bold text-utm">24/7</div>
+                            <div class="text-3xl font-bold text-[#802c44]">24/7</div>
                             <div class="text-sm text-gray-600">Emergency Care</div>
                         </div>
                         <div class="text-center">
-                            <div class="text-3xl font-bold text-utm">15+</div>
+                            <div class="text-3xl font-bold text-[#802c44]">15+</div>
                             <div class="text-sm text-gray-600">Specialists</div>
                         </div>
                     </div>
                 </div>
-                <form id="loginForm">
-  <!-- your existing email, password, role fields -->
-  <button type="submit">Sign In</button>
-</form>
-
-<script type="module">
-  import { auth } from './js/firebase-config.js';
-  import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-  import { getDoc, doc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
-  import { db } from './js/firebase-config.js';
-
-  document.getElementById('loginForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    const role = document.getElementById('role').value;
-    
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      
-      // Check user's role from Firestore
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      if (userDoc.exists() && userDoc.data().role === role) {
-        window.location.href = `${role}_dashboard.html`;
-      } else {
-        alert("Role mismatch. Please select the correct role.");
-      }
-    } catch (error) {
-      alert("Login failed: " + error.message);
-    }
-  });
-</script>
 
                 <!-- Hero Image -->
-                <div class="relative">
-                    <img src="images/pku-utm.jpg" alt="PKU UTM" class="rounded-2xl shadow-2xl w-full h-[400px] object-cover bg-gray-200"/>
-                    <!-- Decorative element matching image_1d35a0.png shadow style -->
-                    <div class="absolute -bottom-6 -left-6 w-24 h-24 bg-utm opacity-10 rounded-full blur-2xl"></div>
+                <div>
+                    <img src="images/pku-utm.jpg" alt="PKU UTM" class="rounded-2xl shadow-2xl w-full h-[400px] object-cover" />
                 </div>
 
             </div>
         </div>
     </section>
 
-    <!-- Quick Access Section -->
+    <!-- Quick Access -->
     <section class="py-16 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-12">
-                <h3 class="text-4xl font-bold mb-4">Quick Access</h3>
+                <h3 class="text-3xl font-bold mb-4">Quick Access</h3>
                 <p class="text-gray-600">Everything you need at your fingertips</p>
             </div>
 
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Card 1: Redirects to login -->
-                <a href="login.html" class="p-8 rounded-2xl bg-[#f8edf1] hover:bg-[#eed6de] transition-all group">
-                    <i class="fa-solid fa-calendar text-4xl text-utm mb-6"></i>
-                    <h4 class="font-bold text-xl mb-2">Book Appointment</h4>
-                    <p class="text-gray-600">Schedule your visit with our specialists</p>
-                </a>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Card 1 -->
+                <div class="p-6 rounded-xl bg-[#f8edf1] hover:bg-[#eed6de] transition-all cursor-pointer">
+                    <i class="fa-solid fa-calendar text-3xl text-[#802c44] mb-4"></i>
+                    <h4 class="font-semibold mb-2">Book Appointment</h4>
+                    <p class="text-sm text-gray-600">Schedule your visit with our specialists</p>
+                </div>
 
-                <!-- Card 2: Redirects to login -->
-                <a href="login.html" class="p-8 rounded-2xl bg-green-50 hover:bg-green-100 transition-all">
-                    <i class="fa-solid fa-file-medical text-4xl text-green-600 mb-6"></i>
-                    <h4 class="font-bold text-xl mb-2">Medical Records</h4>
-                    <p class="text-gray-600">View your health history and reports</p>
-                </a>
+                <!-- Card 2 -->
+                <div class="p-6 rounded-xl bg-green-50 hover:bg-green-100 transition-all cursor-pointer">
+                    <i class="fa-solid fa-file-medical text-3xl text-green-600 mb-4"></i>
+                    <h4 class="font-semibold mb-2">Medical Records</h4>
+                    <p class="text-sm text-gray-600">View your health history and reports</p>
+                </div>
 
-                <!-- Card 3: Redirects to login -->
-                <a href="login.html" class="p-8 rounded-2xl bg-purple-50 hover:bg-purple-100 transition-all">
-                    <i class="fa-solid fa-user-doctor text-4xl text-purple-600 mb-6"></i>
-                    <h4 class="font-bold text-xl mb-2">Teleconsultation</h4>
-                    <p class="text-gray-600">Connect with doctors online</p>
-                </a>
+                <!-- Card 3 -->
+                <div class="p-6 rounded-xl bg-purple-50 hover:bg-purple-100 transition-all cursor-pointer">
+                    <i class="fa-solid fa-user-doctor text-3xl text-purple-600 mb-4"></i>
+                    <h4 class="font-semibold mb-2">Teleconsultation</h4>
+                    <p class="text-sm text-gray-600">Connect with doctors online</p>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- Contact Info Footer Section -->
-    <section id="contact" class="py-16 bg-gray-50 border-t">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid md:grid-cols-3 gap-12 text-center">
-            <div>
-                <i class="fa-solid fa-clock text-utm text-2xl mb-4"></i>
-                <h4 class="font-bold mb-2">Operating Hours</h4>
-                <p class="text-sm text-gray-600">Mon-Fri: 8:00 AM - 5:00 PM</p>
-                <p class="text-sm text-gray-600">Emergency: 24/7</p>
+    <!-- Services Section -->
+    <section id="services" class="py-16 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold mb-4">Our Services</h3>
+                <p class="text-gray-600">Comprehensive healthcare services for the UTM community</p>
             </div>
-            <div>
-                <i class="fa-solid fa-phone text-utm text-2xl mb-4"></i>
-                <h4 class="font-bold mb-2">Contact Us</h4>
-                <p class="text-sm text-gray-600">Phone: +607-553 3333</p>
-                <p class="text-sm text-gray-600">Email: clinic@utm.my</p>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Service 1 -->
+                <div class="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                    <h4 class="text-xl font-bold mb-3">General Medicine</h4>
+                    <p class="text-gray-600 mb-6">Routine checkups, diagnosis, and treatment for common health conditions.</p>
+                    <ul class="space-y-2 text-gray-700">
+                        <li>• Health Screening</li>
+                        <li>• Chronic Disease Management</li>
+                        <li>• Preventive Care</li>
+                    </ul>
+                </div>
+
+                <!-- Service 2 -->
+                <div class="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                    <h4 class="text-xl font-bold mb-3">Specialist Care</h4>
+                    <p class="text-gray-600 mb-6">Access specialized medical professionals across various disciplines.</p>
+                    <ul class="space-y-2 text-gray-700">
+                        <li>• Cardiology</li>
+                        <li>• Dermatology</li>
+                        <li>• Orthopedics</li>
+                    </ul>
+                </div>
+
+                <!-- Service 3 -->
+                <div class="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                    <h4 class="text-xl font-bold mb-3">Laboratory Services</h4>
+                    <p class="text-gray-600 mb-6">Comprehensive diagnostic testing and health monitoring.</p>
+                    <ul class="space-y-2 text-gray-700">
+                        <li>• Blood Tests</li>
+                        <li>• X-Ray</li>
+                        <li>• Health Packages</li>
+                    </ul>
+                </div>
             </div>
-            <div>
-                <i class="fa-solid fa-location-dot text-utm text-2xl mb-4"></i>
-                <h4 class="font-bold mb-2">Location</h4>
-                <p class="text-sm text-gray-600">UTM Health Centre, Skudai</p>
-                <p class="text-sm text-gray-600">Johor Bahru, Malaysia</p>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Hours -->
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-[#f8edf1] rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fa-solid fa-clock text-[#802c44]"></i>
+                    </div>
+                    <h4 class="font-semibold mb-3">Operating Hours</h4>
+                    <p class="text-sm text-gray-600">Mon-Fri: 8:00 AM - 5:00 PM</p>
+                    <p class="text-sm text-gray-600">Sat: 8:00 AM - 12:00 PM</p>
+                    <p class="text-sm text-gray-600">Emergency: 24/7</p>
+                </div>
+
+                <!-- Contact Info -->
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-[#f8edf1] rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fa-solid fa-phone text-[#802c44]"></i>
+                    </div>
+                    <h4 class="font-semibold mb-3">Contact Us</h4>
+                    <p class="text-sm text-gray-600">Phone: +607-553 3333</p>
+                    <p class="text-sm text-gray-600">Emergency: +607-553 4444</p>
+                    <p class="text-sm text-gray-600">Email: clinic@utm.my</p>
+                </div>
+
+                <!-- Location -->
+                <div class="text-center">
+                    <div class="w-12 h-12 bg-[#f8edf1] rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fa-solid fa-location-dot text-[#802c44]"></i>
+                    </div>
+                    <h4 class="font-semibold mb-3">Location</h4>
+                    <p class="text-sm text-gray-600">UTM Health Centre</p>
+                    <p class="text-sm text-gray-600">Universiti Teknologi Malaysia</p>
+                    <p class="text-sm text-gray-600">Johor Bahru, Malaysia</p>
+                </div>
             </div>
         </div>
     </section>
