@@ -1,4 +1,3 @@
-<!-- Admin Dashboard by Sonia Selvaratnam 14/5/2026 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,74 +5,283 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - UTM Clinic</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            DEFAULT: '#802c44',
+                            light: '#f4e8ec',
+                            hover: '#6a2438'
+                        },
+                        text: {
+                            dark: '#1e293b',
+                            muted: '#64748b'
+                        },
+                        borderCustom: '#e2e8f0',
+                        bgBody: '#f8fafc'
+                    },
+                    borderRadius: {
+                        'custom': '16px'
+                    },
+                    boxShadow: {
+                        'custom': '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02)'
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        .bg-primary { background-color: #802c44; }
-        .text-primary { color: #802c44; }
+        body { background-color: #f8fafc; color: #1e293b; }
+        .current-patient-card::after {
+            content: "\f479"; font-family: "Font Awesome 6 Free"; font-weight: 900;
+            position: absolute; right: -20px; bottom: -20px; font-size: 150px; opacity: 0.1;
+        }
+        @media (max-width: 768px) {
+            .sidebar-text { display: none; }
+        }
     </style>
 </head>
-<body class="bg-gray-50">
-    <div class="flex min-h-screen">
-        <aside class="w-64 bg-white border-r p-4">
-            <div class="font-bold text-xl mb-8">UTM Clinic</div>
-            <nav class="space-y-2">
-                <a href="admin-dashboard.html" class="block p-2 bg-primary text-white rounded">Dashboard</a>
-                <a href="manage-doctors.html" class="block p-2 hover:bg-gray-100 rounded">Manage Doctors</a>
-                <a href="manage-staff.html" class="block p-2 hover:bg-gray-100 rounded">Manage Staff</a>
-                <button id="logoutBtn" class="w-full text-left p-2 hover:bg-gray-100 rounded">Logout</button>
-            </nav>
-        </aside>
-        <main class="flex-1 p-8">
-            <h1 class="text-3xl font-bold">Admin Dashboard</h1>
-            <p class="text-gray-500 mb-8">Welcome, <span id="adminName">Admin</span></p>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-white p-6 rounded shadow">
-                    <i class="fas fa-users text-2xl text-primary mb-2"></i>
-                    <h3 class="text-2xl font-bold" id="totalPatients">0</h3>
-                    <p>Total Patients</p>
+<body class="flex min-h-screen font-sans">
+
+    <aside class="w-[80px] md:w-[280px] bg-white border-r border-borderCustom py-8 flex flex-col sticky top-0 h-screen transition-all duration-300">
+        <div class="flex items-center gap-3 px-4 md:px-6 pb-10 justify-center md:justify-start">
+            <div class="w-[42px] h-[42px] bg-primary rounded-[12px] flex items-center justify-center flex-shrink-0">
+                <img src="images/Clinic-logo.png" alt="Logo" class="w-[80%] h-[80%] object-contain">
+            </div>
+            <div class="sidebar-text text-[22px] font-bold text-primary whitespace-nowrap">UTM Clinic</div>
+        </div>
+
+        <nav class="flex flex-col gap-1.5 px-3">
+            <a href="admin_dashboard.html" class="flex items-center gap-3 px-4 py-3 bg-primary text-white rounded-[12px] font-medium transition-all duration-300 justify-center md:justify-start">
+                <i class="fas fa-columns text-lg"></i>
+                <span class="sidebar-text">Admin Dashboard</span>
+            </a>
+            <a href="admin-doctors.html" class="flex items-center gap-3 px-4 py-3 text-text-muted hover:bg-primary-light hover:text-primary rounded-[12px] font-medium transition-all duration-300 justify-center md:justify-start">
+                <i class="fas fa-user-md text-lg"></i>
+                <span class="sidebar-text">Manage Doctors</span>
+            </a>
+            <a href="admin-staff.html" class="flex items-center gap-3 px-4 py-3 text-text-muted hover:bg-primary-light hover:text-primary rounded-[12px] font-medium transition-all duration-300 justify-center md:justify-start">
+                <i class="fas fa-users-cog text-lg"></i>
+                <span class="sidebar-text">Manage Staff</span>
+            </a>
+            <a href="admin-reports.html" class="flex items-center gap-3 px-4 py-3 text-text-muted hover:bg-primary-light hover:text-primary rounded-[12px] font-medium transition-all duration-300 justify-center md:justify-start">
+                <i class="fas fa-chart-line text-lg"></i>
+                <span class="sidebar-text">Sales Reports</span>
+            </a>
+        </nav>
+
+        <div class="px-3 border-t border-borderCustom pt-5 mt-auto">
+            <a href="login.html" id="logoutLink" class="flex items-center gap-3 px-4 py-3 text-[#ef4444] hover:bg-[#fef2f2] rounded-[12px] font-medium transition-all duration-300 justify-center md:justify-start">
+                <i class="fas fa-sign-out-alt text-lg"></i>
+                <span class="sidebar-text">Logout</span>
+            </a>
+        </div>
+    </aside>
+
+    <main class="flex-1 p-6 md:p-10 overflow-y-auto">
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-text-dark">Admin Dashboard</h1>
+            <p class="text-text-muted text-base">Clinic management and overview</p>
+        </header>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-custom border border-borderCustom shadow-custom flex items-center gap-5">
+                <div class="w-14 h-14 rounded-[14px] flex items-center justify-center text-2xl bg-[#eff6ff] text-[#3b82f6]">
+                    <i class="fas fa-user-md"></i>
                 </div>
-                <div class="bg-white p-6 rounded shadow">
-                    <i class="fas fa-user-md text-2xl text-primary mb-2"></i>
-                    <h3 class="text-2xl font-bold" id="totalDoctors">0</h3>
-                    <p>Doctors</p>
-                </div>
-                <div class="bg-white p-6 rounded shadow">
-                    <i class="fas fa-calendar text-2xl text-primary mb-2"></i>
-                    <h3 class="text-2xl font-bold" id="todayAppointments">0</h3>
-                    <p>Today's Appointments</p>
+                <div class="stat-info">
+                    <h3 class="text-2xl font-bold text-text-dark">8</h3>
+                    <p class="text-sm text-text-muted whitespace-nowrap">Total Doctors</p>
                 </div>
             </div>
-        </main>
-    </div>
-    <script type="module">
-        import { auth, db } from './js/firebase-config.js';
-        import { signOut } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
-        import { collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
-        auth.onAuthStateChanged(async (user) => {
-            if (!user) { window.location.href = 'login.html'; return; }
-            const userDoc = await getDoc(doc(db, "users", user.uid));
-            if (userDoc.exists()) document.getElementById('adminName').innerText = userDoc.data().name || 'Admin';
-            
-            // Count patients (role = patient)
-            const patientsQuery = query(collection(db, "users"), where("role", "==", "patient"));
-            const patientsSnap = await getDocs(patientsQuery);
-            document.getElementById('totalPatients').innerText = patientsSnap.size;
-            
-            const doctorsQuery = query(collection(db, "users"), where("role", "==", "doctor"));
-            const doctorsSnap = await getDocs(doctorsQuery);
-            document.getElementById('totalDoctors').innerText = doctorsSnap.size;
-            
-            const today = new Date().toISOString().slice(0,10);
-            const aptQuery = query(collection(db, "appointments"), where("date", "==", today));
-            const aptSnap = await getDocs(aptQuery);
-            document.getElementById('todayAppointments').innerText = aptSnap.size;
+            <div class="bg-white p-6 rounded-custom border border-borderCustom shadow-custom flex items-center gap-5">
+                <div class="w-14 h-14 rounded-[14px] flex items-center justify-center text-2xl bg-[#faf5ff] text-[#a855f7]">
+                    <i class="fas fa-users-cog"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="text-2xl font-bold text-text-dark">5</h3>
+                    <p class="text-sm text-text-muted whitespace-nowrap">Total Staff</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-custom border border-borderCustom shadow-custom flex items-center gap-5">
+                <div class="w-14 h-14 rounded-[14px] flex items-center justify-center text-2xl bg-blue-50 text-blue-600">
+                    <i class="fas fa-hospital-user"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="text-2xl font-bold text-text-dark">342</h3>
+                    <p class="text-sm text-text-muted whitespace-nowrap">Total Patients</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-custom border border-borderCustom shadow-custom flex items-center gap-5">
+                <div class="w-14 h-14 rounded-[14px] flex items-center justify-center text-2xl bg-[#f0fdf4] text-[#22c55e]">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="text-2xl font-bold text-text-dark">24</h3>
+                    <p class="text-sm text-text-muted whitespace-nowrap">Today's Appts</p>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-custom border border-borderCustom shadow-custom flex items-center gap-5">
+                <div class="w-14 h-14 rounded-[14px] flex items-center justify-center text-2xl bg-[#fdf2f2] text-primary">
+                    <i class="fas fa-wallet"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 class="text-2xl font-bold text-text-dark">RM 456</h3>
+                    <p class="text-sm text-text-muted whitespace-nowrap">Monthly Sales</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <a href="admin-doctors.html" class="group relative overflow-hidden bg-gradient-to-br from-[#802c44] to-[#5a1e2f] text-white p-8 rounded-custom shadow-md hover:shadow-xl transition-all duration-300 flex flex-col items-center justify-center text-center gap-4">
+                <div class="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-user-plus text-3xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-1">Manage Doctors</h3>
+                    <p class="text-sm opacity-85">Add, edit, or remove doctor accounts</p>
+                </div>
+            </a>
+
+            <a href="admin-staff.html" class="group relative overflow-hidden bg-gradient-to-br from-[#6a2438] to-[#451421] text-white p-8 rounded-custom shadow-md hover:shadow-xl transition-all duration-300 flex flex-col items-center justify-center text-center gap-4">
+                <div class="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-users text-3xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-1">Manage Staff</h3>
+                    <p class="text-sm opacity-85">Add, edit, or remove staff accounts</p>
+                </div>
+            </a>
+
+            <a href="admin-reports.html" class="group relative overflow-hidden bg-gradient-to-br from-[#22c55e] to-[#15803d] text-white p-8 rounded-custom shadow-md hover:shadow-xl transition-all duration-300 flex flex-col items-center justify-center text-center gap-4">
+                <div class="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                    <i class="fas fa-trending-up text-3xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-1">Sales Reports</h3>
+                    <p class="text-sm opacity-85">Revenue metrics from wellness items</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="text-[20px] font-bold mb-5 flex items-center gap-2.5 text-text-dark">
+            <i class="fas fa-history text-primary"></i> Recent Appointment Activity
+        </div>
+        
+        <div class="bg-white p-6 rounded-custom border border-borderCustom shadow-custom">
+            <div id="activityContainer" class="space-y-3">
+                <div class="text-center text-sm py-4 text-text-muted">
+                    <i class="fas fa-spinner fa-spin mr-2 text-primary"></i> Loading incoming activities...
+                </div>
+            </div>
+        </div>
+    </main>
+
+<script type="module">
+        // Import core configurations and instances directly from your path
+        import { db, auth } from "./js/firebase-config.js";
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+        import { collection, query, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+        // Enforce Authentication
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.href = "login.html";
+            }
         });
-        document.getElementById('logoutBtn').addEventListener('click', async () => {
-            await signOut(auth);
-            window.location.href = 'login.html';
+
+        // Handle Logout
+        const logoutLink = document.getElementById('logoutLink');
+        if (logoutLink) {
+            logoutLink.addEventListener('click', async (e) => {
+                e.preventDefault();
+                await signOut(auth);
+                window.location.href = 'login.html';
+            });
+        }
+
+        // Live Fetch Realtime Appointments Setup matching your Firestore schema
+        const container = document.getElementById("activityContainer");
+
+        // Queries your appointments sorting by your actual field: "createdAt" (descending order)
+        const appointmentsQuery = query(
+            collection(db, "appointments"),
+            orderBy("createdAt", "desc"), 
+            limit(5)
+        );
+
+        // Real-time snapshot listener updating UI layout elements dynamically
+        onSnapshot(appointmentsQuery, (snapshot) => {
+            if (snapshot.empty) {
+                container.innerHTML = `
+                    <div class="text-center py-6 text-text-muted text-sm">
+                        <i class="fas fa-calendar-times block text-xl mb-2 text-text-muted/60"></i>
+                        No recent appointment logs recorded.
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = ""; // Clear loader/previous templates
+
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                const patientName = data.patientName || "Unknown Patient";
+                const doctorName = data.doctorName || "Unassigned Doctor";
+                
+                // Parse your ISO 8601 String value ("2026-05-21T11:28:31.192Z") safely
+                let dateString = "Just Now";
+                if (data.createdAt) {
+                    try {
+                        const dateObject = new Date(data.createdAt);
+                        dateString = dateObject.toLocaleDateString('en-SG', {
+                            year: 'numeric', 
+                            month: '2-digit', 
+                            day: '2-digit',
+                            hour: '2-digit', 
+                            minute: '2-digit',
+                            hour12: true
+                        });
+                    } catch (err) {
+                        dateString = data.createdAt; // Fallback text stability
+                    }
+                }
+
+                // Append design system layout item row component
+                const element = document.createElement("div");
+                element.className = "flex gap-4 p-4 bg-bgBody rounded-[12px] border border-transparent hover:border-primary/20 transition-all duration-200";
+                element.innerHTML = `
+                    <div class="p-2.5 bg-primary-light text-primary rounded-[10px] h-fit flex items-center justify-center flex-shrink-0">
+                        <i class="fas fa-calendar-check text-sm"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-text-dark">
+                            Appointment booked: <span class="font-semibold text-primary">${patientName}</span> assigned to <span class="font-semibold text-text-dark">${doctorName}</span>
+                        </p>
+                        <p class="text-xs text-text-muted mt-1">
+                            <i class="far fa-clock mr-1"></i>${dateString}
+                        </p>
+                    </div>
+                `;
+                container.appendChild(element);
+            });
+        }, (error) => {
+            console.error("Firestore read exception: ", error);
+            container.innerHTML = `
+                <div class="text-center py-4 text-red-600 text-sm">
+                    <i class="fas fa-exclamation-triangle mr-2"></i> Failed to synchronize activity records logs.
+                </div>`;
         });
     </script>
-</body>
 </html>
-<!-- Admin Dashboard by Sonia Selvaratnam 14/5/2026 -->
