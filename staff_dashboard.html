@@ -41,8 +41,15 @@
         </aside>
 
         <main class="flex-1 p-8">
-            <h1 class="text-3xl font-bold text-gray-800">Staff Dashboard</h1>
-            <p class="text-gray-500 mb-8">Welcome, <span id="staffName" class="font-medium text-gray-700">Clinic Staff</span></p>
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800">Staff Dashboard</h1>
+                    <p class="text-gray-500">Welcome, <span id="staffName" class="font-medium text-gray-700">Clinic Staff</span></p>
+                </div>
+                <button id="runTestsBtn" class="bg-gray-800 hover:bg-gray-900 text-white text-xs px-4 py-2 rounded-lg font-mono transition-all">
+                    <i class="fas fa-flask mr-1"></i> Run System Tests
+                </button>
+            </div>
 
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
                 <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between">
@@ -95,142 +102,166 @@
         </main>
     </div>
 
-    <script type="module">
-        import { auth, db } from './js/firebase-config.js';
-        import { signOut } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
-        import { collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+<script type="module">
+// 1. Import everything directly from the Firebase CDN
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+import { getFirestore, collection, query, where, getDocs, getDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
-        auth.onAuthStateChanged(async (user) => {
-            if (!user) {
-                window.location.href = 'login.html';
-                return;
-            }
-            
-            try {
-                const userDoc = await getDoc(doc(db, "users", user.uid));
-                if (userDoc.exists()) {
-                    document.getElementById('staffName').innerText = userDoc.data().name || 'Clinic Staff';
-                }
-            } catch (err) {
-                console.error("Error pulling staff profile metadata:", err);
-            }
-            
-            loadTodayStats();
+// 2. Define configuration locally
+const firebaseConfig = {
+    apiKey: "AIzaSyCVIQytNF0kQ5ZZh1J8Uc56pHhoL1bG90M",
+    authDomain: "utm-clinic-portal.firebaseapp.com",
+    projectId: "utm-clinic-portal",
+    storageBucket: "utm-clinic-portal.firebasestorage.app",
+    messagingSenderId: "579361367162",
+    appId: "1:579361367162:web:4e45c841ec63756aff07c3",
+    measurementId: "G-W1LNRL2VVY"
+};
+
+// 3. Initialize local database and auth states
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+const appointmentsList = document.getElementById("appointmentsList");
+const todayCount = document.getElementById("todayCount");
+const confirmedCount = document.getElementById("confirmedCount");
+const pendingCount = document.getElementById("pendingCount");
+const paymentCount = document.getElementById("paymentCount");
+const staffName = document.getElementById("staffName");
+
+onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+        window.location.href = "login.html";
+        return;
+    }
+
+    try {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (userDoc.exists()) {
+            staffName.textContent = userDoc.data().name || "Clinic Staff";
+        }
+    } catch (err) {
+        console.error("Failed to load profile:", err);
+    }
+
+    loadDashboardData();
+});
+
+async function loadDashboardData() {
+    appointmentsList.innerHTML = `
+        <div class="text-center py-6 text-gray-400">
+            <i class="fas fa-spinner fa-spin mr-2"></i> Loading dashboard...
+        </div>
+    `;
+
+    try {
+        const todayDate = new Date().toLocaleDateString('sv-SE'); 
+        const appointmentsRef = collection(db, "appointments");
+
+        const todayQuery = query(appointmentsRef, where("date", "==", todayDate));
+        const confirmedQuery = query(appointmentsRef, where("status", "==", "confirmed"));
+        const pendingQuery = query(appointmentsRef, where("status", "==", "pending"));
+        const paymentQuery = query(collection(db, "payments"), where("status", "==", "pending"));
+
+        const [todaySnap, confirmedSnap, pendingSnap, paymentSnap] = await Promise.all([
+            getDocs(todayQuery),
+            getDocs(confirmedQuery),
+            getDocs(pendingQuery),
+            getDocs(paymentQuery)
+        ]);
+
+        const appointments = [];
+        todaySnap.forEach((docSnap) => {
+            appointments.push({ id: docSnap.id, ...docSnap.data() });
         });
 
-        async function loadTodayStats() {
+        todayCount.textContent = appointments.length;
+        confirmedCount.textContent = confirmedSnap.size;
+        pendingCount.textContent = pendingSnap.size;
+        paymentCount.textContent = paymentSnap.size;
+
+        await renderAppointments(appointments);
+
+    } catch (error) {
+        console.error("Dashboard error detailed trace:", error);
+        appointmentsList.innerHTML = `
+            <div class="text-center py-8 text-red-500">
+                Failed to load dashboard data. Check browser console logs.
+            </div>
+        `;
+    }
+}
+
+async function renderAppointments(appointments) {
+    appointmentsList.innerHTML = "";
+
+    if (appointments.length === 0) {
+        appointmentsList.innerHTML = `
+            <div class="text-center py-8 text-gray-400 border border-dashed rounded-lg bg-gray-50">
+                <i class="fas fa-calendar-check text-3xl mb-3"></i>
+                <p>No appointments scheduled for today.</p>
+            </div>
+        `;
+        return;
+    }
+
+    appointments.sort((a, b) => (a.time || "").localeCompare(b.time || ""));
+
+    const renderedRows = await Promise.all(appointments.map(async (appointment) => {
+        let patientName = appointment.patientName || appointment.studentName || "Unknown Patient";
+
+        if (appointment.userId) {
             try {
-                // Get your local Malaysian date string format (YYYY-MM-DD)
-                const localDate = new Date();
-                const year = localDate.getFullYear();
-                const month = String(localDate.getMonth() + 1).padStart(2, '0');
-                const day = String(localDate.getDate()).padStart(2, '0');
-                const todayStr = `${year}-${month}-${day}`;
-
-                console.log("System date checked for view sync:", todayStr);
-
-                // Fetch data using the proper referenced db instance from config
-                const appointmentsRef = collection(db, "appointments");
-                const allSnap = await getDocs(appointmentsRef);
-                
-                const globalApts = [];
-                allSnap.forEach((doc) => {
-                    globalApts.push({ id: doc.id, ...doc.data() });
-                });
-
-                // FIX: Filter metrics globally from all records instead of chaining off today's array
-                const todayAppointments = globalApts.filter(a => a.date === todayStr);
-                const confirmedTotal = globalApts.filter(a => a.status === 'confirmed').length;
-                const pendingTotal = globalApts.filter(a => a.status === 'pending').length;
-
-                // Update UI metric strings
-                document.getElementById('todayCount').innerText = todayAppointments.length;
-                document.getElementById('confirmedCount').innerText = confirmedTotal;
-                document.getElementById('pendingCount').innerText = pendingTotal;
-
-                // Query pending transactions loop
-                try {
-                    const paymentQuery = query(collection(db, "payments"), where("status", "==", "pending"));
-                    const paymentSnap = await getDocs(paymentQuery);
-                    document.getElementById('paymentCount').innerText = paymentSnap.size;
-                } catch(e) {
-                    console.warn("Payments dashboard metric bypass:", e.message);
-                    document.getElementById('paymentCount').innerText = "0"; 
+                const patientDoc = await getDoc(doc(db, "users", appointment.userId));
+                if (patientDoc.exists()) {
+                    patientName = patientDoc.data().name || patientName;
                 }
-
-                const container = document.getElementById('appointmentsList');
-                if (todayAppointments.length === 0) {
-                    container.innerHTML = `
-                        <div class="text-center py-8 text-gray-400 border border-dashed rounded-lg bg-gray-50">
-                            <i class="fas fa-calendar-check text-2xl mb-2 text-gray-300"></i>
-                            <p>No appointments scheduled for today (${todayStr}).</p>
-                        </div>`;
-                    return;
-                }
-
-                // Sort chronological display orders
-                todayAppointments.sort((a, b) => (a.time || "").localeCompare(b.time || ""));
-                container.innerHTML = '';
-
-                // Build modern list structures
-                for (const apt of todayAppointments) {
-                    let displayPatientName = apt.patientName || apt.studentName || 'Registered Patient';
-                    
-                    if (!apt.patientName && !apt.studentName && apt.userId) {
-                        try {
-                            const patientDoc = await getDoc(doc(db, "users", apt.userId));
-                            if (patientDoc.exists()) {
-                                displayPatientName = patientDoc.data().name;
-                            }
-                        } catch (err) {
-                            console.warn("Dynamic layout lookup missing field validation:", err.message);
-                        }
-                    }
-
-                    const div = document.createElement('div');
-                    div.className = 'p-4 bg-gray-50 border border-gray-100 rounded-xl flex justify-between items-center';
-                    div.innerHTML = `
-                        <div class="flex items-center gap-6">
-                            <div class="text-sm font-bold text-gray-700 bg-white px-3 py-1.5 rounded-lg border shadow-sm font-mono min-w-[90px] text-center">
-                                ${apt.time || '09:00 AM'}
-                            </div>
-                            <div>
-                                <p class="font-semibold text-gray-800">${displayPatientName}</p>
-                                <p class="text-xs text-gray-400 mt-0.5">with ${apt.doctorName || 'Assigned UTM Practitioner'}</p>
-                            </div>
-                        </div>
-                        <span class="px-3 py-1 rounded-full text-xs font-semibold ${
-                            apt.status === 'confirmed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-                        }">
-                            ${apt.status || 'pending'}
-                        </span>
-                    `;
-                    container.appendChild(div);
-                }
-            } catch (error) {
-                console.error("CRITICAL FIRESTORE ERROR DETAIL:", error);
-                document.getElementById('appointmentsList').innerHTML = `
-                    <div class="text-center py-4 text-red-500">
-                        <p class="font-bold">Error reading database logs.</p>
-                        <p class="text-xs text-gray-500 mt-1">Reason: ${error.message || 'Check connection environment'}</p>
-                    </div>`;
+            } catch (err) {
+                console.error("Error fetching patient doc:", err);
             }
         }
 
-        // Card Routing Link Event
-        document.getElementById('paymentMetricCard').addEventListener('click', () => {
-            window.location.href = 'staff-verify-payment.html';
-        });
+        const statusClass = appointment.status === "confirmed" 
+            ? "bg-green-100 text-green-700" 
+            : "bg-yellow-100 text-yellow-700";
 
-        // Logout Event handler
-        document.getElementById('logoutBtn').addEventListener('click', async () => {
-            try {
-                await signOut(auth);
-                window.location.href = 'login.html';
-            } catch (err) {
-                console.error("Signout error:", err);
-            }
-        });
-    </script>
+        const row = document.createElement("div");
+        row.className = "p-4 bg-gray-50 border border-gray-100 rounded-xl flex justify-between items-center";
+        row.innerHTML = `
+            <div class="flex items-center gap-6">
+                <div class="text-sm font-bold text-gray-700 bg-white px-3 py-2 rounded-lg border shadow-sm min-w-[90px] text-center">
+                    ${appointment.time || "--:--"}
+                </div>
+                <div>
+                    <p class="font-semibold text-gray-800">${patientName}</p>
+                    <p class="text-xs text-gray-500 mt-1">${appointment.doctorName || "No Doctor Assigned"}</p>
+                </div>
+            </div>
+            <span class="px-3 py-1 rounded-full text-xs font-semibold ${statusClass}">
+                ${appointment.status || "pending"}
+            </span>
+        `;
+        return row;
+    }));
+
+    renderedRows.forEach(row => appointmentsList.appendChild(row));
+}
+
+document.getElementById("paymentMetricCard")?.addEventListener("click", () => {
+    window.location.href = "staff-verify-payment.html";
+});
+
+document.getElementById("logoutBtn")?.addEventListener("click", async () => {
+    try {
+        await signOut(auth);
+        window.location.href = "login.html";
+    } catch (err) {
+        console.error("Logout failed:", err);
+    }
+});
+</script>
 </body>
 </html>
