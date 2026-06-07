@@ -5,102 +5,154 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Staff Dashboard - UTM Clinic</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            DEFAULT: '#802c44',
+                            light: '#f4e8ec',
+                            hover: '#6a2438'
+                        },
+                        text: {
+                            dark: '#1e293b',
+                            muted: '#64748b'
+                        },
+                        borderCustom: '#e2e8f0',
+                        bgBody: '#f8fafc'
+                    },
+                    borderRadius: {
+                        'custom': '16px'
+                    },
+                    boxShadow: {
+                        'custom': '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02)'
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        .bg-primary { background-color: #802c44; }
-        .text-primary { color: #802c44; }
-        .sidebar { width: 260px; }
-        @media (max-width: 768px) { .sidebar { width: 80px; } .sidebar span { display: none; } }
+        body { background-color: #f8fafc; color: #1e293b; }
+        @media (max-width: 768px) {
+            .sidebar-text { display: none; }
+        }
     </style>
 </head>
-<body class="bg-gray-50">
-    <div class="flex min-h-screen">
-        <aside class="sidebar bg-white border-r border-gray-200 flex flex-col">
-            <div class="p-6 border-b flex items-center gap-3">
-                <img src="images/utm-logo.png" alt="UTM Logo" class="h-12 mx-auto">
-            </div>
-            <nav class="flex-1 p-4">
-                <a href="staff_dashboard.html" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-primary text-white mb-2 shadow-sm">
-                    <i class="fas fa-home w-5"></i> <span>Dashboard</span>
-                </a>
-                <a href="staff-manage-appointments.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 mb-2">
-                    <i class="fas fa-calendar-alt w-5"></i> <span>Manage Appointments</span>
-                </a>
-                <a href="staff-verify-payment.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 mb-2">
-                    <i class="fas fa-dollar-sign w-5"></i> <span>Verify Payments</span>
-                </a>
-                <a href="staff-medication-list.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100">
-                    <i class="fas fa-pills w-5"></i> <span>Medication List</span>
-                </a>
-            </nav>
-            <div class="p-4 border-t">
-                <button id="logoutBtn" class="flex items-center gap-3 px-4 py-3 rounded-lg w-full text-gray-700 hover:bg-gray-100 text-left">
-                    <i class="fas fa-sign-out-alt w-5"></i> <span>Logout</span>
-                </button>
-            </div>
-        </aside>
+<body class="flex min-h-screen font-sans">
 
-        <main class="flex-1 p-8">
-            <div class="flex justify-between items-center mb-4">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-800">Staff Dashboard</h1>
-                    <p class="text-gray-500">Welcome, <span id="staffName" class="font-medium text-gray-700">Clinic Staff</span></p>
-                </div>
-                <button id="runTestsBtn" class="bg-gray-800 hover:bg-gray-900 text-white text-xs px-4 py-2 rounded-lg font-mono transition-all">
-                    <i class="fas fa-flask mr-1"></i> Run System Tests
-                </button>
+    <aside class="w-[80px] md:w-[280px] bg-white border-r border-borderCustom py-8 flex flex-col sticky top-0 h-screen transition-all duration-300">
+        <div class="flex items-center gap-3 px-4 md:px-6 pb-10 justify-center md:justify-start">
+            <div class="w-[42px] h-[42px] bg-primary rounded-[12px] flex items-center justify-center flex-shrink-0">
+                <img src="images/Clinic-logo.png" alt="Logo" class="w-[80%] h-[80%] object-contain">
             </div>
+            <div class="sidebar-text text-[22px] font-bold text-primary whitespace-nowrap">UTM Clinic</div>
+        </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between">
-                    <div>
-                        <div class="w-10 h-10 rounded-lg bg-pink-50 flex items-center justify-center mb-4">
-                            <i class="fas fa-calendar text-primary text-xl"></i>
-                        </div>
-                        <h3 class="text-3xl font-bold text-gray-800" id="todayCount">0</h3>
-                        <p class="text-sm text-gray-500 mt-1">Today's Appointments</p>
-                    </div>
+        <nav class="flex flex-col gap-1.5 px-3">
+            <a href="staff_dashboard.html" class="flex items-center gap-3 px-4 py-3 bg-primary text-white rounded-[12px] font-medium transition-all duration-300 justify-center md:justify-start">
+                <i class="fas fa-columns text-lg"></i>
+                <span class="sidebar-text">Dashboard</span>
+            </a>
+            <a href="staff-manage-appointments.html" class="flex items-center gap-3 px-4 py-3 text-text-muted hover:bg-primary-light hover:text-primary rounded-[12px] font-medium transition-all duration-300 justify-center md:justify-start">
+                <i class="fas fa-calendar-alt text-lg"></i>
+                <span class="sidebar-text">Manage Appointments</span>
+            </a>
+            <a href="staff-verify-payment.html" class="flex items-center gap-3 px-4 py-3 text-text-muted hover:bg-primary-light hover:text-primary rounded-[12px] font-medium transition-all duration-300 justify-center md:justify-start">
+                <i class="fas fa-dollar-sign text-lg"></i>
+                <span class="sidebar-text">Verify Payments</span>
+            </a>
+            <a href="staff-medication-list.html" class="flex items-center gap-3 px-4 py-3 text-text-muted hover:bg-primary-light hover:text-primary rounded-[12px] font-medium transition-all duration-300 justify-center md:justify-start">
+                <i class="fas fa-pills text-lg"></i>
+                <span class="sidebar-text">Medication List</span>
+            </a>
+        </nav>
+
+        <div class="px-3 border-t border-borderCustom pt-5 mt-auto">
+            <button id="logoutBtn" class="w-full flex items-center gap-3 px-4 py-3 text-[#ef4444] hover:bg-[#fef2f2] rounded-[12px] font-medium transition-all duration-300 justify-center md:justify-start text-left">
+                <i class="fas fa-sign-out-alt text-lg"></i>
+                <span class="sidebar-text">Logout</span>
+            </button>
+        </div>
+    </aside>
+
+    <main class="flex-1 p-6 md:p-10 overflow-y-auto">
+        <header class="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-text-dark">Staff Dashboard</h1>
+                <p class="text-text-muted text-base">Welcome, <span id="staffName" class="font-semibold text-text-dark">Clinic Staff</span></p>
+            </div>
+            <button id="runTestsBtn" class="bg-[#1e293b] hover:bg-[#0f172a] text-white text-xs px-4 py-2.5 rounded-[10px] font-mono transition-all flex items-center gap-2 shadow-sm">
+                <i class="fas fa-flask"></i> Run System Tests
+            </button>
+        </header>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-custom border border-borderCustom shadow-custom flex items-center gap-5">
+                <div class="w-14 h-14 rounded-[14px] flex items-center justify-center text-2xl bg-[#fdf2f2] text-primary">
+                    <i class="fas fa-calendar"></i>
                 </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between">
-                    <div>
-                        <div class="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center mb-4">
-                            <i class="fas fa-check-circle text-green-600 text-xl"></i>
-                        </div>
-                        <h3 class="text-3xl font-bold text-gray-800" id="confirmedCount">0</h3>
-                        <p class="text-sm text-gray-500 mt-1">Confirmed (Total)</p>
-                    </div>
-                </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between">
-                    <div>
-                        <div class="w-10 h-10 rounded-lg bg-yellow-50 flex items-center justify-center mb-4">
-                            <i class="fas fa-user-clock text-yellow-600 text-xl"></i>
-                        </div>
-                        <h3 class="text-3xl font-bold text-gray-800" id="pendingCount">0</h3>
-                        <p class="text-sm text-gray-500 mt-1">Pending Confirmation</p>
-                    </div>
-                </div>
-                <div id="paymentMetricCard" class="bg-amber-500 text-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col justify-between cursor-pointer hover:bg-amber-600 transition-all">
-                    <div>
-                        <div class="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center mb-4">
-                            <i class="fas fa-dollar-sign text-white text-xl"></i>
-                        </div>
-                        <h3 class="text-3xl font-bold text-white" id="paymentCount">0</h3>
-                        <p class="text-sm text-white/90 mt-1">Payments to Verify</p>
-                    </div>
+                <div class="stat-info">
+                    <h3 id="todayCount" class="text-2xl font-bold text-text-dark">0</h3>
+                    <p class="text-sm text-text-muted whitespace-nowrap">Today's Appts</p>
                 </div>
             </div>
 
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-xl font-bold text-gray-800">Today's Appointments</h2>
-                    <a href="staff-manage-appointments.html" class="text-sm text-primary font-medium hover:underline">View All</a>
+            <div class="bg-white p-6 rounded-custom border border-borderCustom shadow-custom flex items-center gap-5">
+                <div class="w-14 h-14 rounded-[14px] flex items-center justify-center text-2xl bg-[#f0fdf4] text-[#22c55e]">
+                    <i class="fas fa-check-circle"></i>
                 </div>
-                <div id="appointmentsList" class="space-y-3">
-                    <div class="text-center py-6 text-gray-400">Loading schedule...</div>
+                <div class="stat-info">
+                    <h3 id="confirmedCount" class="text-2xl font-bold text-text-dark">0</h3>
+                    <p class="text-sm text-text-muted whitespace-nowrap">Confirmed (Total)</p>
                 </div>
             </div>
-        </main>
-    </div>
+
+            <div class="bg-white p-6 rounded-custom border border-borderCustom shadow-custom flex items-center gap-5">
+                <div class="w-14 h-14 rounded-[14px] flex items-center justify-center text-2xl bg-[#fffbeb] text-[#d97706]">
+                    <i class="fas fa-user-clock"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="pendingCount" class="text-2xl font-bold text-text-dark">0</h3>
+                    <p class="text-sm text-text-muted whitespace-nowrap">Pending Confirmation</p>
+                </div>
+            </div>
+
+            <div id="paymentMetricCard" class="group bg-gradient-to-br from-[#d97706] to-[#b45309] text-white p-6 rounded-custom shadow-custom flex items-center gap-5 cursor-pointer hover:shadow-xl hover:scale-[1.01] transition-all duration-300">
+                <div class="w-14 h-14 rounded-[14px] flex items-center justify-center text-2xl bg-white/20">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="paymentCount" class="text-2xl font-bold text-white">0</h3>
+                    <p class="text-sm text-white/90 whitespace-nowrap">Payments to Verify</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-[20px] font-bold mb-5 flex items-center gap-2.5 text-text-dark">
+            <i class="fas fa-history text-primary"></i> Today's Appointments Schedule
+        </div>
+
+        <div class="bg-white p-6 rounded-custom border border-borderCustom shadow-custom">
+            <div class="flex justify-between items-center mb-6 border-b border-borderCustom pb-4">
+                <h2 class="text-lg font-bold text-text-dark">Incoming Patients</h2>
+                <a href="staff-manage-appointments.html" class="text-sm text-primary font-semibold hover:text-primary-hover hover:underline flex items-center gap-1">
+                    View All Schedule <i class="fas fa-arrow-right text-xs"></i>
+                </a>
+            </div>
+            <div id="appointmentsList" class="space-y-3">
+                <div class="text-center text-sm py-6 text-text-muted">
+                    <i class="fas fa-spinner fa-spin mr-2 text-primary"></i> Loading schedule logs...
+                </div>
+            </div>
+        </div>
+    </main>
 
 <script type="module">
 // 1. Import everything directly from the Firebase CDN
@@ -152,8 +204,8 @@ onAuthStateChanged(auth, async (user) => {
 
 async function loadDashboardData() {
     appointmentsList.innerHTML = `
-        <div class="text-center py-6 text-gray-400">
-            <i class="fas fa-spinner fa-spin mr-2"></i> Loading dashboard...
+        <div class="text-center py-6 text-text-muted text-sm">
+            <i class="fas fa-spinner fa-spin mr-2 text-primary"></i> Syncing runtime parameters...
         </div>
     `;
 
@@ -188,8 +240,8 @@ async function loadDashboardData() {
     } catch (error) {
         console.error("Dashboard error detailed trace:", error);
         appointmentsList.innerHTML = `
-            <div class="text-center py-8 text-red-500">
-                Failed to load dashboard data. Check browser console logs.
+            <div class="text-center py-8 text-red-500 font-medium text-sm">
+                <i class="fas fa-exclamation-triangle mr-1"></i> Failed to synchronize local layout data.
             </div>
         `;
     }
@@ -200,9 +252,9 @@ async function renderAppointments(appointments) {
 
     if (appointments.length === 0) {
         appointmentsList.innerHTML = `
-            <div class="text-center py-8 text-gray-400 border border-dashed rounded-lg bg-gray-50">
-                <i class="fas fa-calendar-check text-3xl mb-3"></i>
-                <p>No appointments scheduled for today.</p>
+            <div class="text-center py-8 text-text-muted text-sm border border-dashed border-borderCustom rounded-[12px] bg-bgBody">
+                <i class="fas fa-calendar-check text-2xl mb-2 text-text-muted/60 block"></i>
+                No appointments scheduled for today.
             </div>
         `;
         return;
@@ -225,22 +277,22 @@ async function renderAppointments(appointments) {
         }
 
         const statusClass = appointment.status === "confirmed" 
-            ? "bg-green-100 text-green-700" 
-            : "bg-yellow-100 text-yellow-700";
+            ? "bg-[#f0fdf4] text-[#16a34a]" 
+            : "bg-[#fffbeb] text-[#d97706]";
 
         const row = document.createElement("div");
-        row.className = "p-4 bg-gray-50 border border-gray-100 rounded-xl flex justify-between items-center";
+        row.className = "flex gap-4 p-4 bg-bgBody rounded-[12px] border border-transparent hover:border-primary/20 transition-all duration-200 justify-between items-center";
         row.innerHTML = `
-            <div class="flex items-center gap-6">
-                <div class="text-sm font-bold text-gray-700 bg-white px-3 py-2 rounded-lg border shadow-sm min-w-[90px] text-center">
-                    ${appointment.time || "--:--"}
+            <div class="flex items-center gap-4 min-w-0">
+                <div class="text-sm font-bold text-text-dark bg-white px-3 py-2 rounded-[10px] border border-borderCustom shadow-sm min-w-[95px] text-center flex-shrink-0">
+                    <i class="far fa-clock text-xs text-text-muted mr-1"></i>${appointment.time || "--:--"}
                 </div>
-                <div>
-                    <p class="font-semibold text-gray-800">${patientName}</p>
-                    <p class="text-xs text-gray-500 mt-1">${appointment.doctorName || "No Doctor Assigned"}</p>
+                <div class="min-w-0">
+                    <p class="font-semibold text-text-dark text-sm truncate">${patientName}</p>
+                    <p class="text-xs text-text-muted mt-0.5"><i class="fas fa-user-md text-xs mr-1"></i>${appointment.doctorName || "No Doctor Assigned"}</p>
                 </div>
             </div>
-            <span class="px-3 py-1 rounded-full text-xs font-semibold ${statusClass}">
+            <span class="px-2.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wider flex-shrink-0 ${statusClass}">
                 ${appointment.status || "pending"}
             </span>
         `;

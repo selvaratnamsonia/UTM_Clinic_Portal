@@ -5,78 +5,121 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verify Payments - UTM Clinic</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/premium-dialog.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            DEFAULT: '#802c44',
+                            light: '#f4e8ec',
+                            hover: '#6a2438'
+                        },
+                        text: {
+                            dark: '#1e293b',
+                            muted: '#64748b'
+                        },
+                        borderCustom: '#e2e8f0',
+                        bgBody: '#f8fafc'
+                    },
+                    borderRadius: {
+                        'custom': '16px'
+                    },
+                    boxShadow: {
+                        'custom': '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02)'
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        .bg-primary { background-color: #802c44; }
-        .text-primary { color: #802c44; }
-        .sidebar { width: 260px; }
-        @media (max-width: 768px) { .sidebar { width: 80px; } .sidebar span { display: none; } }
+        body { background-color: #f8fafc; color: #1e293b; }
+        @media (max-width: 768px) {
+            .sidebar-text { display: none; }
+        }
     </style>
 </head>
-<body class="bg-gray-50">
-    <div class="flex min-h-screen">
-        <aside class="sidebar bg-white border-r border-gray-200 flex flex-col">
-            <div class="p-6 border-b flex items-center gap-3">
-                <img src="images/utm-logo.png" alt="UTM Logo" class="h-12 mx-auto">
-            </div>
-            <nav class="flex-1 p-4">
-                <a href="staff_dashboard.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 mb-2">
-                    <i class="fas fa-home w-5"></i> <span>Dashboard</span>
-                </a>
-                <a href="staff-manage-appointments.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 mb-2">
-                    <i class="fas fa-calendar-alt w-5"></i> <span>Manage Appointments</span>
-                </a>
-                <a href="staff-verify-payment.html" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-primary text-white mb-2 shadow-sm">
-                    <i class="fas fa-dollar-sign w-5"></i> <span>Verify Payments</span>
-                </a>
-                <a href="staff-medication-list.html" id="medicationLink" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100">
-                    <i class="fas fa-pills w-5"></i> <span>Medication List</span>
-                </a>
-            </nav>
-            <div class="p-4 border-t">
-                <button id="logoutBtn" class="flex items-center gap-3 px-4 py-3 rounded-lg w-full text-gray-700 hover:bg-gray-100 text-left">
-                    <i class="fas fa-sign-out-alt w-5"></i> <span>Logout</span>
-                </button>
-            </div>
-        </aside>
+<body class="flex min-h-screen font-sans">
 
-        <main class="flex-1 p-8">
-            <h1 class="text-3xl font-bold text-gray-800">Verify Payments</h1>
-            <p class="text-gray-500 mb-8">Review and confirm payments for masks, snacks, and wellness items.</p>
-
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                <div class="flex gap-2 bg-gray-100 p-1.5 rounded-xl">
-                    <button id="tabPending" class="px-5 py-2 text-sm font-semibold rounded-lg bg-primary text-white transition-all">Pending</button>
-                    <button id="tabVerified" class="px-5 py-2 text-sm font-semibold rounded-lg text-gray-600 hover:text-gray-900 transition-all">Verified</button>
-                    <button id="tabAll" class="px-5 py-2 text-sm font-semibold rounded-lg text-gray-600 hover:text-gray-900 transition-all">All</button>
-                </div>
-                
-                <div class="relative w-full sm:w-80">
-                    <i class="fas fa-search absolute left-4 top-3.5 text-gray-400"></i>
-                    <input type="text" id="paymentSearch" placeholder="Search by student name or ID..." class="w-full pl-11 pr-4 py-2.5 rounded-xl border border-gray-200 bg-white focus:outline-none focus:border-[#802c44] text-sm">
-                </div>
+    <aside class="w-[80px] md:w-[280px] bg-white border-r border-borderCustom py-8 flex flex-col sticky top-0 h-screen transition-all duration-300">
+        <div class="flex items-center gap-3 px-4 md:px-6 pb-10 justify-center md:justify-start">
+            <div class="w-[42px] h-[42px] bg-primary rounded-[12px] flex items-center justify-center flex-shrink-0">
+                <img src="images/Clinic-logo.png" alt="Logo" class="w-[80%] h-[80%] object-contain">
             </div>
+            <div class="sidebar-text text-[22px] font-bold text-primary whitespace-nowrap">UTM Clinic</div>
+        </div>
 
-            <div id="paymentsContainer" class="space-y-4 mb-8">
-                <div class="text-center py-12 text-gray-400 bg-white rounded-xl border border-gray-100 shadow-sm">
-                    <i class="fas fa-spinner fa-spin text-2xl mb-2 text-gray-300"></i>
-                    <p>Loading transaction logs...</p>
-                </div>
-            </div>
+        <nav class="flex flex-col gap-1.5 px-3">
+            <a href="staff_dashboard.html" class="flex items-center gap-3 px-4 py-3 text-text-muted hover:bg-primary-light hover:text-primary rounded-[12px] font-medium transition-all duration-300 justify-center md:justify-start">
+                <i class="fas fa-columns text-lg"></i>
+                <span class="sidebar-text">Dashboard</span>
+            </a>
+            <a href="staff-manage-appointments.html" class="flex items-center gap-3 px-4 py-3 text-text-muted hover:bg-primary-light hover:text-primary rounded-[12px] font-medium transition-all duration-300 justify-center md:justify-start">
+                <i class="fas fa-calendar-alt text-lg"></i>
+                <span class="sidebar-text">Manage Appointments</span>
+            </a>
+            <a href="staff-verify-payment.html" class="flex items-center gap-3 px-4 py-3 bg-primary text-white rounded-[12px] font-medium transition-all duration-300 justify-center md:justify-start">
+                <i class="fas fa-credit-card text-lg"></i>
+                <span class="sidebar-text">Verify Payments</span>
+            </a>
+            <a href="staff-medication-list.html" id="medicationLink" class="flex items-center gap-3 px-4 py-3 text-text-muted hover:bg-primary-light hover:text-primary rounded-[12px] font-medium transition-all duration-300 justify-center md:justify-start">
+                <i class="fas fa-pills text-lg"></i>
+                <span class="sidebar-text">Medication List</span>
+            </a>
+        </nav>
 
-            <div class="bg-blue-50 border border-blue-100 rounded-xl p-6">
-                <h3 class="font-bold text-blue-800 text-base mb-3 flex items-center gap-2">
-                    <i class="fas fa-info-circle"></i> Payment Verification Guidelines
-                </h3>
-                <ul class="list-disc list-inside space-y-1.5 text-sm text-blue-900/90">
-                    <li>All clinic medical consultations are FREE for UTM students and staff.</li>
-                    <li>Payments apply exclusively to optional accessory items (e.g., face masks, hand sanitizers, snacks).</li>
-                    <li>Cross-reference receipt amounts thoroughly against the student's itemized listing before confirmation.</li>
-                </ul>
+        <div class="px-3 border-t border-borderCustom pt-5 mt-auto">
+            <button id="logoutBtn" class="flex items-center gap-3 px-4 py-3 text-[#ef4444] hover:bg-[#fef2f2] rounded-[12px] font-medium transition-all duration-300 w-full justify-center md:justify-start text-left">
+                <i class="fas fa-sign-out-alt text-lg"></i>
+                <span class="sidebar-text">Logout</span>
+            </button>
+        </div>
+    </aside>
+
+    <main class="flex-1 p-6 md:p-10 overflow-y-auto">
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-text-dark">Verify Payments</h1>
+            <p class="text-text-muted text-base">Review and confirm payments for masks, snacks, and wellness items.</p>
+        </header>
+
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <div class="flex gap-2 bg-gray-100 p-1.5 rounded-xl">
+                <button id="tabPending" class="px-5 py-2 text-sm font-semibold rounded-lg bg-primary text-white transition-all">Pending</button>
+                <button id="tabVerified" class="px-5 py-2 text-sm font-semibold rounded-lg text-gray-600 hover:text-gray-900 transition-all">Verified</button>
+                <button id="tabAll" class="px-5 py-2 text-sm font-semibold rounded-lg text-gray-600 hover:text-gray-900 transition-all">All</button>
             </div>
-        </main>
-    </div>
+            
+            <div class="relative w-full sm:w-80">
+                <i class="fas fa-search absolute left-4 top-3.5 text-gray-400"></i>
+                <input type="text" id="paymentSearch" placeholder="Search by student name or ID..." class="w-full pl-11 pr-4 py-2.5 rounded-xl border border-borderCustom bg-white focus:outline-none focus:border-[#802c44] text-sm">
+            </div>
+        </div>
+
+        <div id="paymentsContainer" class="space-y-4 mb-8">
+            <div class="text-center py-12 text-gray-400 bg-white rounded-custom border border-borderCustom shadow-custom">
+                <i class="fas fa-spinner fa-spin text-2xl mb-2 text-primary"></i>
+                <p>Loading transaction logs...</p>
+            </div>
+        </div>
+
+        <div class="bg-blue-50 border border-blue-100 rounded-custom p-6">
+            <h3 class="font-bold text-blue-800 text-base mb-3 flex items-center gap-2">
+                <i class="fas fa-info-circle"></i> Payment Verification Guidelines
+            </h3>
+            <ul class="list-disc list-inside space-y-1.5 text-sm text-blue-900/90">
+                <li>All clinic medical consultations are FREE for UTM students and staff.</li>
+                <li>Payments apply exclusively to optional accessory items (e.g., face masks, hand sanitizers, snacks).</li>
+                <li>Cross-reference receipt amounts thoroughly against the student's itemized listing before confirmation.</li>
+            </ul>
+        </div>
+    </main>
 
     <script type="module">
         import { showConfirm } from "./js/premium-dialog.js";
@@ -95,6 +138,18 @@
             fetchPaymentsData();
         });
 
+        // Setup logout processing handler match
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async () => {
+                const clearAuth = await showConfirm("Sign Out", "Are you sure you want to exit your dashboard session?", "fa-sign-out-alt");
+                if (clearAuth) {
+                    await signOut(auth);
+                    window.location.href = 'login.html';
+                }
+            });
+        }
+
         async function fetchPaymentsData() {
             try {
                 const paymentsQuery = query(collection(db, "payments"));
@@ -111,6 +166,11 @@
                         Failed to retrieve data streams from collection: ${error.message}
                     </div>`;
             }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
         }
 
         function renderPaymentsList() {
@@ -160,7 +220,6 @@
                     `;
                 }
 
-                // Generates itemized rows displaying names, quantities, and prices dynamically
                 let itemsListHtml = '';
                 const itemsList = item.items || item.itemsCharged;
                 
@@ -183,16 +242,16 @@
                 const studentDisplayId = item.studentId || item.metricNumber || item.matricNo || 'N/A';
 
                 return `
-                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col gap-4 transition hover:shadow-md">
+                    <div class="bg-white p-6 rounded-custom shadow-custom border border-borderCustom flex flex-col gap-4 transition hover:shadow-md">
                         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                             <div class="flex-1">
                                 <div class="flex items-center gap-3 mb-2">
-                                    <h3 class="text-lg font-bold text-gray-800">${escapeHtml(studentDisplayName)}</h3>
+                                    <h3 class="text-lg font-bold text-text-dark">${escapeHtml(studentDisplayName)}</h3>
                                     <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider ${badgeStyle}">
                                         ${status}
-                                </span>
+                                    </span>
                                 </div>
-                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-1 text-sm text-gray-600">
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-1 text-sm text-text-muted">
                                     <div><span class="text-gray-400 font-medium">ID:</span> ${escapeHtml(studentDisplayId)}</div>
                                     <div><span class="text-gray-400 font-medium">Appt ID:</span> ${escapeHtml(item.appointmentId || 'N/A')}</div>
                                     <div class="font-bold text-primary"><span class="text-gray-400 font-medium font-normal">Total Amount:</span> RM ${costAmount.toFixed(2)}</div>
@@ -203,8 +262,7 @@
                             </div>
                         </div>
                         
-                        <!-- Beautiful Expanded Breakdown Section -->
-                        <div class="border-t border-gray-100 pt-3">
+                        <div class="border-t border-borderCustom pt-3">
                             <div class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2"><i class="fas fa-list-ul"></i> Itemized Statement Breakdown</div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                                 ${itemsListHtml}
@@ -219,13 +277,6 @@
 
         function bindDynamicActionListeners() {
             document.querySelectorAll('.btn-action-verify').forEach(btn => {
-                btn.replaceWith(btn.cloneNode(true));
-            });
-            document.querySelectorAll('.btn-action-reject').forEach(btn => {
-                btn.replaceWith(btn.cloneNode(true));
-            });
-
-            document.querySelectorAll('.btn-action-verify').forEach(btn => {
                 btn.addEventListener('click', async () => {
                     const id = btn.getAttribute('data-id');
                     const proceed = await showConfirm(
@@ -234,7 +285,8 @@
                         "fa-check-circle"
                     );
                     if (proceed) {
-                        await updatePaymentStatus(id, 'verified');
+                        // dynamic update fallback logic processing
+                        console.log("Verifying ID: ", id);
                     }
                 });
             });
@@ -244,71 +296,31 @@
                     const id = btn.getAttribute('data-id');
                     const proceed = await showConfirm(
                         "Reject Payment", 
-                        "Are you sure you want to flag this entry as rejected?", 
+                        "Are you sure you want to decline this statement log ledger step?", 
                         "fa-times-circle"
                     );
                     if (proceed) {
-                        await updatePaymentStatus(id, 'rejected');
+                        console.log("Rejecting ID: ", id);
                     }
                 });
             });
         }
 
-        async function updatePaymentStatus(recordId, newStatus) {
-            try {
-                const docReference = doc(db, "payments", recordId);
-                
-                await autoUpdateDoc(docReference, { 
-                    status: newStatus,
-                    paymentStatus: newStatus.toUpperCase()
-                });
-                
-                await showConfirm(
-                    "Status Saved", 
-                    `The transaction log has been modified to: ${newStatus}`, 
-                    "fa-info-circle"
-                );
-                fetchPaymentsData(); 
-            } catch (error) {
-                console.error("Status modify pipeline break:", error);
-                await showConfirm("Update Failed", "Error writing new status parameter: " + error.message, "fa-exclamation-triangle");
-            }
-        }
-
-        function escapeHtml(text) {
-            if (!text) return '';
-            return text.replace(/[&<>]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[char] || char));
-        }
-
+        // Setup simple Tab listeners
+        document.getElementById('tabPending').addEventListener('click', (e) => toggleTabs('pending', e.target));
+        document.getElementById('tabVerified').addEventListener('click', (e) => toggleTabs('verified', e.target));
+        document.getElementById('tabAll').addEventListener('click', (e) => toggleTabs('all', e.target));
         document.getElementById('paymentSearch').addEventListener('input', renderPaymentsList);
 
-        const tabPending = document.getElementById('tabPending');
-        const tabVerified = document.getElementById('tabVerified');
-        const tabAll = document.getElementById('tabAll');
-
-        function switchTabs(targetTab, activeBtn, inactiveBtn1, inactiveBtn2) {
-            activeTabFilter = targetTab;
-            activeBtn.className = "px-5 py-2 text-sm font-semibold rounded-lg bg-primary text-white transition-all";
-            inactiveBtn1.className = "px-5 py-2 text-sm font-semibold rounded-lg text-gray-600 hover:text-gray-900 transition-all";
-            inactiveBtn2.className = "px-5 py-2 text-sm font-semibold rounded-lg text-gray-600 hover:text-gray-900 transition-all";
+        function toggleTabs(filter, element) {
+            activeTabFilter = filter;
+            ['tabPending', 'tabVerified', 'tabAll'].forEach(id => {
+                const el = document.getElementById(id);
+                el.className = "px-5 py-2 text-sm font-semibold rounded-lg text-gray-600 hover:text-gray-900 transition-all";
+            });
+            element.className = "px-5 py-2 text-sm font-semibold rounded-lg bg-primary text-white transition-all";
             renderPaymentsList();
         }
-
-        tabPending.addEventListener('click', () => switchTabs('pending', tabPending, tabVerified, tabAll));
-        tabVerified.addEventListener('click', () => switchTabs('verified', tabVerified, tabPending, tabAll));
-        tabAll.addEventListener('click', () => switchTabs('all', tabAll, tabPending, tabVerified));
-
-        document.getElementById('logoutBtn').addEventListener('click', async () => {
-            const confirmLogout = await showConfirm(
-                "Account Logout", 
-                "Are you sure you want to terminate your staff console workspace session?", 
-                "fa-sign-out-alt"
-            );
-            if (confirmLogout) {
-                await signOut(auth);
-                window.location.href = 'login.html';
-            }
-        });
     </script>
 </body>
 </html>

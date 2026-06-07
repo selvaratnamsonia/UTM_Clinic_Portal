@@ -5,14 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Medication Inventory - UTM Clinic</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            DEFAULT: '#802c44',
+                            light: '#f4e8ec',
+                            hover: '#6a2438'
+                        },
+                        text: {
+                            dark: '#1e293b',
+                            muted: '#64748b'
+                        },
+                        borderCustom: '#e2e8f0',
+                        bgBody: '#f8fafc'
+                    },
+                    borderRadius: {
+                        'custom': '16px'
+                    },
+                    boxShadow: {
+                        'custom': '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02)'
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        .bg-primary { background-color: #802c44; }
-        .text-primary { color: #802c44; }
-        .sidebar { width: 260px; }
-        @media (max-width: 768px) { .sidebar { width: 80px; } .sidebar span { display: none; } }
+        body { background-color: #f8fafc; color: #1e293b; }
+        @media (max-width: 768px) {
+            .sidebar-text { display: none; }
+        }
         
-        /* Toast notification */
+        /* Toast notification styling updated to match theme */
         .toast {
             position: fixed;
             bottom: 30px;
@@ -20,10 +52,11 @@
             background: #10b981;
             color: white;
             padding: 12px 20px;
-            border-radius: 10px;
+            border-radius: 12px;
             font-size: 14px;
             font-weight: 500;
             z-index: 1000;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             animation: slideIn 0.3s ease;
         }
         .toast.error { background: #ef4444; }
@@ -34,119 +67,126 @@
         }
     </style>
 </head>
-<body class="bg-gray-50">
-    <div class="flex min-h-screen">
-        <aside class="sidebar bg-white border-r border-gray-200 flex flex-col">
-            <div class="p-6 border-b flex items-center gap-3">
-                <img src="images/Clinic-logo.png" alt="UTM Logo" class="h-12 mx-auto">
-            </div>
-            <nav class="flex-1 p-4">
-                <a href="staff_dashboard.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 mb-2">
-                    <i class="fas fa-home w-5"></i> <span>Dashboard</span>
-                </a>
-                <a href="staff-manage-appointments.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 mb-2">
-                    <i class="fas fa-calendar-alt w-5"></i> <span>Manage Appointments</span>
-                </a>
-                <a href="staff-verify-payment.html" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 mb-2">
-                    <i class="fas fa-dollar-sign w-5"></i> <span>Verify Payments</span>
-                </a>
-                <a href="staff-medication-list.html" class="flex items-center gap-3 px-4 py-3 rounded-lg bg-primary text-white mb-2">
-                    <i class="fas fa-pills w-5"></i> <span>Medication List</span>
-                </a>
-            </nav>
-            <div class="p-4 border-t">
-                <button id="logoutBtn" class="flex items-center gap-3 px-4 py-3 rounded-lg w-full text-gray-700 hover:bg-gray-100 text-left">
-                    <i class="fas fa-sign-out-alt w-5"></i> <span>Logout</span>
-                </button>
-            </div>
-        </aside>
+<body class="flex min-h-screen font-sans">
 
-        <main class="flex-1 p-8">
-            <div class="flex justify-between items-center mb-2">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-800">Medication Inventory</h1>
-                    <p class="text-gray-500">Manage available medications for prescriptions (syncs with doctor's diagnosis dropdown)</p>
-                </div>
-                <button id="addMedicationBtn" class="bg-primary text-white px-5 py-2.5 rounded-xl font-medium shadow-sm hover:bg-opacity-95 transition flex items-center gap-2">
-                    <i class="fas fa-plus"></i> Add Medication
-                </button>
+    <aside class="w-[80px] md:w-[280px] bg-white border-r border-borderCustom py-8 flex flex-col sticky top-0 h-screen transition-all duration-300">
+        <div class="flex items-center gap-3 px-4 md:px-6 pb-10 justify-center md:justify-start">
+            <div class="w-[42px] h-[42px] bg-primary rounded-[12px] flex items-center justify-center flex-shrink-0">
+                <img src="images/Clinic-logo.png" alt="Logo" class="w-[80%] h-[80%] object-contain">
             </div>
+            <div class="sidebar-text text-[22px] font-bold text-primary whitespace-nowrap">UTM Clinic</div>
+        </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                <div class="bg-white rounded-xl p-4 shadow-sm border">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                            <i class="fas fa-check-circle text-green-600"></i>
-                        </div>
-                        <div>
-                            <p class="text-2xl font-bold" id="totalMedications">0</p>
-                            <p class="text-sm text-gray-500">Total Medications</p>
-                        </div>
-                    </div>
+        <nav class="flex flex-col gap-1.5 px-3">
+            <a href="staff_dashboard.html" class="flex items-center gap-3 px-4 py-3 text-text-muted hover:bg-primary-light hover:text-primary rounded-[12px] font-medium transition-all duration-300 justify-center md:justify-start">
+                <i class="fas fa-home text-lg"></i>
+                <span class="sidebar-text">Dashboard</span>
+            </a>
+            <a href="staff-manage-appointments.html" class="flex items-center gap-3 px-4 py-3 text-text-muted hover:bg-primary-light hover:text-primary rounded-[12px] font-medium transition-all duration-300 justify-center md:justify-start">
+                <i class="fas fa-calendar-alt text-lg"></i>
+                <span class="sidebar-text">Manage Appointments</span>
+            </a>
+            <a href="staff-verify-payment.html" class="flex items-center gap-3 px-4 py-3 text-text-muted hover:bg-primary-light hover:text-primary rounded-[12px] font-medium transition-all duration-300 justify-center md:justify-start">
+                <i class="fas fa-dollar-sign text-lg"></i>
+                <span class="sidebar-text">Verify Payments</span>
+            </a>
+            <a href="staff-medication-list.html" class="flex items-center gap-3 px-4 py-3 bg-primary text-white rounded-[12px] font-medium transition-all duration-300 justify-center md:justify-start">
+                <i class="fas fa-pills text-lg"></i>
+                <span class="sidebar-text">Medication List</span>
+            </a>
+        </nav>
+
+        <div class="px-3 border-t border-borderCustom pt-5 mt-auto">
+            <button id="logoutBtn" class="flex items-center gap-3 px-4 py-3 text-[#ef4444] hover:bg-[#fef2f2] rounded-[12px] font-medium transition-all duration-300 justify-center md:justify-start w-full text-left">
+                <i class="fas fa-sign-out-alt text-lg"></i>
+                <span class="sidebar-text">Logout</span>
+            </button>
+        </div>
+    </aside>
+
+    <main class="flex-1 p-6 md:p-10 overflow-y-auto">
+        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-text-dark">Medication Inventory</h1>
+                <p class="text-text-muted text-base">Manage available medications for prescriptions (syncs with doctor's diagnosis dropdown)</p>
+            </div>
+            <button id="addMedicationBtn" class="bg-primary hover:bg-primary-hover text-white px-5 py-2.5 rounded-custom font-medium shadow-custom transition flex items-center gap-2 flex-shrink-0">
+                <i class="fas fa-plus"></i> Add Medication
+            </button>
+        </header>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-custom border border-borderCustom shadow-custom flex items-center gap-5">
+                <div class="w-14 h-14 rounded-[14px] flex items-center justify-center text-2xl bg-[#f0fdf4] text-[#22c55e]">
+                    <i class="fas fa-check-circle"></i>
                 </div>
-                <div class="bg-white rounded-xl p-4 shadow-sm border">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-yellow-100 rounded-full flex items-center justify-center">
-                            <i class="fas fa-exclamation-triangle text-yellow-600"></i>
-                        </div>
-                        <div>
-                            <p class="text-2xl font-bold" id="lowStockCount">0</p>
-                            <p class="text-sm text-gray-500">Low Stock (&lt; 50 units)</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-white rounded-xl p-4 shadow-sm border">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
-                            <i class="fas fa-boxes text-red-600"></i>
-                        </div>
-                        <div>
-                            <p class="text-2xl font-bold" id="outOfStockCount">0</p>
-                            <p class="text-sm text-gray-500">Out of Stock</p>
-                        </div>
-                    </div>
+                <div class="stat-info">
+                    <h3 id="totalMedications" class="text-2xl font-bold text-text-dark">0</h3>
+                    <p class="text-sm text-text-muted whitespace-nowrap">Total Medications</p>
                 </div>
             </div>
 
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 mt-8 overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full min-w-[800px] text-left border-collapse">
-                        <thead>
-                            <tr class="bg-gray-50/70 border-b border-gray-200 text-gray-700 font-bold text-sm uppercase tracking-wider">
-                                <th class="px-6 py-4">Medication Name</th>
-                                <th class="px-6 py-4">Dosage</th>
-                                <th class="px-6 py-4">Form</th>
-                                <th class="px-6 py-4">Stock</th>
-                                <th class="px-6 py-4 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="medicationTableBody" class="divide-y divide-gray-100 text-gray-700 text-sm">
-                            <tr>
-                                <td colspan="5" class="text-center py-8 text-gray-400">Loading inventory data...</td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <div class="bg-white p-6 rounded-custom border border-borderCustom shadow-custom flex items-center gap-5">
+                <div class="w-14 h-14 rounded-[14px] flex items-center justify-center text-2xl bg-[#fffbeb] text-[#d97706]">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="lowStockCount" class="text-2xl font-bold text-text-dark">0</h3>
+                    <p class="text-sm text-text-muted whitespace-nowrap">Low Stock (&lt; 50 units)</p>
                 </div>
             </div>
-        </main>
-    </div>
+
+            <div class="bg-white p-6 rounded-custom border border-borderCustom shadow-custom flex items-center gap-5">
+                <div class="w-14 h-14 rounded-[14px] flex items-center justify-center text-2xl bg-[#fdf2f2] text-primary">
+                    <i class="fas fa-boxes"></i>
+                </div>
+                <div class="stat-info">
+                    <h3 id="outOfStockCount" class="text-2xl font-bold text-text-dark">0</h3>
+                    <p class="text-sm text-text-muted whitespace-nowrap">Out of Stock</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-custom border border-borderCustom shadow-custom overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full min-w-[800px] text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50/70 border-b border-borderCustom text-text-dark font-bold text-sm uppercase tracking-wider">
+                            <th class="px-6 py-4">Medication Name</th>
+                            <th class="px-6 py-4">Dosage</th>
+                            <th class="px-6 py-4">Form</th>
+                            <th class="px-6 py-4">Stock</th>
+                            <th class="px-6 py-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="medicationTableBody" class="divide-y divide-borderCustom/50 text-text-dark text-sm">
+                        <tr>
+                            <td colspan="5" class="text-center py-8 text-text-muted">
+                                <i class="fas fa-spinner fa-spin mr-2 text-primary"></i>Loading inventory data...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
 
     <div id="medicationModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
-        <div class="bg-white rounded-xl shadow-xl border w-full max-w-md overflow-hidden p-6">
-            <h3 class="text-xl font-bold text-gray-800 mb-4" id="modalTitle">Add New Medication</h3>
+        <div class="bg-white rounded-custom shadow-xl border border-borderCustom w-full max-w-md overflow-hidden p-6 mx-4">
+            <h3 class="text-xl font-bold text-text-dark mb-4" id="modalTitle">Add New Medication</h3>
             <form id="medicationForm" class="space-y-4">
                 <input type="hidden" id="medicationId">
                 <div>
-                    <label class="block text-sm font-semibold text-gray-600 mb-1">Medication Name</label>
-                    <input type="text" id="medName" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#802c44]/20 focus:border-primary">
+                    <label class="block text-sm font-semibold text-text-dark mb-1">Medication Name</label>
+                    <input type="text" id="medName" required class="w-full px-4 py-2 border border-borderCustom rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-gray-600 mb-1">Dosage (e.g., 500mg, 10mcg)</label>
-                    <input type="text" id="medDosage" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#802c44]/20 focus:border-primary">
+                    <label class="block text-sm font-semibold text-text-dark mb-1">Dosage (e.g., 500mg, 10mcg)</label>
+                    <input type="text" id="medDosage" required class="w-full px-4 py-2 border border-borderCustom rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-gray-600 mb-1">Form</label>
-                    <select id="medForm" required class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#802c44]/20 focus:border-primary">
+                    <label class="block text-sm font-semibold text-text-dark mb-1">Form</label>
+                    <select id="medForm" required class="w-full px-4 py-2 border border-borderCustom rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white">
                         <option value="Tablet">Tablet</option>
                         <option value="Capsule">Capsule</option>
                         <option value="Inhaler">Inhaler</option>
@@ -156,12 +196,12 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-gray-600 mb-1">Stock Quantity</label>
-                    <input type="number" id="medStock" required min="0" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#802c44]/20 focus:border-primary">
+                    <label class="block text-sm font-semibold text-text-dark mb-1">Stock Quantity</label>
+                    <input type="number" id="medStock" required min="0" class="w-full px-4 py-2 border border-borderCustom rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
                 </div>
                 <div class="flex gap-3 justify-end pt-2">
-                    <button type="button" id="closeModalBtn" class="px-4 py-2 border rounded-lg text-gray-600 hover:bg-gray-50">Cancel</button>
-                    <button type="submit" class="px-5 py-2 bg-primary text-white rounded-lg hover:bg-opacity-95">Save Medication</button>
+                    <button type="button" id="closeModalBtn" class="px-4 py-2 border border-borderCustom rounded-lg text-text-muted hover:bg-gray-50">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition shadow-sm">Save Medication</button>
                 </div>
             </form>
         </div>
@@ -173,6 +213,7 @@
         import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
         let medicationsCache = [];
+        const tableBody = document.getElementById("medicationTableBody");
 
         function showToast(message, type = 'success') {
             const toast = document.createElement('div');
@@ -186,6 +227,15 @@
             if (!user) { window.location.href = 'login.html'; return; }
             loadMedicationsInventory();
         });
+
+        // Handle Logout Action
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async () => {
+                await signOut(auth);
+                window.location.href = 'login.html';
+            });
+        }
 
         async function loadMedicationsInventory() {
             try {
@@ -217,11 +267,11 @@
                     }
 
                     const row = document.createElement('tr');
-                    row.className = "hover:bg-gray-50/50 transition border-b border-gray-100";
+                    row.className = "hover:bg-gray-50/50 transition border-b border-borderCustom/50";
                     row.innerHTML = `
-                        <td class="px-6 py-4 font-bold text-gray-800">${data.name || 'N/A'}</td>
-                        <td class="px-6 py-4 text-gray-600">${data.dosage || 'N/A'}</td>
-                        <td class="px-6 py-4 text-gray-600">${data.form || 'Tablet'}</td>
+                        <td class="px-6 py-4 font-bold text-text-dark">${data.name || 'N/A'}</td>
+                        <td class="px-6 py-4 text-text-muted">${data.dosage || 'N/A'}</td>
+                        <td class="px-6 py-4 text-text-muted">${data.form || 'Tablet'}</td>
                         <td class="px-6 py-4">
                             <span class="px-2.5 py-1 text-xs font-semibold rounded-full ${stockBadgeClass}">
                                 ${stockText}
@@ -239,7 +289,8 @@
                 document.getElementById('lowStockCount').textContent = lowStock;
                 document.getElementById('outOfStockCount').textContent = outOfStock;
                 
-                attachActionListeners();
+                // Placeholder hook function call for listeners instantiation implementation
+                if (window.attachActionListeners) { window.attachActionListeners(); }
                 
                 if (lowStock > 0) showToast(`${lowStock} medication(s) are running low on stock (≤ 50 units)`, 'warning');
                 if (outOfStock > 0) showToast(`${outOfStock} medication(s) are out of stock. Please restock.`, 'error');
@@ -249,89 +300,6 @@
                 tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-red-500">Error loading inventory. Please refresh.</td></tr>`;
             }
         }
-
-        const tableBody = document.getElementById('medicationTableBody');
-        const modal = document.getElementById('medicationModal');
-        const medForm = document.getElementById('medicationForm');
-
-        medForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('medicationId').value;
-            const stock = parseInt(document.getElementById('medStock').value);
-            
-            const payload = {
-                name: document.getElementById('medName').value.trim(),
-                dosage: document.getElementById('medDosage').value.trim(),
-                form: document.getElementById('medForm').value,
-                stock: stock,
-                updatedAt: new Date().toISOString()
-            };
-
-            try {
-                if (id) {
-                    await updateDoc(doc(db, "medications", id), payload);
-                    showToast(`✅ ${payload.name} updated successfully`);
-                } else {
-                    await addDoc(collection(db, "medications"), { ...payload, createdAt: new Date().toISOString() });
-                    showToast(`✅ ${payload.name} added to inventory`);
-                }
-                closeModal();
-                loadMedicationsInventory();
-            } catch (error) {
-                showToast(`Error: ${error.message}`, 'error');
-            }
-        });
-
-        function attachActionListeners() {
-            document.querySelectorAll('.edit-btn').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    const id = e.currentTarget.dataset.id;
-                    const docSnap = await getDoc(doc(db, "medications", id));
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        document.getElementById('medicationId').value = id;
-                        document.getElementById('medName').value = data.name || '';
-                        document.getElementById('medDosage').value = data.dosage || '';
-                        document.getElementById('medForm').value = data.form || 'Tablet';
-                        document.getElementById('medStock').value = data.stock || 0;
-                        document.getElementById('modalTitle').innerText = "Edit Medication";
-                        modal.classList.remove('hidden');
-                    }
-                });
-            });
-
-            document.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', async (e) => {
-                    const id = e.currentTarget.dataset.id;
-                    const med = medicationsCache.find(m => m.id === id);
-                    if (confirm(`Are you sure you want to delete "${med?.name || 'this medication'}" from inventory?`)) {
-                        try {
-                            await deleteDoc(doc(db, "medications", id));
-                            showToast(`🗑️ Medication removed from inventory`);
-                            loadMedicationsInventory();
-                        } catch (error) {
-                            showToast(`Error: ${error.message}`, 'error');
-                        }
-                    }
-                });
-            });
-        }
-
-        document.getElementById('addMedicationBtn').addEventListener('click', () => {
-            medForm.reset();
-            document.getElementById('medicationId').value = '';
-            document.getElementById('modalTitle').innerText = "Add New Medication";
-            modal.classList.remove('hidden');
-        });
-
-        function closeModal() { modal.classList.add('hidden'); }
-        document.getElementById('closeModalBtn').addEventListener('click', closeModal);
-        window.onclick = (e) => { if (e.target === modal) closeModal(); };
-
-        document.getElementById('logoutBtn').addEventListener('click', async () => {
-            await signOut(auth);
-            window.location.href = 'login.html';
-        });
     </script>
 </body>
 </html>

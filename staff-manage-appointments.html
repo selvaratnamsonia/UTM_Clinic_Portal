@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Appointments - UTM Clinic Staff</title>
 
+    <script src="https://cdn.tailwindcss.com"></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script type="text/javascript">
@@ -15,507 +17,137 @@
        })();
     </script>
 
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            DEFAULT: '#802c44',
+                            light: '#f4e8ec',
+                            hover: '#6a2438'
+                        },
+                        text: {
+                            dark: '#1e293b',
+                            muted: '#64748b'
+                        },
+                        borderCustom: '#e2e8f0',
+                        bgBody: '#f8fafc'
+                    },
+                    borderRadius: {
+                        'custom': '16px'
+                    },
+                    boxShadow: {
+                        'custom': '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02)'
+                    }
+                }
+            }
+        }
+    </script>
+
     <style>
-        :root {
-            --primary: #802c44;
-            --primary-light: #f4e8ec;
-            --primary-hover: #6a2438;
-            --bg-body: #f8fafc;
-            --white: #ffffff;
-            --text-dark: #1e293b;
-            --text-muted: #64748b;
-            --border-color: #e2e8f0;
-            --radius: 12px;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            
-            --btn-confirm: #e6f7ed;
-            --text-confirm: #15803d;
-            --btn-reschedule: #e0f2fe;
-            --text-reschedule: #0369a1;
-            --btn-cancel: #fee2e2;
-            --text-cancel: #dc2626;
-            --btn-dispense: #fef3c7;
-            --text-dispense: #d97706;
+        body { background-color: #f8fafc; color: #1e293b; }
+        @media (max-width: 768px) {
+            .sidebar-text { display: none; }
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
+        .badge-pending { background: #fef3c7; color: #d97706; }
+        .badge-confirmed { background: #dcfce7; color: #16a34a; }
+        .badge-cancelled { background: #fee2e2; color: #dc2626; }
+        .badge-completed { background: #e0f2fe; color: #0284c7; }
 
-        body {
-            display: flex;
-            min-height: 100vh;
-            background: var(--bg-body);
-            color: var(--text-dark);
-        }
-
-        .sidebar {
-            width: 280px;
-            background: var(--white);
-            border-right: 1px solid var(--border-color);
-            padding: 30px 0;
-            display: flex;
-            flex-direction: column;
-            position: sticky;
-            top: 0;
-            height: 100vh;
-        }
-
-        .logo-container {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 0 25px 40px;
-        }
-
-        .logo-box {
-            width: 42px;
-            height: 42px;
-            background: var(--primary);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .logo-text { font-size: 22px; font-weight: 700; color: var(--primary); }
-
-        .nav-links { display: flex; flex-direction: column; gap: 5px; padding: 0 15px; }
-
-        .nav-link {
-            padding: 12px 18px;
-            color: var(--text-muted);
-            border-radius: 12px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            text-decoration: none;
-        }
-
-        .nav-link:hover { background: var(--primary-light); color: var(--primary); }
-        .nav-link.active { background: var(--primary-light); color: var(--primary); font-weight: 600; }
-
-        .main {
-            flex: 1;
-            padding: 40px 60px;
-            max-width: 1200px;
-        }
-
-        header { margin-bottom: 30px; }
-        h1 { font-size: 28px; font-weight: 700; margin-bottom: 6px; }
-        .subtitle { color: var(--text-muted); font-size: 15px; }
-
-        .filter-tabs {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 25px;
-        }
-
-        .filter-btn {
-            background: #f1f5f9;
-            border: none;
-            padding: 10px 22px;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-dark);
-            cursor: pointer;
-            border-radius: 20px;
-            transition: all 0.2s ease;
-        }
-
-        .filter-btn:hover { background: #e2e8f0; }
-        .filter-btn.active {
-            background: var(--primary);
-            color: var(--white);
-        }
-
-        .appointments-list {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .appointment-card {
-            background: var(--white);
-            border-radius: var(--radius);
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow);
-            padding: 24px;
-            display: flex;
-            flex-direction: column; 
-            gap: 16px;
-            position: relative;
-            transition: transform 0.2s;
-        }
-
-        .appointment-card:hover {
-            transform: translateY(-2px);
-        }
-
-        .card-top-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            width: 100%;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .patient-details {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .name-row {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
-        .patient-name {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--text-dark);
-        }
-
-        .badge {
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: capitalize;
-            display: inline-block;
-        }
-
-        .badge.pending { background: #fef3c7; color: #d97706; }
-        .badge.confirmed { background: #dcfce7; color: #16a34a; }
-        .badge.cancelled { background: #fee2e2; color: #dc2626; }
-        .badge.completed { background: #e0f2fe; color: #0284c7; }
-
-        .matric-no {
-            font-size: 13px;
-            color: var(--text-muted);
-            font-weight: 500;
-            letter-spacing: 0.5px;
-        }
-
-        .meta-line {
-            font-size: 14px;
-            color: var(--text-dark);
-            margin-top: 2px;
-        }
-
-        .meta-line strong {
-            color: #475569;
-            font-weight: 600;
-        }
-
-        .action-group {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .action-btn {
-            border: 1px solid transparent;
-            padding: 10px 16px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s ease;
-        }
-
-        .action-btn.confirm { background: var(--btn-confirm); color: var(--text-confirm); }
-        .action-btn.confirm:hover { background: #16a34a; color: var(--white); }
-        .action-btn.reschedule { background: var(--btn-reschedule); color: var(--text-reschedule); }
-        .action-btn.reschedule:hover { background: #0284c7; color: var(--white); }
-        .action-btn.cancel { background: var(--btn-cancel); color: var(--text-cancel); }
-        .action-btn.cancel:hover { background: #dc2626; color: var(--white); }
-        .action-btn.dispense { background: var(--btn-dispense); color: var(--text-dispense); }
-        .action-btn.dispense:hover { background: #d97706; color: var(--white); }
-
-        .reschedule-panel {
-            display: none; 
-            border-top: 1px solid var(--border-color);
-            padding-top: 18px;
-            margin-top: 4px;
-            animation: fadeIn 0.2s ease-in-out;
-        }
-
-        .panel-title {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: 12px;
-        }
-
-        .input-grid {
-            display: grid;
-            grid-template-columns: 140px 140px;
-            gap: 12px;
-            margin-bottom: 15px;
-        }
-
-        .input-wrapper {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .input-label {
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-        }
-
-        .form-input {
-            width: 100%;
-            font-size: 13px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 8px 12px;
-            background: #f8fafc;
-            color: var(--text-dark);
-            outline: none;
-            transition: all 0.2s;
-        }
-
-        .form-input:focus {
-            background: var(--white);
-            border-color: var(--primary);
-            box-shadow: 0 0 0 1px var(--primary);
-        }
-
-        .panel-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .panel-btn {
-            padding: 8px 14px;
-            font-size: 12px;
-            font-weight: 700;
-            border-radius: 6px;
-            cursor: pointer;
-            border: none;
-            transition: all 0.2s;
-        }
-
-        .panel-btn.save {
-            background: var(--primary);
-            color: var(--white);
-        }
-
-        .panel-btn.save:hover {
-            background: var(--primary-hover);
-        }
-
-        .panel-btn.close {
-            background: #f1f5f9;
-            color: var(--text-dark);
-        }
-
-        .panel-btn.close:hover {
-            background: #e2e8f0;
-        }
-
-        .empty-state {
-            background: var(--white);
-            border: 1px dashed var(--border-color);
-            border-radius: var(--radius);
-            padding: 50px;
-            text-align: center;
-            color: var(--text-muted);
-            font-style: italic;
-        }
-
-        /* --- Premium Custom Dialog Modal Styles --- */
+        /* Modal Smooth Animations */
         .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(15, 23, 42, 0.4);
-            backdrop-filter: blur(4px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            opacity: 0;
-            pointer-events: none;
             transition: opacity 0.25s ease;
         }
-
+        .modal-box {
+            transform: scale(0.95);
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
         .modal-overlay.active {
             opacity: 1;
             pointer-events: auto;
         }
-
-        .modal-box {
-            background: var(--white);
-            width: 100%;
-            max-width: 400px;
-            border-radius: 16px;
-            padding: 28px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            text-align: center;
-            transform: scale(0.9);
-            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
         .modal-overlay.active .modal-box {
             transform: scale(1);
         }
-
-        .modal-icon {
-            width: 56px;
-            height: 56px;
-            background: #fee2e2;
-            color: #dc2626;
-            font-size: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 18px;
-        }
-
-        .modal-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: 8px;
-        }
-
-        .modal-message {
-            font-size: 14px;
-            color: var(--text-muted);
-            line-height: 1.5;
-            margin-bottom: 24px;
-        }
-
-        .modal-btn-group {
-            display: flex;
-            gap: 12px;
-            justify-content: center;
-        }
-
-        .modal-btn {
-            flex: 1;
-            padding: 11px 20px;
-            font-size: 14px;
-            font-weight: 600;
-            border-radius: 10px;
-            cursor: pointer;
-            border: none;
-            transition: all 0.2s ease;
-        }
-
-        .modal-btn.confirm-cancel {
-            background: #dc2626;
-            color: var(--white);
-        }
-
-        .modal-btn.confirm-cancel:hover {
-            background: #b91c1c;
-        }
-
-        .modal-btn.abort-cancel {
-            background: #f1f5f9;
-            color: var(--text-dark);
-        }
-
-        .modal-btn.abort-cancel:hover {
-            background: #e2e8f0;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(4px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @media (max-width: 900px) {
-            .card-top-content { flex-direction: column; align-items: stretch; }
-            .action-group { width: 100%; justify-content: flex-start; }
-            .input-grid { grid-template-columns: 1fr; }
-            .main { padding: 20px; }
-        }
     </style>
 </head>
-<body>
+<body class="flex min-h-screen font-sans antialiased">
 
-<aside class="sidebar">
-    <div class="logo-container">
-        <div class="logo-box">
-            <img src="images/Clinic-logo.png" alt="UTM Logo" style="width:75%; height:75%; object-fit:contain;">
+    <aside class="w-[80px] md:w-[280px] bg-white border-r border-borderCustom py-8 flex flex-col sticky top-0 h-screen transition-all duration-300 z-30">
+        <div class="flex items-center gap-3 px-4 md:px-6 pb-10 justify-center md:justify-start">
+            <div class="w-[42px] h-[42px] bg-primary rounded-[12px] flex items-center justify-center flex-shrink-0">
+                <img src="images/Clinic-logo.png" alt="Logo" class="w-[80%] h-[80%] object-contain">
+            </div>
+            <div class="sidebar-text text-[22px] font-bold text-primary whitespace-nowrap">UTM Clinic</div>
         </div>
-        <div class="logo-text">UTM Clinic</div>
-    </div>
-
-    <nav class="nav-links">
-        <a href="staff_dashboard.html" class="nav-link">
-            <i class="fas fa-columns"></i> <span>Dashboard</span>
-        </a>
-        <a href="staff-manage-appointments.html" class="nav-link active">
-            <i class="fas fa-calendar-check"></i> <span>Manage Appointments</span>
-        </a>
-        <a href="staff-verify-payment.html" class="nav-link">
-            <i class="fas fa-dollar-sign"></i> <span>Verify Payments</span>
-        </a>
-        <a href="staff-medication-list.html" class="nav-link">
-            <i class="fas fa-pills"></i> <span>Medication List</span>
-        </a>
-        <a href="#" id="staffLogout" class="nav-link" style="margin-top: auto; color: #ef4444;">
-            <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
-        </a>
-    </nav>
-</aside>
-
-<main class="main">
-    <header>
-        <h1>Manage Appointments</h1>
-        <p class="subtitle">Confirm, reschedule, cancel, or dispense medications for patient appointments.</p>
-    </header>
-
-    <div class="filter-tabs">
-        <button class="filter-btn active" data-filter="all">All</button>
-        <button class="filter-btn" data-filter="pending">Pending</button>
-        <button class="filter-btn" data-filter="confirmed">Confirmed</button>
-        <button class="filter-btn" data-filter="completed">Completed</button>
-    </div>
-
-    <div class="appointments-list" id="appointmentsWrapper">
-        <div class="empty-state">Loading patient database configurations...</div>
-    </div>
-</main>
-
-<div class="modal-overlay" id="cancelModalOverlay">
-    <div class="modal-box">
-        <div class="modal-icon">
-            <i class="fas fa-exclamation-triangle"></i>
+        
+        <nav class="flex flex-col gap-1.5 px-3 flex-1">
+            <a href="staff_dashboard.html" class="flex items-center gap-3 px-4 py-3 text-text-muted hover:bg-primary-light hover:text-primary rounded-[12px] font-medium transition-all duration-300 justify-center md:justify-start">
+                <i class="fas fa-home text-lg"></i> 
+                <span class="sidebar-text">Dashboard</span>
+            </a>
+            <a href="staff-manage-appointments.html" class="flex items-center gap-3 px-4 py-3 bg-primary text-white rounded-[12px] font-medium transition-all duration-300 justify-center md:justify-start">
+                <i class="fas fa-calendar-alt text-lg"></i> 
+                <span class="sidebar-text">Manage Appointments</span>
+            </a>
+            <a href="staff-verify-payment.html" class="flex items-center gap-3 px-4 py-3 text-text-muted hover:bg-primary-light hover:text-primary rounded-[12px] font-medium transition-all duration-300 justify-center md:justify-start">
+                <i class="fas fa-dollar-sign text-lg"></i> 
+                <span class="sidebar-text">Verify Payments</span>
+            </a>
+            <a href="staff-medication-list.html" class="flex items-center gap-3 px-4 py-3 text-text-muted hover:bg-primary-light hover:text-primary rounded-[12px] font-medium transition-all duration-300 justify-center md:justify-start">
+                <i class="fas fa-pills text-lg"></i> 
+                <span class="sidebar-text">Medication List</span>
+            </a>
+        </nav>
+        
+        <div class="px-3 border-t border-borderCustom pt-5 mt-auto">
+            <button id="staffLogout" class="flex items-center gap-3 px-4 py-3 text-[#ef4444] hover:bg-[#fef2f2] rounded-[12px] font-medium transition-all duration-300 w-full justify-center md:justify-start">
+                <i class="fas fa-sign-out-alt text-lg"></i> 
+                <span class="sidebar-text">Logout</span>
+            </button>
         </div>
-        <div class="modal-title">Cancel Appointment</div>
-        <div class="modal-message">Are you certain you wish to cancel this appointment? This action will set the status to cancelled.</div>
-        <div class="modal-btn-group">
-            <button class="modal-btn abort-cancel" id="abortCancelBtn">No, Keep It</button>
-            <button class="modal-btn confirm-cancel" id="confirmCancelBtn">Yes, Cancel</button>
+    </aside>
+
+    <div class="flex-1 flex flex-col min-w-0">
+        <main class="flex-1 p-6 md:p-10 max-w-5xl w-full mx-auto">
+            <header class="mb-8">
+                <h1 class="text-3xl font-bold text-text-dark">Manage Appointments</h1>
+                <p class="text-text-muted text-base mt-1">Confirm, reschedule, cancel, or dispense medications for patient appointments.</p>
+            </header>
+
+            <div class="flex flex-wrap gap-2 mb-8 bg-slate-100 p-1.5 rounded-xl w-max max-w-full">
+                <button class="filter-btn active px-4 py-2 text-xs md:text-sm font-semibold rounded-lg transition-all bg-white text-slate-900 shadow-sm" data-filter="all">All</button>
+                <button class="filter-btn px-4 py-2 text-xs md:text-sm font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition-all" data-filter="pending">Pending</button>
+                <button class="filter-btn px-4 py-2 text-xs md:text-sm font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition-all" data-filter="confirmed">Confirmed</button>
+                <button class="filter-btn px-4 py-2 text-xs md:text-sm font-semibold rounded-lg text-slate-600 hover:text-slate-900 transition-all" data-filter="completed">Completed</button>
+            </div>
+
+            <div class="space-y-4" id="appointmentsWrapper">
+                <div class="bg-white border border-dashed border-slate-200 rounded-2xl p-12 text-center text-slate-400 font-medium italic">
+                    Loading patient database configurations...
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="modal-overlay fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 opacity-0 pointer-events-none" id="cancelModalOverlay">
+        <div class="modal-box bg-white w-full max-w-md mx-4 rounded-2xl p-6 shadow-xl text-center">
+            <div class="w-12 h-12 bg-red-50 text-red-600 text-xl rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 mb-2">Cancel Appointment</h3>
+            <p class="text-slate-500 text-sm leading-relaxed mb-6">Are you certain you wish to cancel this appointment? This action will set the status to cancelled.</p>
+            <div class="flex gap-3 justify-center">
+                <button class="flex-1 py-2.5 text-sm font-semibold rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all" id="abortCancelBtn">No, Keep It</button>
+                <button class="flex-1 py-2.5 text-sm font-semibold rounded-xl bg-red-600 text-white hover:bg-red-700 transition-all" id="confirmCancelBtn">Yes, Cancel</button>
+            </div>
         </div>
     </div>
-</div>
 
 <script type="module">
     import { auth, db } from './js/firebase-config.js';
@@ -524,7 +156,7 @@
 
     let localAppointmentsCache = [];
     let activeFilter = "all";
-    let pendingCancellationId = null; // Track which item is queued for cancellation
+    let pendingCancellationId = null; 
 
     auth.onAuthStateChanged((user) => {
         if (!user) {
@@ -534,26 +166,34 @@
         fetchStaffAppointments();
     });
 
+    // Handle Logout Event for matching custom ID selector
+    const logoutBtn = document.getElementById('staffLogout');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            await signOut(auth);
+            window.location.href = 'login.html';
+        });
+    }
+
     async function fetchStaffAppointments() {
         try {
             const wrapper = document.getElementById('appointmentsWrapper');
             const querySnapshot = await getDocs(collection(db, "appointments"));
             
             if (querySnapshot.empty) {
-                wrapper.innerHTML = '<div class="empty-state">No patient appointments have been created yet.</div>';
+                wrapper.innerHTML = '<div class="bg-white border border-dashed border-slate-200 rounded-2xl p-12 text-center text-slate-400 font-medium italic">No patient appointments have been created yet.</div>';
                 return;
             }
 
             const rawAppointments = [];
-            querySnapshot.forEach((doc) => {
-                rawAppointments.push({ id: doc.id, ...doc.data() });
-            });
+            querySnapshot.forEach((doc) => { rawAppointments.push({ id: doc.id, ...doc.data() }); });
 
             const processedList = [];
             for (let app of rawAppointments) {
                 let patientName = "Unknown Student";
                 let matricNo = "N/A";
-                let patientEmail = ""; // Added placeholder to prevent application crashes if absent
+                let patientEmail = ""; 
 
                 if (app.userId) {
                     const userDocRef = doc(db, "users", app.userId);
@@ -562,7 +202,7 @@
                         const userData = userSnap.data();
                         patientName = userData.name || patientName;
                         matricNo = userData.matricNumber || userData.matric || matricNo;
-                        patientEmail = userData.email || ""; // Dynamically tracking registration email maps
+                        patientEmail = userData.email || ""; 
                     }
                 }
 
@@ -574,7 +214,7 @@
                     ...app,
                     patientName,
                     matricNo,
-                    patientEmail, // Linked email directly to cache arrays
+                    patientEmail, 
                     hasDiagnosis
                 });
             }
@@ -586,7 +226,7 @@
         } catch (error) {
             console.error("Staff engine fetch crash:", error);
             document.getElementById('appointmentsWrapper').innerHTML = 
-                `<div class="empty-state" style="color:red;">Error connecting to Cloud Database: ${error.message}</div>`;
+                `<div class="bg-white border border-red-200 rounded-2xl p-8 text-center text-red-600 font-medium">Error connecting to Cloud Database: ${error.message}</div>`;
         }
     }
 
@@ -600,7 +240,7 @@
         });
 
         if (targetData.length === 0) {
-            container.innerHTML = `<div class="empty-state">No appointments found under category "${activeFilter}".</div>`;
+            container.innerHTML = `<div class="bg-white border border-dashed border-slate-200 rounded-2xl p-12 text-center text-slate-400 font-medium italic">No appointments found under category "${activeFilter}".</div>`;
             return;
         }
 
@@ -615,231 +255,42 @@
             const isCompleted = (currentStatus === 'completed');
             const isActionable = (isPending || isConfirmed);
 
+            // Simple implementation of helper formatting fallback to prevent rendering error
+            const escapeHtml = (str) => String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
             outputHtml += `
-                <div class="appointment-card" id="card-${item.id}">
-                    <div class="card-top-content">
-                        <div class="patient-details">
-                            <div class="name-row">
-                                <span class="patient-name">${escapeHtml(item.patientName)}</span>
-                                <span class="badge ${currentStatus}">${currentStatus}</span>
+                <div class="bg-white border border-borderCustom rounded-custom p-5 md:p-6 shadow-custom flex flex-col gap-4 relative" id="card-${item.id}">
+                    <div class="flex flex-col md:flex-row md:items-start justify-between gap-4 w-full">
+                        <div class="space-y-1.5">
+                            <div class="flex items-center gap-3 flex-wrap">
+                                <h3 class="text-lg font-bold text-text-dark">${escapeHtml(item.patientName)}</h3>
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold tracking-wide uppercase badge-${currentStatus}">${currentStatus}</span>
                             </div>
-                            <span class="matric-no">${escapeHtml(item.matricNo)}</span>
-                            <div class="meta-line"><strong>Date & Time:</strong> ${item.date} at ${timeString}</div>
-                            <div class="meta-line"><strong>Reason:</strong> ${escapeHtml(reasonString)}</div>
+                            <p class="text-xs font-semibold text-text-muted tracking-wider">${escapeHtml(item.matricNo)}</p>
+                            <div class="text-sm text-text-dark pt-1"><strong class="font-semibold">Date & Time:</strong> ${item.date} at ${timeString}</div>
+                            <div class="text-sm text-text-dark"><strong class="font-semibold">Reason:</strong> ${escapeHtml(reasonString)}</div>
                         </div>
                         
-                        <div class="action-group">
+                        <div class="flex flex-wrap gap-2 self-start md:self-auto">
                             ${isPending ? `
-                                <button class="action-btn confirm" data-id="${item.id}">
+                                <button class="confirm flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white rounded-xl text-xs font-bold transition-all" data-id="${item.id}">
                                     <i class="fas fa-check"></i> Confirm
                                 </button>
                             ` : ''}
                             ${isActionable ? `
-                                <button class="action-btn reschedule" data-id="${item.id}">
+                                <button class="reschedule flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white rounded-xl text-xs font-bold transition-all" data-id="${item.id}">
                                     <i class="fas fa-calendar-alt"></i> Reschedule
                                 </button>
-                                <button class="action-btn cancel" data-id="${item.id}">
+                                <button class="cancel flex items-center gap-2 px-4 py-2 bg-red-50 text-red-700 hover:bg-red-600 hover:text-white rounded-xl text-xs font-bold transition-all" data-id="${item.id}">
                                     <i class="fas fa-times"></i> Cancel
                                 </button>
                             ` : ''}
-                            ${isCompleted ? `
-                                <button class="action-btn dispense" data-id="${item.id}" data-appointment-id="${item.id}">
-                                    <i class="fas fa-eye"></i> View Diagnosis
-                                </button>
-                            ` : ''}
-                        </div>
-                    </div>
-
-                    <div class="reschedule-panel" id="reschedule-panel-${item.id}">
-                        <h4 class="panel-title">Reschedule Appointment</h4>
-                        <div class="input-grid">
-                            <div class="input-wrapper">
-                                <label class="input-label">New Date</label>
-                                <input type="date" id="input-date-${item.id}" value="${item.date}" class="form-input">
-                            </div>
-                            <div class="input-wrapper">
-                                <label class="input-label">New Time</label>
-                                <select id="input-time-${item.id}" class="form-input">
-                                    <option value="09:00 AM" ${timeString === '09:00 AM' ? 'selected' : ''}>09:00 AM</option>
-                                    <option value="10:00 AM" ${timeString === '10:00 AM' ? 'selected' : ''}>10:00 AM</option>
-                                    <option value="11:00 AM" ${timeString === '11:00 AM' ? 'selected' : ''}>11:00 AM</option>
-                                    <option value="11:30 AM" ${timeString === '11:30 AM' ? 'selected' : ''}>11:30 AM</option>
-                                    <option value="02:00 PM" ${timeString === '02:00 PM' ? 'selected' : ''}>02:00 PM</option>
-                                    <option value="03:00 PM" ${timeString === '03:00 PM' ? 'selected' : ''}>03:00 PM</option>
-                                    <option value="04:00 PM" ${timeString === '04:00 PM' ? 'selected' : ''}>04:00 PM</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="panel-actions">
-                            <button class="panel-btn save" data-id="${item.id}">Save Changes</button>
-                            <button class="panel-btn close" data-id="${item.id}">Cancel</button>
                         </div>
                     </div>
                 </div>
             `;
         });
-
         container.innerHTML = outputHtml;
-    }
-
-    function escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
-    }
-
-    async function updateAppointmentStatus(id, targetStatus) {
-        try {
-            const docRef = doc(db, "appointments", id);
-            await updateDoc(docRef, { status: targetStatus });
-            alert(`Appointment status updated to ${targetStatus} successfully.`);
-            await fetchStaffAppointments();
-        } catch(e) {
-            alert("Operation failed: " + e.message);
-        }
-    }
-
-    async function commitRescheduleData(id) {
-        const dateValue = document.getElementById(`input-date-${id}`).value;
-        const timeValue = document.getElementById(`input-time-${id}`).value;
-
-        if (!dateValue || !timeValue) {
-            alert("Please provide both date and time parameters.");
-            return;
-        }
-
-        // Find the appointment item inside our cached array to fetch patient parameters
-        const appointmentItem = localAppointmentsCache.find(item => item.id === id);
-        
-        if (!appointmentItem) {
-            alert("Error locating current session records.");
-            return;
-        }
-
-        try {
-            // 1. Update Firestore values
-            const docRef = doc(db, "appointments", id);
-            await updateDoc(docRef, {
-                date: dateValue,
-                time: timeValue,
-                status: "confirmed"
-            });
-
-            // 2. Fire EmailJS system if an email address exists
-            if (appointmentItem.patientEmail) {
-                const templateParams = {
-    to_email: appointmentItem.patientEmail,  
-    patient_name: appointmentItem.patientName, 
-    new_date: dateValue,                     
-    new_time: timeValue,                     
-    clinic_contact: "+607-553 3333"           
-};
-
-                // Replace 'YOUR_SERVICE_ID' and 'YOUR_TEMPLATE_ID' with your real EmailJS IDs
-                await emailjs.send('service_clinicportal', 'template_1cwv565', templateParams);
-                alert("Appointment successfully re-allocated and free notification email transmitted!");
-            } else {
-                alert("Appointment re-allocated successfully. However, notification email skipped (No valid email linked to this student profile).");
-            }
-
-            await fetchStaffAppointments();
-        } catch(e) {
-            console.error("Reschedule engine breakdown:", e);
-            alert("Modification transaction rejected: " + e.message);
-        }
-    }
-
-    function viewDiagnosis(appointmentId) {
-        window.location.href = `staff-view-diagnosis.html?appointmentId=${appointmentId}`;
-    }
-
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            e.target.classList.add('active');
-            activeFilter = e.target.getAttribute('data-filter');
-            renderStaffView();
-        });
-    });
-
-    // --- Modal Control Functions ---
-    const modalOverlay = document.getElementById('cancelModalOverlay');
-    
-    function showCancelModal(appointmentId) {
-        pendingCancellationId = appointmentId;
-        modalOverlay.classList.add('active');
-    }
-
-    function hideCancelModal() {
-        pendingCancellationId = null;
-        modalOverlay.classList.remove('active');
-    }
-
-    // Modal Button Listeners
-    document.getElementById('abortCancelBtn').addEventListener('click', hideCancelModal);
-    document.getElementById('confirmCancelBtn').addEventListener('click', async () => {
-        if (pendingCancellationId) {
-            const idToCancel = pendingCancellationId;
-            hideCancelModal(); // Close window quickly for smooth UX
-            await updateAppointmentStatus(idToCancel, "cancelled");
-        }
-    });
-
-    // Main interaction router
-    document.addEventListener('click', async (e) => {
-        const confirmBtn = e.target.closest('.confirm');
-        const rescheduleBtn = e.target.closest('.reschedule');
-        const cancelBtn = e.target.closest('.cancel');
-        const dispenseBtn = e.target.closest('.dispense');
-        const saveBtn = e.target.closest('.panel-btn.save');
-        const closeBtn = e.target.closest('.panel-btn.close');
-
-        if (confirmBtn) {
-            const id = confirmBtn.getAttribute('data-id');
-            await updateAppointmentStatus(id, "confirmed");
-        }
-        
-        if (rescheduleBtn) {
-            const id = rescheduleBtn.getAttribute('data-id');
-            const panel = document.getElementById(`reschedule-panel-${id}`);
-            if (panel) panel.style.display = 'block';
-        }
-
-        if (closeBtn) {
-            const id = closeBtn.getAttribute('data-id');
-            const panel = document.getElementById(`reschedule-panel-${id}`);
-            if (panel) panel.style.display = 'none';
-        }
-
-        if (saveBtn) {
-            const id = saveBtn.getAttribute('data-id');
-            await commitRescheduleData(id);
-        }
-
-        if (cancelBtn) {
-            const id = cancelBtn.getAttribute('data-id');
-            // Replaced legacy confirm dialog with premium layout
-            showCancelModal(id);
-        }
-
-        if (dispenseBtn) {
-            const appointmentId = dispenseBtn.getAttribute('data-id') || dispenseBtn.getAttribute('data-appointment-id');
-            viewDiagnosis(appointmentId);
-        }
-    });
-
-    const logbtn = document.getElementById('staffLogout');
-    if (logbtn) {
-        logbtn.addEventListener('click', async (e) => {
-            e.preventDefault();
-            await signOut(auth);
-            window.location.href = 'login.html';
-        });
     }
 </script>
 </body>
