@@ -11,7 +11,7 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script type="text/javascript">
        (function(){
-          emailjs.init("kI9GBgLZojLKwBkfI"); // Replace with your real EmailJS Public Key
+          emailjs.init("kI9GBgLZojLKwBkfI"); 
        })();
     </script>
 
@@ -83,7 +83,7 @@
 
         .logo-text { font-size: 22px; font-weight: 700; color: var(--primary); }
 
-        .nav-links { display: flex; flex-direction: column; gap: 5px; padding: 0 15px; }
+        .nav-links { display: flex; flex-direction: column; gap: 5px; padding: 0 15px; height: 100%; }
 
         .nav-link {
             padding: 12px 18px;
@@ -314,23 +314,10 @@
             transition: all 0.2s;
         }
 
-        .panel-btn.save {
-            background: var(--primary);
-            color: var(--white);
-        }
-
-        .panel-btn.save:hover {
-            background: var(--primary-hover);
-        }
-
-        .panel-btn.close {
-            background: #f1f5f9;
-            color: var(--text-dark);
-        }
-
-        .panel-btn.close:hover {
-            background: #e2e8f0;
-        }
+        .panel-btn.save { background: var(--primary); color: var(--white); }
+        .panel-btn.save:hover { background: var(--primary-hover); }
+        .panel-btn.close { background: #f1f5f9; color: var(--text-dark); }
+        .panel-btn.close:hover { background: #e2e8f0; }
 
         .empty-state {
             background: var(--white);
@@ -425,23 +412,10 @@
             transition: all 0.2s ease;
         }
 
-        .modal-btn.confirm-cancel {
-            background: #dc2626;
-            color: var(--white);
-        }
-
-        .modal-btn.confirm-cancel:hover {
-            background: #b91c1c;
-        }
-
-        .modal-btn.abort-cancel {
-            background: #f1f5f9;
-            color: var(--text-dark);
-        }
-
-        .modal-btn.abort-cancel:hover {
-            background: #e2e8f0;
-        }
+        .modal-btn.confirm-cancel { background: #dc2626; color: var(--white); }
+        .modal-btn.confirm-cancel:hover { background: #b91c1c; }
+        .modal-btn.abort-cancel { background: #f1f5f9; color: var(--text-dark); }
+        .modal-btn.abort-cancel:hover { background: #e2e8f0; }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(4px); }
@@ -517,6 +491,20 @@
     </div>
 </div>
 
+<div class="modal-overlay" id="logoutModalOverlay">
+    <div class="modal-box">
+        <div class="modal-icon">
+            <i class="fas fa-sign-out-alt"></i>
+        </div>
+        <div class="modal-title">Account Logout</div>
+        <div class="modal-message">Are you certain you want to log out of your session? Any unsaved process adjustments will be dropped.</div>
+        <div class="modal-btn-group">
+            <button class="modal-btn abort-cancel" id="abortLogoutBtn">Cancel</button>
+            <button class="modal-btn confirm-cancel" id="confirmLogoutBtn">Log Out</button>
+        </div>
+    </div>
+</div>
+
 <script type="module">
     import { auth, db } from './js/firebase-config.js';
     import { signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
@@ -524,7 +512,7 @@
 
     let localAppointmentsCache = [];
     let activeFilter = "all";
-    let pendingCancellationId = null; // Track which item is queued for cancellation
+    let pendingCancellationId = null; 
 
     auth.onAuthStateChanged((user) => {
         if (!user) {
@@ -553,7 +541,7 @@
             for (let app of rawAppointments) {
                 let patientName = "Unknown Student";
                 let matricNo = "N/A";
-                let patientEmail = ""; // Added placeholder to prevent application crashes if absent
+                let patientEmail = ""; 
 
                 if (app.userId) {
                     const userDocRef = doc(db, "users", app.userId);
@@ -562,7 +550,7 @@
                         const userData = userSnap.data();
                         patientName = userData.name || patientName;
                         matricNo = userData.matricNumber || userData.matric || matricNo;
-                        patientEmail = userData.email || ""; // Dynamically tracking registration email maps
+                        patientEmail = userData.email || ""; 
                     }
                 }
 
@@ -574,7 +562,7 @@
                     ...app,
                     patientName,
                     matricNo,
-                    patientEmail, // Linked email directly to cache arrays
+                    patientEmail, 
                     hasDiagnosis
                 });
             }
@@ -713,16 +701,13 @@
             return;
         }
 
-        // Find the appointment item inside our cached array to fetch patient parameters
         const appointmentItem = localAppointmentsCache.find(item => item.id === id);
-        
         if (!appointmentItem) {
             alert("Error locating current session records.");
             return;
         }
 
         try {
-            // 1. Update Firestore values
             const docRef = doc(db, "appointments", id);
             await updateDoc(docRef, {
                 date: dateValue,
@@ -730,19 +715,17 @@
                 status: "confirmed"
             });
 
-            // 2. Fire EmailJS system if an email address exists
             if (appointmentItem.patientEmail) {
                 const templateParams = {
-    to_email: appointmentItem.patientEmail,  
-    patient_name: appointmentItem.patientName, 
-    new_date: dateValue,                     
-    new_time: timeValue,                     
-    clinic_contact: "+607-553 3333"           
-};
+                    to_email: appointmentItem.patientEmail,  
+                    patient_name: appointmentItem.patientName, 
+                    new_date: dateValue,                     
+                    new_time: timeValue,                     
+                    clinic_contact: "+607-553 3333"           
+                };
 
-                // Replace 'YOUR_SERVICE_ID' and 'YOUR_TEMPLATE_ID' with your real EmailJS IDs
                 await emailjs.send('service_clinicportal', 'template_1cwv565', templateParams);
-                alert("Appointment successfully re-allocated and free notification email transmitted!");
+                alert("Appointment successfully re-allocated and notification email transmitted!");
             } else {
                 alert("Appointment re-allocated successfully. However, notification email skipped (No valid email linked to this student profile).");
             }
@@ -750,7 +733,7 @@
             await fetchStaffAppointments();
         } catch(e) {
             console.error("Reschedule engine breakdown:", e);
-            alert("Modification transaction rejected: " + e.message);
+            alert("Modification transaction rejected! Error tracking signature returned: " + (e.text || e.message || e));
         }
     }
 
@@ -768,26 +751,57 @@
     });
 
     // --- Modal Control Functions ---
-    const modalOverlay = document.getElementById('cancelModalOverlay');
+    const cancelOverlay = document.getElementById('cancelModalOverlay');
+    const logoutOverlay = document.getElementById('logoutModalOverlay');
     
     function showCancelModal(appointmentId) {
         pendingCancellationId = appointmentId;
-        modalOverlay.classList.add('active');
+        cancelOverlay.classList.add('active');
     }
 
     function hideCancelModal() {
         pendingCancellationId = null;
-        modalOverlay.classList.remove('active');
+        cancelOverlay.classList.remove('active');
     }
 
-    // Modal Button Listeners
+    // Cancel Modal Action Handling
     document.getElementById('abortCancelBtn').addEventListener('click', hideCancelModal);
     document.getElementById('confirmCancelBtn').addEventListener('click', async () => {
         if (pendingCancellationId) {
             const idToCancel = pendingCancellationId;
-            hideCancelModal(); // Close window quickly for smooth UX
+            hideCancelModal(); 
             await updateAppointmentStatus(idToCancel, "cancelled");
         }
+    });
+
+    // Logout Modal Action Handling
+    const logbtn = document.getElementById('staffLogout');
+    if (logbtn) {
+        logbtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            logoutOverlay.classList.add('active');
+        });
+    }
+
+    document.getElementById('abortLogoutBtn').addEventListener('click', () => {
+        logoutOverlay.classList.remove('active');
+    });
+
+    document.getElementById('confirmLogoutBtn').addEventListener('click', async () => {
+        try {
+            logoutOverlay.classList.remove('active');
+            await signOut(auth);
+            window.location.href = 'login.html';
+        } catch (error) {
+            console.error("Sign-out routing breakdown:", error);
+            alert("Logout transaction rejected: " + error.message);
+        }
+    });
+
+    // Dismiss custom modals via backdrop clicks
+    window.addEventListener('click', (e) => {
+        if (e.target === cancelOverlay) hideCancelModal();
+        if (e.target === logoutOverlay) logoutOverlay.classList.remove('active');
     });
 
     // Main interaction router
@@ -823,7 +837,6 @@
 
         if (cancelBtn) {
             const id = cancelBtn.getAttribute('data-id');
-            // Replaced legacy confirm dialog with premium layout
             showCancelModal(id);
         }
 
@@ -832,15 +845,6 @@
             viewDiagnosis(appointmentId);
         }
     });
-
-    const logbtn = document.getElementById('staffLogout');
-    if (logbtn) {
-        logbtn.addEventListener('click', async (e) => {
-            e.preventDefault();
-            await signOut(auth);
-            window.location.href = 'login.html';
-        });
-    }
 </script>
 </body>
 </html>

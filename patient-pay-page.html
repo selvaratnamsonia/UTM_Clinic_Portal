@@ -547,6 +547,13 @@
         const proceed = await showConfirm("Confirm Payment", "Finalize payment execution parameters?", "fa-credit-card");
         if (!proceed) return;
 
+        // Immediately lock the UI button to completely block rapid triple-clicks
+        const submitBtn = document.getElementById('processPaymentBtn');
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = "0.5";
+        submitBtn.style.cursor = "not-allowed";
+        submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Processing Payment...`;
+
         try {
             const finalItemsList = [];
             let billingSum = 0;
@@ -570,7 +577,6 @@
             const calculatedStatus = isManualVerificationRequired ? "pending" : "verified";
             const updatedAppointmentStatus = isManualVerificationRequired ? "pending-payment-verification" : "completed";
 
-            // Keys are completely matched to staff script data variables
             const paymentRecordDocument = {
                 appointmentId: currentAppointmentId,
                 studentName: appointmentSnapshotData.patientName || "SIA JUN YU",
@@ -595,7 +601,7 @@
 
             if (isManualVerificationRequired) {
                 await showConfirm("Verification Submitted", "Your transaction is pending administrative review.", "fa-clock");
-                window.location.href = "staff-verify-payment.html";
+                window.location.href = "appointments.html"; 
             } else {
                 await showConfirm("Transaction Complete", "Receipt details recorded inside your ledger!", "fa-check-circle");
                 window.location.href = "appointments.html";
@@ -603,6 +609,12 @@
 
         } catch (err) {
             console.error("Critical error saving history log snapshot collection data:", err);
+            
+            // Re-enable button structure if connection context dropped completely
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = "1";
+            submitBtn.style.cursor = "pointer";
+            submitBtn.innerHTML = `<i class="fas fa-shield-alt"></i> Complete Secure Payment`;
         }
     });
 
