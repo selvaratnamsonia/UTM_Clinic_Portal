@@ -43,6 +43,7 @@
             padding: 30px 0;
             display: flex;
             flex-direction: column;
+            flex-shrink: 0;
         }
 
         .logo-container {
@@ -491,37 +492,40 @@
 
 <body>
 
-   <aside class="sidebar">
-    <div class="logo-container">
-        <div class="logo-box">
-            <img src="images/Clinic-logo.png" alt="Logo" class="logo-img">
+    <aside class="sidebar">
+        <div class="logo-container">
+            <div class="logo-box">
+                <img src="images/Clinic-logo.png" alt="Logo" class="logo-img">
+            </div>
+            <div class="logo-text">UTM Clinic</div>
         </div>
-        <div class="logo-text">UTM Clinic</div>
-    </div>
 
-    <nav class="nav-links">
-        <a href="doctor_dashboard.html" class="nav-link ">
-            <i class="fas fa-columns"></i>
-            <span>Dashboard</span>
-        </a>
-        <a href="claim-appointment.html" class="nav-link active">
-            <i class="fas fa-calendar-alt"></i>
-            <span>Claim Appointments</span>
-        </a>
-         <a href="past-patient.html" class="nav-link">
-            <i class="fas fa-history"></i>
-            <span>Past Patients</span>
-        </a>
-    </nav>
+        <nav class="nav-links">
+            <a href="doctor_dashboard.html" class="nav-link">
+                <i class="fas fa-columns"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="claim-appointment.html" class="nav-link active">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Claim Appointments</span>
+            </a>
+            <a href="past-patient.html" class="nav-link">
+                <i class="fas fa-history"></i>
+                <span>Past Patients</span>
+            </a>
+            <a href="doctor-signature-modal.html" class="nav-link">
+                <i class="fas fa-signature"></i> 
+                <span>MC Signature</span>
+            </a>
+        </nav>
 
-    <div class="sidebar-footer">
-        <a href="login.html" id="logoutLink" class="nav-link logout-link">
-            <i class="fas fa-sign-out-alt"></i>
-            <span>Logout</span>
-        </a>
-    </div>
-</aside>
-
+        <div class="sidebar-footer">
+            <a href="login.html" id="logoutLink" class="nav-link logout-link">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </a>
+        </div>
+    </aside>
 
     <main class="main-content">
         <div class="container">
