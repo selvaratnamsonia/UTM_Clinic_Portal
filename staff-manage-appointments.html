@@ -13,53 +13,338 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script type="text/javascript">
        (function(){
-          emailjs.init("kI9GBgLZojLKwBkfI"); // Replace with your real EmailJS Public Key
+          emailjs.init("kI9GBgLZojLKwBkfI"); 
        })();
     </script>
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-                    },
-                    colors: {
-                        primary: {
-                            DEFAULT: '#802c44',
-                            light: '#f4e8ec',
-                            hover: '#6a2438'
-                        },
-                        text: {
-                            dark: '#1e293b',
-                            muted: '#64748b'
-                        },
-                        borderCustom: '#e2e8f0',
-                        bgBody: '#f8fafc'
-                    },
-                    borderRadius: {
-                        'custom': '16px'
-                    },
-                    boxShadow: {
-                        'custom': '0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02)'
-                    }
-                }
-            }
-        }
-    </script>
-
     <style>
-        body { background-color: #f8fafc; color: #1e293b; }
-        @media (max-width: 768px) {
-            .sidebar-text { display: none; }
+        :root {
+            --primary: #802c44;
+            --primary-light: #f4e8ec;
+            --primary-hover: #6a2438;
+            --bg-body: #f8fafc;
+            --white: #ffffff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            
+            --btn-confirm: #e6f7ed;
+            --text-confirm: #15803d;
+            --btn-reschedule: #e0f2fe;
+            --text-reschedule: #0369a1;
+            --btn-cancel: #fee2e2;
+            --text-cancel: #dc2626;
+            --btn-dispense: #fef3c7;
+            --text-dispense: #d97706;
         }
 
-        .badge-pending { background: #fef3c7; color: #d97706; }
-        .badge-confirmed { background: #dcfce7; color: #16a34a; }
-        .badge-cancelled { background: #fee2e2; color: #dc2626; }
-        .badge-completed { background: #e0f2fe; color: #0284c7; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
 
-        /* Modal Smooth Animations */
+        body {
+            display: flex;
+            min-height: 100vh;
+            background: var(--bg-body);
+            color: var(--text-dark);
+        }
+
+        .sidebar {
+            width: 280px;
+            background: var(--white);
+            border-right: 1px solid var(--border-color);
+            padding: 30px 0;
+            display: flex;
+            flex-direction: column;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 25px 40px;
+        }
+
+        .logo-box {
+            width: 42px;
+            height: 42px;
+            background: var(--primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-text { font-size: 22px; font-weight: 700; color: var(--primary); }
+
+        .nav-links { display: flex; flex-direction: column; gap: 5px; padding: 0 15px; }
+
+        .nav-link {
+            padding: 12px 18px;
+            color: var(--text-muted);
+            border-radius: 12px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .nav-link:hover { background: var(--primary-light); color: var(--primary); }
+        .nav-link.active { background: var(--primary-light); color: var(--primary); font-weight: 600; }
+
+        .main {
+            flex: 1;
+            padding: 40px 60px;
+            max-width: 1200px;
+        }
+
+        header { margin-bottom: 30px; }
+        h1 { font-size: 28px; font-weight: 700; margin-bottom: 6px; }
+        .subtitle { color: var(--text-muted); font-size: 15px; }
+
+        .filter-tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .filter-btn {
+            background: #f1f5f9;
+            border: none;
+            padding: 10px 22px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dark);
+            cursor: pointer;
+            border-radius: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn:hover { background: #e2e8f0; }
+        .filter-btn.active {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .appointments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .appointment-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            padding: 24px;
+            display: flex;
+            flex-direction: column; 
+            gap: 16px;
+            position: relative;
+            transition: transform 0.2s;
+        }
+
+        .appointment-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .card-top-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            width: 100%;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .patient-details {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .name-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .patient-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: capitalize;
+            display: inline-block;
+        }
+
+        .badge.pending { background: #fef3c7; color: #d97706; }
+        .badge.confirmed { background: #dcfce7; color: #16a34a; }
+        .badge.cancelled { background: #fee2e2; color: #dc2626; }
+        .badge.completed { background: #e0f2fe; color: #0284c7; }
+
+        .matric-no {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .meta-line {
+            font-size: 14px;
+            color: var(--text-dark);
+            margin-top: 2px;
+        }
+
+        .meta-line strong {
+            color: #475569;
+            font-weight: 600;
+        }
+
+        .action-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            border: 1px solid transparent;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .action-btn.confirm { background: var(--btn-confirm); color: var(--text-confirm); }
+        .action-btn.confirm:hover { background: #16a34a; color: var(--white); }
+        .action-btn.reschedule { background: var(--btn-reschedule); color: var(--text-reschedule); }
+        .action-btn.reschedule:hover { background: #0284c7; color: var(--white); }
+        .action-btn.cancel { background: var(--btn-cancel); color: var(--text-cancel); }
+        .action-btn.cancel:hover { background: #dc2626; color: var(--white); }
+        .action-btn.dispense { background: var(--btn-dispense); color: var(--text-dispense); }
+        .action-btn.dispense:hover { background: #d97706; color: var(--white); }
+
+        .reschedule-panel {
+            display: none; 
+            border-top: 1px solid var(--border-color);
+            padding-top: 18px;
+            margin-top: 4px;
+            animation: fadeIn 0.2s ease-in-out;
+        }
+
+        .panel-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 12px;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: 140px 140px;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .input-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .input-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .form-input {
+            width: 100%;
+            font-size: 13px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 12px;
+            background: #f8fafc;
+            color: var(--text-dark);
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            background: var(--white);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 1px var(--primary);
+        }
+
+        .panel-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .panel-btn {
+            padding: 8px 14px;
+            font-size: 12px;
+            font-weight: 700;
+            border-radius: 6px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .panel-btn.save {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .panel-btn.save:hover {
+            background: var(--primary-hover);
+        }
+
+        .panel-btn.close {
+            background: #f1f5f9;
+            color: var(--text-dark);
+        }
+
+        .panel-btn.close:hover {
+            background: #e2e8f0;
+        }
+
+        .empty-state {
+            background: var(--white);
+            border: 1px dashed var(--border-color);
+            border-radius: var(--radius);
+            padding: 50px;
+            text-align: center;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        /* --- Premium Custom Dialog Modal Styles --- */
         .modal-overlay {
             transition: opacity 0.25s ease;
         }
@@ -73,6 +358,80 @@
         }
         .modal-overlay.active .modal-box {
             transform: scale(1);
+        }
+
+        .modal-icon {
+            width: 56px;
+            height: 56px;
+            background: #fee2e2;
+            color: #dc2626;
+            font-size: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 18px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+
+        .modal-message {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+
+        .modal-btn-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 11px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        .modal-btn.confirm-cancel {
+            background: #dc2626;
+            color: var(--white);
+        }
+
+        .modal-btn.confirm-cancel:hover {
+            background: #b91c1c;
+        }
+
+        .modal-btn.abort-cancel {
+            background: #f1f5f9;
+            color: var(--text-dark);
+        }
+
+        .modal-btn.abort-cancel:hover {
+            background: #e2e8f0;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 900px) {
+            .card-top-content { flex-direction: column; align-items: stretch; }
+            .action-group { width: 100%; justify-content: flex-start; }
+            .input-grid { grid-template-columns: 1fr; }
+            .main { padding: 20px; }
         }
     </style>
 </head>
@@ -134,20 +493,21 @@
             </div>
         </main>
     </div>
+</main>
 
-    <div class="modal-overlay fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 opacity-0 pointer-events-none" id="cancelModalOverlay">
-        <div class="modal-box bg-white w-full max-w-md mx-4 rounded-2xl p-6 shadow-xl text-center">
-            <div class="w-12 h-12 bg-red-50 text-red-600 text-xl rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-exclamation-triangle"></i>
-            </div>
-            <h3 class="text-lg font-bold text-slate-900 mb-2">Cancel Appointment</h3>
-            <p class="text-slate-500 text-sm leading-relaxed mb-6">Are you certain you wish to cancel this appointment? This action will set the status to cancelled.</p>
-            <div class="flex gap-3 justify-center">
-                <button class="flex-1 py-2.5 text-sm font-semibold rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all" id="abortCancelBtn">No, Keep It</button>
-                <button class="flex-1 py-2.5 text-sm font-semibold rounded-xl bg-red-600 text-white hover:bg-red-700 transition-all" id="confirmCancelBtn">Yes, Cancel</button>
-            </div>
+<div class="modal-overlay" id="cancelModalOverlay">
+    <div class="modal-box">
+        <div class="modal-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <div class="modal-title">Cancel Appointment</div>
+        <div class="modal-message">Are you certain you wish to cancel this appointment? This action will set the status to cancelled.</div>
+        <div class="modal-btn-group">
+            <button class="modal-btn abort-cancel" id="abortCancelBtn">No, Keep It</button>
+            <button class="modal-btn confirm-cancel" id="confirmCancelBtn">Yes, Cancel</button>
         </div>
     </div>
+</div>
 
 <script type="module">
     import { auth, db } from './js/firebase-config.js';
@@ -291,6 +651,165 @@
             `;
         });
         container.innerHTML = outputHtml;
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    async function updateAppointmentStatus(id, targetStatus) {
+        try {
+            const docRef = doc(db, "appointments", id);
+            await updateDoc(docRef, { status: targetStatus });
+            alert(`Appointment status updated to ${targetStatus} successfully.`);
+            await fetchStaffAppointments();
+        } catch(e) {
+            alert("Operation failed: " + e.message);
+        }
+    }
+
+    async function commitRescheduleData(id) {
+        const dateValue = document.getElementById(`input-date-${id}`).value;
+        const timeValue = document.getElementById(`input-time-${id}`).value;
+
+        if (!dateValue || !timeValue) {
+            alert("Please provide both date and time parameters.");
+            return;
+        }
+
+        // Find the appointment item inside our cached array to fetch patient parameters
+        const appointmentItem = localAppointmentsCache.find(item => item.id === id);
+        
+        if (!appointmentItem) {
+            alert("Error locating current session records.");
+            return;
+        }
+
+        try {
+            // 1. Update Firestore values
+            const docRef = doc(db, "appointments", id);
+            await updateDoc(docRef, {
+                date: dateValue,
+                time: timeValue,
+                status: "confirmed"
+            });
+
+            // 2. Fire EmailJS system if an email address exists
+            if (appointmentItem.patientEmail) {
+                const templateParams = {
+    to_email: appointmentItem.patientEmail,  
+    patient_name: appointmentItem.patientName, 
+    new_date: dateValue,                     
+    new_time: timeValue,                     
+    clinic_contact: "+607-553 3333"           
+};
+
+                // Replace 'YOUR_SERVICE_ID' and 'YOUR_TEMPLATE_ID' with your real EmailJS IDs
+                await emailjs.send('service_clinicportal', 'template_1cwv565', templateParams);
+                alert("Appointment successfully re-allocated and free notification email transmitted!");
+            } else {
+                alert("Appointment re-allocated successfully. However, notification email skipped (No valid email linked to this student profile).");
+            }
+
+            await fetchStaffAppointments();
+        } catch(e) {
+            console.error("Reschedule engine breakdown:", e);
+            alert("Modification transaction rejected: " + e.message);
+        }
+    }
+
+    function viewDiagnosis(appointmentId) {
+        window.location.href = `staff-view-diagnosis.html?appointmentId=${appointmentId}`;
+    }
+
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            activeFilter = e.target.getAttribute('data-filter');
+            renderStaffView();
+        });
+    });
+
+    // --- Modal Control Functions ---
+    const modalOverlay = document.getElementById('cancelModalOverlay');
+    
+    function showCancelModal(appointmentId) {
+        pendingCancellationId = appointmentId;
+        modalOverlay.classList.add('active');
+    }
+
+    function hideCancelModal() {
+        pendingCancellationId = null;
+        modalOverlay.classList.remove('active');
+    }
+
+    // Modal Button Listeners
+    document.getElementById('abortCancelBtn').addEventListener('click', hideCancelModal);
+    document.getElementById('confirmCancelBtn').addEventListener('click', async () => {
+        if (pendingCancellationId) {
+            const idToCancel = pendingCancellationId;
+            hideCancelModal(); // Close window quickly for smooth UX
+            await updateAppointmentStatus(idToCancel, "cancelled");
+        }
+    });
+
+    // Main interaction router
+    document.addEventListener('click', async (e) => {
+        const confirmBtn = e.target.closest('.confirm');
+        const rescheduleBtn = e.target.closest('.reschedule');
+        const cancelBtn = e.target.closest('.cancel');
+        const dispenseBtn = e.target.closest('.dispense');
+        const saveBtn = e.target.closest('.panel-btn.save');
+        const closeBtn = e.target.closest('.panel-btn.close');
+
+        if (confirmBtn) {
+            const id = confirmBtn.getAttribute('data-id');
+            await updateAppointmentStatus(id, "confirmed");
+        }
+        
+        if (rescheduleBtn) {
+            const id = rescheduleBtn.getAttribute('data-id');
+            const panel = document.getElementById(`reschedule-panel-${id}`);
+            if (panel) panel.style.display = 'block';
+        }
+
+        if (closeBtn) {
+            const id = closeBtn.getAttribute('data-id');
+            const panel = document.getElementById(`reschedule-panel-${id}`);
+            if (panel) panel.style.display = 'none';
+        }
+
+        if (saveBtn) {
+            const id = saveBtn.getAttribute('data-id');
+            await commitRescheduleData(id);
+        }
+
+        if (cancelBtn) {
+            const id = cancelBtn.getAttribute('data-id');
+            // Replaced legacy confirm dialog with premium layout
+            showCancelModal(id);
+        }
+
+        if (dispenseBtn) {
+            const appointmentId = dispenseBtn.getAttribute('data-id') || dispenseBtn.getAttribute('data-appointment-id');
+            viewDiagnosis(appointmentId);
+        }
+    });
+
+    const logbtn = document.getElementById('staffLogout');
+    if (logbtn) {
+        logbtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            await signOut(auth);
+            window.location.href = 'login.html';
+        });
     }
 </script>
 </body>
