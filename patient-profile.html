@@ -1,11 +1,9 @@
-<!-- Patient Profile page - Optimized & Fixed -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Profile - UTM Clinic Portal</title>
-    <!-- Modern Font and Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -40,7 +38,7 @@
         .logo-img { width: 80%; height: 80%; object-fit: contain; }
         .logo-text { font-size: 22px; font-weight: 700; color: var(--primary); }
 
-        .nav-links { display: flex; flex-direction: column; gap: 5px; padding: 0 15px; }
+        .nav-links { display: flex; flex-direction: column; gap: 5px; padding: 0 15px; flex: 1; }
         .nav-link {
             padding: 12px 18px; color: var(--text-muted); border-radius: 12px; font-weight: 500;
             transition: all 0.3s ease; display: flex; align-items: center; gap: 12px; text-decoration: none;
@@ -128,7 +126,7 @@
         <a href="patient_dashboard.html" class="nav-link"><i class="fas fa-columns"></i> <span>Dashboard</span></a>
         <a href="appointments.html" class="nav-link"><i class="fas fa-calendar-alt"></i> <span>My Appointments</span></a>
         <a href="book-appointment.html" class="nav-link"><i class="fas fa-plus-circle"></i> <span>Book Appointment</span></a>
-        <a href="patient-profile.html" class="nav-link"><i class="fas fa-user-circle"></i> <span>Profile</span></a>
+        <a href="patient-profile.html" class="nav-link active"><i class="fas fa-user-circle"></i> <span>Profile</span></a>
         <a href="login.html" id="logoutLink" class="nav-link" style="margin-top: auto; color: #ef4444;"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
     </nav>
 </aside>
@@ -139,7 +137,6 @@
         <p class="subtitle">Keep your information up to date to ensure seamless clinic visits.</p>
     </header>
 
-    <!-- Global Alerts -->
     <div id="alertSuccess" class="alert alert-success"></div>
     <div id="alertError" class="alert alert-error"></div>
 

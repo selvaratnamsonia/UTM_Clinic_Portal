@@ -39,7 +39,7 @@
             width: 280px;
             background: var(--white);
             border-right: 1px solid var(--border-color);
-            padding: 30px 0;
+            padding: 30px 0 20px 0;
             display: flex;
             flex-direction: column;
             position: sticky;
@@ -51,7 +51,7 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 0 25px 40px;
+            padding: 0 25px 30px;
         }
 
         .logo-box {
@@ -84,6 +84,7 @@
             flex-direction: column;
             gap: 5px;
             padding: 0 15px;
+            flex: 1;
         }
 
         .nav-link {
@@ -114,10 +115,56 @@
             box-shadow: 0 4px 12px rgba(128, 44, 68, 0.2);
         }
 
+        /* Sidebar User Profile Card */
+        .sidebar-profile {
+            margin-top: auto;
+            padding: 15px 12px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .profile-avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-light);
+            color: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .profile-info {
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        .profile-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dark);
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .profile-email {
+            font-size: 11px;
+            color: var(--text-muted);
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
         /* --- Main Content --- */
         .main {
             flex: 1;
             padding: 40px 60px;
+            overflow-y: auto;
         }
 
         header {
@@ -355,7 +402,7 @@
 
         @media (max-width: 1024px) {
             .sidebar { width: 80px; }
-            .logo-text, .nav-link span { display: none; }
+            .logo-text, .nav-link span, .sidebar-profile { display: none; }
             .nav-link { justify-content: center; padding: 15px; }
             .main { padding: 30px; }
         }
@@ -383,7 +430,13 @@
         <a href="patient-profile.html" class="nav-link">
             <i class="fas fa-user-circle"></i> <span>Profile</span>
         </a>
-        <a href="#" id="logoutLink" class="nav-link" style="margin-top: auto; color: #ef4444;">
+        
+        <div class="sidebar-profile" id="userProfileIndicator">
+          
+            </div>
+        </div>
+
+        <a href="#" id="logoutLink" class="nav-link" style="color: #ef4444;">
             <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
         </a>
     </nav>
@@ -470,10 +523,27 @@
         return (hours * 60) + minutes;
     }
 
-    // Auth check and load user data
-    auth.onAuthStateChanged((user) => {
+    // Auth check and profile loader synchronization
+    auth.onAuthStateChanged(async (user) => {
         if (!user) {
             window.location.href = 'login.html';
+        } else {
+            // Render profile parameters into layout sidebar frame
+            try {
+                document.getElementById('profileEmail').textContent = user.email || '';
+                const userRef = doc(db, "users", user.uid);
+                const userSnap = await getDoc(userRef);
+                
+                if (userSnap.exists()) {
+                    const name = userSnap.data().name || 'Patient';
+                    document.getElementById('profileName').textContent = name;
+                    document.getElementById('userAvatar').textContent = name.charAt(0).toUpperCase();
+                } else {
+                    document.getElementById('profileName').textContent = 'Patient';
+                }
+            } catch (error) {
+                console.error("Error setting up profile panel context:", error);
+            }
         }
     });
 
@@ -574,8 +644,12 @@
         const reason = document.getElementById('reason').value;
         const time = document.getElementById('selectedTime').value;
         
-        if (!date) {
-            showAlert("Please select a date", "error");
+        const now = new Date();
+        const localTodayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+        const currentMinutesNow = (now.getHours() * 60) + now.getMinutes();
+
+        if (!date || date < localTodayStr) {
+            showAlert("Please select a valid future date", "error");
             return false;
         }
         if (!time) {
@@ -588,10 +662,6 @@
         }
         
         // Double check time validity against real-time on submission
-        const now = new Date();
-        const localTodayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
-        const currentMinutesNow = (now.getHours() * 60) + now.getMinutes();
-
         if (date === localTodayStr && parseTimeToMinutes(time) <= currentMinutesNow) {
             showAlert("This time slot has just passed. Please pick a future slot.", "error");
             await renderTimeSlots();

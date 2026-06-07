@@ -70,12 +70,30 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(128, 44, 68, 0.3);
         }
 
-        .logo-img { width: 80%; height: 80%; object-fit: contain; }
-        .logo-text { font-size: 22px; font-weight: 700; color: var(--primary); }
+        .logo-img { 
+            width: 80%; 
+            height: 80%; 
+            object-fit: contain; 
+        }
+        
+        .logo-text { 
+            font-size: 22px; 
+            font-weight: 700; 
+            color: var(--primary); 
+            letter-spacing: -0.5px;
+        }
 
-        .nav-links { display: flex; flex-direction: column; gap: 5px; padding: 0 15px; }
+        .nav-links { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 5px; 
+            padding: 0 15px; 
+            height: 100%;
+        }
 
         .nav-link {
             padding: 12px 18px;
@@ -89,8 +107,21 @@
             text-decoration: none;
         }
 
-        .nav-link:hover { background: var(--primary-light); color: var(--primary); }
-        .nav-link.active { background: var(--primary-light); color: var(--primary); font-weight: 600; }
+        .nav-link i {
+            font-size: 18px;
+            width: 24px;
+        }
+
+        .nav-link:hover { 
+            background: var(--primary-light); 
+            color: var(--primary); 
+        }
+        
+        .nav-link.active { 
+            background: var(--primary); 
+            color: white; 
+            box-shadow: 0 4px 12px rgba(128, 44, 68, 0.2);
+        }
 
         /* --- Main Content Section --- */
         .main {
@@ -315,6 +346,7 @@
         @media (max-width: 1024px) {
             .sidebar { width: 80px; }
             .logo-text, .nav-link span { display: none; }
+            .nav-link { justify-content: center; padding: 15px; }
             .main { padding: 30px; }
         }
 
@@ -329,7 +361,7 @@
 <aside class="sidebar">
     <div class="logo-container">
         <div class="logo-box">
-            <img src="images/Clinic-logo.png" alt="Logo" class="logo-img">
+            <img src="images/Clinic-logo.png" alt="UTM Clinic Logo" class="logo-img">
         </div>
         <div class="logo-text">UTM Clinic</div>
     </div>
@@ -347,7 +379,7 @@
         <a href="patient-profile.html" class="nav-link">
             <i class="fas fa-user-circle"></i> <span>Profile</span>
         </a>
-        <a href="#" id="logoutLink" class="nav-link" style="margin-top: auto; color: #ef4444;">
+        <a href="login.html" id="logoutLink" class="nav-link" style="margin-top: auto; color: #ef4444;">
             <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
         </a>
     </nav>
@@ -505,7 +537,6 @@
             } else if (isCancelled) {
                 actionHtml = '<span class="no-action">Cancelled</span>';
             } else if (isCompleted) {
-                // Modified to redirect to payment.html with dynamic parameters instead of triggering a modal container overlay
                 actionHtml = `
                     <button class="btn-pay-action" onclick="window.location.href='patient-pay-page.html?aptId=${item.id}'">
                         <i class="fas fa-credit-card"></i> Pay Fee
@@ -530,7 +561,6 @@
     }
     
     function bindTableActionListeners() {
-        // Only bind cancellation actions now since redirection handles payment natively
         document.querySelectorAll('.cancel-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 e.stopPropagation();
@@ -587,7 +617,7 @@
             if (currentTab === 'upcoming') {
                 return (aptDateTime >= now) && (status !== 'cancelled' && status !== 'completed');
             } else {
-                return (aptDateTime < now) || (status === 'cancelled' || status === 'completed');
+                return (aptDateTime < now) || (status === 'cancelled' && status === 'completed');
             }
         });
         
