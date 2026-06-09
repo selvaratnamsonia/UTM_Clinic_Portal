@@ -6,8 +6,27 @@
   <title>Edit Diagnosis Record - UTM Clinic</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
-
   <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script src="./js/html2pdf.bundle.min.js"></script>
+
+  <style>
+    /* Custom Modal Micro-Animations */
+    .modal-backdrop-fade {
+      animation: backdropIn 0.2s ease-out forwards;
+    }
+    .modal-card-scale {
+      animation: cardIn 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+    @keyframes backdropIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes cardIn {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+  </style>
 </head>
 
 <body class="bg-gray-100 font-sans text-gray-800">
@@ -17,7 +36,7 @@
     <div class="flex items-center justify-between mb-6">
       <button
         id="cancelBtn"
-        class="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition"
+        class="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition font-medium text-sm"
       >
         <i data-lucide="arrow-left" class="w-4 h-4"></i>
         Cancel & Return
@@ -132,6 +151,21 @@
     </div>
   </div>
 
+  <div id="premiumDialogOverlay" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm modal-backdrop-fade">
+    <div class="bg-white w-full max-w-md rounded-2xl p-6 shadow-xl border border-gray-100 text-center modal-card-scale">
+      <div id="dialogIconContainer" class="mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4">
+        </div>
+      <h3 id="dialogTitle" class="text-xl font-bold text-gray-900 mb-2">Message Title</h3>
+      <p id="dialogMessage" class="text-gray-500 text-sm leading-relaxed mb-6">Detailed message description.</p>
+      <button 
+        id="dialogActionBtn" 
+        class="w-full py-2.5 text-sm font-semibold text-white rounded-xl shadow-md transition"
+      >
+        Acknowledge
+      </button>
+    </div>
+  </div>
+
   <script type="module">
     import { db } from './js/firebase-config.js';
     import { 
@@ -140,10 +174,10 @@
       updateDoc 
     } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
-    // Initialize Lucide Vector Icons
+    // Initialize Lucide Vector Graphics Mapping Layer
     lucide.createIcons();
 
-    // DOM References
+    // Application UI Node Links
     const formLoadingState = document.getElementById("formLoadingState");
     const editDiagnosisForm = document.getElementById("editDiagnosisForm");
     const docIdBadge = document.getElementById("docIdBadge");
@@ -157,19 +191,55 @@
     const mcDaysInput = document.getElementById("mcDays");
     const medicineInput = document.getElementById("medicine");
     
-    const cancelBtn = document.getElementById("backBtn") || document.getElementById("cancelBtn");
+    const cancelBtn = document.getElementById("cancelBtn");
     const discardFormBtn = document.getElementById("discardFormBtn");
 
-    // Dynamic Parameter URL ID Extraction Handler
+    // Dialog Modal Interface Links
+    const premiumDialogOverlay = document.getElementById("premiumDialogOverlay");
+    const dialogIconContainer = document.getElementById("dialogIconContainer");
+    const dialogTitle = document.getElementById("dialogTitle");
+    const dialogMessage = document.getElementById("dialogMessage");
+    const dialogActionBtn = document.getElementById("dialogActionBtn");
+
+    // URL Token Processing Hooks
     const urlParams = new URLSearchParams(window.location.search);
     const diagnosisId = urlParams.get('id');
 
-    // Route Abort Safeguard Navigation Handler
+    // Safe Page Navigation Exit Loop Handler
     function exitToLedgerView() {
       window.location.href = "past-patient.html";
     }
 
-    // Interactive MC Toggle View Controller
+    // Modal Display Handler Engine
+    function triggerSystemNotification(type, title, message, callback = null) {
+      dialogTitle.textContent = title;
+      dialogMessage.textContent = message;
+
+      // Wipe structural configurations before rewriting layouts
+      dialogIconContainer.className = "mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4";
+      dialogActionBtn.className = "w-full py-2.5 text-sm font-semibold text-white rounded-xl shadow-md transition";
+
+      if (type === "success") {
+        dialogIconContainer.classList.add("bg-green-50", "text-green-600");
+        dialogIconContainer.innerHTML = `<i data-lucide="check-circle" class="w-6 h-6"></i>`;
+        dialogActionBtn.classList.add("bg-green-600", "hover:bg-green-700", "focus:ring-2", "focus:ring-green-500");
+      } else {
+        dialogIconContainer.classList.add("bg-red-50", "text-red-600");
+        dialogIconContainer.innerHTML = `<i data-lucide="alert-triangle" class="w-6 h-6"></i>`;
+        dialogActionBtn.classList.add("bg-red-600", "hover:bg-red-700", "focus:ring-2", "focus:ring-red-500");
+      }
+
+      lucide.createIcons();
+      premiumDialogOverlay.classList.remove("hidden");
+
+      // Bind closing event hooks to user interaction triggers
+      dialogActionBtn.onclick = () => {
+        premiumDialogOverlay.classList.add("hidden");
+        if (callback) callback();
+      };
+    }
+
+    // Dynamic MC Toggle Controller Expansion
     mcIssuedToggle.addEventListener("change", (e) => {
       if (e.target.checked) {
         mcDurationWrapper.classList.remove("hidden");
@@ -181,34 +251,32 @@
       }
     });
 
-    // #77 Criteria: Fetch Database Record & Pre-fill Form Fields
+    // Database Pull Sequence Handler
     async function fetchAndPopulateForm() {
       if (!diagnosisId) {
-        alert("Error: Missing valid record identifier token inside query payload parameter.");
-        exitToLedgerView();
+        triggerSystemNotification("error", "Routing Identity Token Fault", "Missing valid record identifier inside the URL string query allocation framework.", exitToLedgerView);
         return;
       }
 
       try {
         docIdBadge.textContent = `ID: ${diagnosisId}`;
 
-        // Get matching diagnosis record document mapping metadata 
+        // DB Data Path Fetch
         const diagnosisRef = doc(db, "diagnosis", diagnosisId);
         const diagnosisSnap = await getDoc(diagnosisRef);
 
         if (!diagnosisSnap.exists()) {
-          alert("The requested clinical diagnosis document trace could not be located inside database records.");
-          exitToLedgerView();
+          triggerSystemNotification("error", "Record Verification Error", "The targeted clinical file map could not be verified within the datastore directory.", exitToLedgerView);
           return;
         }
 
         const data = diagnosisSnap.data();
 
-        // Account for both 'diagnosis' field from Firestore logs and 'diagnosisNotes' from table definitions
+        // Dual Fallback Interface Content Parsing Mapping System
         diagnosisNotesInput.value = data.diagnosis || data.diagnosisNotes || "";
         medicineInput.value = data.medicine || data.medicinePrescribed || "";
         
-        // Handle MC toggle status parameters
+        // MC Verification Validation Handlers
         if (data.mcIssued === true || data.mcIssued === "true") {
           mcIssuedToggle.checked = true;
           mcDurationWrapper.classList.remove("hidden");
@@ -216,7 +284,7 @@
           mcDaysInput.required = true;
         }
 
-        // Deep fetch cascading metadata linking maps from appointments block
+        // Subordinate Path Cascading Lookup Resolution Pipeline
         if (data.appointmentId) {
           try {
             const appointmentSnap = await getDoc(doc(db, "appointments", data.appointmentId));
@@ -225,73 +293,69 @@
               displayPatientName.textContent = apptData.patientName || "Unknown Patient";
               displayMatricNumber.textContent = apptData.matricNumber || "N/A";
             } else {
-              displayPatientName.textContent = "Unknown Patient (Orphan Link)";
+              displayPatientName.textContent = "Unknown Patient (Orphaned File Matrix)";
               displayMatricNumber.textContent = "N/A";
             }
           } catch (apptErr) {
-            console.error("Cascading appointment mapping lookups failed: ", apptErr);
-            displayPatientName.textContent = "Database Fetch Fault";
+            console.error("Cascade tracking sequence execution error on appointment node lookups: ", apptErr);
+            displayPatientName.textContent = "Network Sync Error";
           }
         } else {
-          displayPatientName.textContent = "Direct Walk-In Record";
+          displayPatientName.textContent = "Direct Patient Walk-In File Log";
           displayMatricNumber.textContent = "N/A";
         }
 
-        // Reveal fully-populated view 
+        // De-escalate system loading placeholders to reveal the form
         formLoadingState.classList.add("hidden");
         editDiagnosisForm.classList.remove("hidden");
 
       } catch (error) {
-        console.error("Critical target pre-population mapping sequence error:", error);
-        alert("Failed to initialize edit session: " + error.message);
-        exitToLedgerView();
+        console.error("Fatal exception trace during data sync parsing initialization:", error);
+        triggerSystemNotification("error", "Application Session Failure", "Database collection synchronization aborted: " + error.message, exitToLedgerView);
       }
     }
 
-    // #78 & #79 Criteria: Save modifications and Update Existing Record in Database
+    // Submit Action Transaction Handler 
     editDiagnosisForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      // Show processing execution button layout state changes
       const submitBtn = document.getElementById("saveRecordBtn");
       const originalText = submitBtn.innerHTML;
       submitBtn.disabled = true;
-      submitBtn.innerHTML = `<div class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div> Processing...`;
+      submitBtn.innerHTML = `<div class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div> Syncing...`;
 
       try {
         const diagnosisRef = doc(db, "diagnosis", diagnosisId);
 
-        // Map and validate tracking variables to preserve existing structural data schemas
+        // Core Payload Composition mapping matching standard validation architectures
         const updatedPayload = {
           diagnosis: diagnosisNotesInput.value.trim(),
-          diagnosisNotes: diagnosisNotesInput.value.trim(), // Keep duplicated fallback for structural cross-safety
+          diagnosisNotes: diagnosisNotesInput.value.trim(), // Structural cross-safety string mapping duplicated fallback
           mcIssued: mcIssuedToggle.checked,
           mcDays: mcIssuedToggle.checked ? parseInt(mcDaysInput.value, 10) || 0 : 0,
           medicine: medicineInput.value.trim(),
-          lastUpdatedAt: new Date().toISOString() // Traceability audit trail metric logging
+          lastUpdatedAt: new Date().toISOString() // Traceability ledger performance audit trail time notation tracker
         };
 
-        // Fire transaction call to modify record content maps cleanly
         await updateDoc(diagnosisRef, updatedPayload);
 
-        alert("Clinical diagnosis record updated successfully.");
-        exitToLedgerView();
+        triggerSystemNotification("success", "Diagnosis Updated", "Clinical diagnosis record updated successfully inside the clinic datastore matrix.", exitToLedgerView);
 
       } catch (error) {
-        console.error("Database write interface transmission failure:", error);
-        alert("Transaction Aborted: " + error.message);
+        console.error("Database tracking write-back deployment pipeline exception:", error);
+        triggerSystemNotification("error", "Transaction Update Failed", "Transmission path dropped: " + error.message);
         
-        // Re-enable interactive elements for retry attempts
+        // Unlock button interactive properties upon transaction dropping to allow operational retries
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalText;
       }
     });
 
-    // Basic Form Exit Event Hooks
+    // Form Navigation Action Link Mappings
     cancelBtn.addEventListener("click", exitToLedgerView);
     discardFormBtn.addEventListener("click", exitToLedgerView);
 
-    // Run Initialization Sequence
+    // Initial Core App Run Routine Launch
     fetchAndPopulateForm();
   </script>
 

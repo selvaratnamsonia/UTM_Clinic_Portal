@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="css/premium-dialog.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
+    <script src="js/html2pdf.bundle.min.js"></script>
+
     <style>
         :root {
             --primary: #802c44;
@@ -22,7 +24,6 @@
             --radius: 16px;
             --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
             
-            /* Payment Feature Custom Colors */
             --payment-amber: #d97706;
             --payment-amber-light: #fef3c7;
             --payment-amber-hover: #b45309;
@@ -225,6 +226,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
+            table-layout: fixed;
         }
 
         thead { background: #f8fafc; }
@@ -244,6 +246,7 @@
             border-top: 1px solid #f1f5f9;
             font-size: 15px;
             vertical-align: middle;
+            word-wrap: break-word;
         }
 
         tr:hover { background: #fcfcfc; }
@@ -294,7 +297,6 @@
              background: #dc2626 !important;
         }
 
-        /* --- Payment Feature Button Layout Style --- */
         .btn-pay-action {
             display: inline-flex;
             align-items: center;
@@ -310,6 +312,7 @@
             transition: all 0.2s ease-in-out;
             box-shadow: 0 2px 4px rgba(217, 119, 6, 0.04);
             text-decoration: none;
+            white-space: nowrap;
         }
 
         .btn-pay-action:hover {
@@ -319,8 +322,44 @@
             box-shadow: 0 4px 6px rgba(217, 119, 6, 0.15);
         }
 
-        .btn-pay-action i {
-            font-size: 14px;
+        .btn-mc-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background-color: #ecfdf5;
+            border: 1px solid #a7f3d0;
+            color: #059669;
+            font-size: 13px;
+            font-weight: 700;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 2px 4px rgba(5, 150, 105, 0.04);
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .btn-mc-action:hover {
+            background-color: #059669;
+            border-color: #059669;
+            color: var(--white);
+            box-shadow: 0 4px 6px rgba(5, 150, 105, 0.15);
+        }
+
+        .btn-mc-action:disabled {
+            background-color: #e2e8f0;
+            border-color: #cbd5e1;
+            color: #94a3b8;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .action-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
         .no-action {
@@ -342,7 +381,6 @@
             font-style: italic;
         }
 
-        /* --- Layout Responsiveness --- */
         @media (max-width: 1024px) {
             .sidebar { width: 80px; }
             .logo-text, .nav-link span { display: none; }
@@ -352,7 +390,7 @@
 
         @media (max-width: 768px) {
             .table-card { overflow-x: auto; }
-            table { min-width: 800px; }
+            table { min-width: 850px; }
         }
     </style>
 </head>
@@ -415,11 +453,11 @@
         <table>
             <thead>
                 <tr>
-                    <th>Doctor</th>
-                    <th>Date & Time</th>
-                    <th>Reason</th>
-                    <th>Status</th>
-                    <th style="text-align: center; width: 160px;">Action</th>
+                    <th style="width: 25%;">Doctor</th>
+                    <th style="width: 20%;">Date & Time</th>
+                    <th style="width: 25%;">Reason</th>
+                    <th style="width: 10%;">Status</th>
+                    <th style="text-align: center; width: 20%;">Action</th>
                 </tr>
             </thead>
             <tbody id="appointmentsTableBody">
@@ -432,17 +470,40 @@
 </main>
 
 <script type="module">
-    // --- Shared Premium Dialog Dynamic Import Engine ---
     import { showConfirm } from "./js/premium-dialog.js";
-
     import { auth, db } from './js/firebase-config.js';
     import { signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-    import { collection, query, where, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+    import { collection, query, where, getDocs, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+    import { generateMCPDF } from "./js/mc-generator.js";
 
     let allAppointments = []; 
     let currentTab = 'upcoming'; 
 
-    // Authenticate account state configuration
+    document.getElementById('tableSearch')?.addEventListener('input', applyFilters);
+    document.getElementById('statusFilter')?.addEventListener('change', applyFilters);
+
+    document.getElementById('tabUpcoming')?.addEventListener('click', function() {
+        currentTab = 'upcoming';
+        this.classList.add('active-tab');
+        document.getElementById('tabPast')?.classList.remove('active-tab');
+        applyFilters();
+    });
+
+    document.getElementById('tabPast')?.addEventListener('click', function() {
+        currentTab = 'past';
+        this.classList.add('active-tab');
+        document.getElementById('tabUpcoming')?.classList.remove('active-tab');
+        applyFilters();
+    });
+
+    document.getElementById('logoutLink')?.addEventListener('click', async (e) => {
+        e.preventDefault();
+        if (await showConfirm("Account Logout", "Are you sure you want to log out?", "fa-sign-out-alt")) {
+            await signOut(auth);
+            window.location.href = 'login.html';
+        }
+    });
+
     auth.onAuthStateChanged(async (user) => {
         if (!user) { 
             window.location.href = 'login.html'; 
@@ -451,7 +512,6 @@
         await loadAppointments(user.uid);
     });
 
-    // Query fetching handler
     async function loadAppointments(uid) {
         try {
             const q = query(collection(db, "appointments"), where("userId", "==", uid));
@@ -472,7 +532,6 @@
         }
     }
 
-    // Format doctor name display
     function getDoctorDisplayName(appointment) {
         if (appointment.doctorName && appointment.doctorName !== "") {
             return `Dr. ${appointment.doctorName}`;
@@ -483,7 +542,6 @@
         return "Awaiting Doctor Assignment";
     }
 
-    // Helper to accurately parse "YYYY-MM-DD" and "HH:MM AM/PM" into a comparable Date Object
     function parseAppointmentDateTime(dateStr, timeStr) {
         if (!dateStr) return new Date(0);
         if (!timeStr || timeStr === "Time TBD") return new Date(`${dateStr}T00:00:00`);
@@ -501,7 +559,6 @@
         return new Date(`${dateStr}T${formattedHours}:${formattedMinutes}:00`);
     }
 
-    // View interface rendering logic
     async function renderTable(appointmentsList) {
         const container = document.getElementById('appointmentsTableBody');
         if (!container) return;
@@ -515,6 +572,8 @@
         const now = new Date();
         
         for (const item of appointmentsList) {
+            if (!item.date) continue;
+
             const doctorDisplay = getDoctorDisplayName(item);
             const timeStr = item.time || "Time TBD";
             const reasonStr = item.reason || "General Consultation";
@@ -531,16 +590,19 @@
             if (isOverdue) {
                 actionHtml = '<span class="no-action overdue">Overdue</span>';
             } else if (canCancel) {
-                actionHtml = `<button class="btn-icon cancel-btn" title="Cancel Appointment" data-id="${item.id}">
-                                <i class="fas fa-trash-alt"></i>
-                              </button>`;
+                actionHtml = `<button class="btn-icon cancel-btn" title="Cancel Appointment" data-id="${item.id}"><i class="fas fa-trash-alt"></i></button>`;
             } else if (isCancelled) {
                 actionHtml = '<span class="no-action">Cancelled</span>';
             } else if (isCompleted) {
                 actionHtml = `
-                    <button class="btn-pay-action" onclick="window.location.href='patient-pay-page.html?aptId=${item.id}'">
-                        <i class="fas fa-credit-card"></i> Pay Fee
-                    </button>`;
+                    <div class="action-container">
+                        <button class="btn-mc-action download-mc-btn" title="Download Medical Certificate" data-id="${item.id}">
+                            <i class="fas fa-file-download"></i> Download MC
+                        </button>
+                        <button class="btn-pay-action" title="Pay Fee" onclick="window.location.href='patient-pay-page.html?aptId=${item.id}'">
+                            <i class="fas fa-credit-card"></i> Pay Fee
+                        </button>
+                    </div>`;
             } else {
                 actionHtml = '<span class="no-action">No action</span>';
             }
@@ -562,131 +624,112 @@
     
     function bindTableActionListeners() {
         document.querySelectorAll('.cancel-btn').forEach(btn => {
+            btn.replaceWith(btn.cloneNode(true)); 
+        });
+        
+        document.querySelectorAll('.download-mc-btn').forEach(btn => {
+            btn.replaceWith(btn.cloneNode(true));
+        });
+
+        document.querySelectorAll('.cancel-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 e.stopPropagation();
-                const appointmentId = btn.getAttribute('data-id');
-                await cancelAppointment(appointmentId);
+                await cancelAppointment(btn.getAttribute('data-id'));
+            });
+        });
+
+        document.querySelectorAll('.download-mc-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Downloading...`;
+                btn.disabled = true;
+
+                await handleMcAutoDownload(btn.getAttribute('data-id'));
+
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
             });
         });
     }
     
     function escapeHtml(str) {
         if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
+        return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
     }
 
     async function cancelAppointment(appointmentId) {
-        const confirmCancel = await showConfirm(
-            "Cancel Appointment",
-            "Are you sure you want to cancel this scheduled clinic appointment?",
-            "fa-exclamation-triangle"
-        );
+        const confirmCancel = await showConfirm("Cancel Appointment", "Are you sure you want to cancel this scheduled clinic appointment?", "fa-exclamation-triangle");
         if (!confirmCancel) return;
 
         try {
-            const appointmentDocRef = doc(db, "appointments", appointmentId);
-            await updateDoc(appointmentDocRef, { status: "cancelled" });
-            
+            await updateDoc(doc(db, "appointments", appointmentId), { status: "cancelled" });
             await showConfirm("Success", "Your appointment has been successfully cancelled.", "fa-check-circle");
             await loadAppointments(auth.currentUser.uid);
         } catch (error) {
-            console.error("Cancellation error:", error);
             await showConfirm("Failed", "Failed to cancel appointment: " + error.message, "fa-times-circle");
         }
     }
 
-    // Combined filter logic
+    async function handleMcAutoDownload(appointmentId) {
+        try {
+            const aptSnap = await getDoc(doc(db, "appointments", appointmentId));
+            if (!aptSnap.exists()) {
+                alert("Targeted clinic record tracking values missing.");
+                return;
+            }
+            const aptData = aptSnap.data();
+
+            const userSnap = await getDoc(doc(db, "users", aptData.userId));
+            const userData = userSnap.exists() ? userSnap.data() : {};
+
+            const mcData = {
+                patientName: userData.name || aptData.patientName || "UTM Patient",
+                matricNumber: userData.matricNumber || "NOT RECORDED",
+                faculty: userData.faculty || "General",
+                diagnosisDate: aptData.date, 
+                mcDays: aptData.mcDays || 1, 
+                doctorName: aptData.doctorName || "Duty Doctor",
+                doctorSpecialization: aptData.doctorSpecialization || "Pegawai Perubatan",
+                doctorLicenseNumber: aptData.doctorLicenseNumber || "MMC Registered",
+                doctorSignatureUrl: aptData.doctorSignatureUrl || "" 
+            };
+
+            await generateMCPDF(mcData);
+
+        } catch (error) {
+            console.error("Critical stream termination on MC engine processing:", error);
+            alert("An issue occurred structuring the PDF file. Please try downloading again.");
+        }
+    }
+
     function applyFilters() {
-        const searchInput = document.getElementById('tableSearch');
-        const statusFilter = document.getElementById('statusFilter');
-        
-        const keyword = searchInput ? searchInput.value.toLowerCase().trim() : '';
-        const filterValue = statusFilter ? statusFilter.value : 'all';
-        
+        const keyword = document.getElementById('tableSearch')?.value.toLowerCase().trim() || '';
+        const filterValue = document.getElementById('statusFilter')?.value || 'all';
         const now = new Date();
 
         let timelineFiltered = allAppointments.filter(item => {
             const status = item.status ? item.status.toLowerCase() : 'pending';
             const aptDateTime = parseAppointmentDateTime(item.date, item.time);
             
-            if (currentTab === 'upcoming') {
-                return (aptDateTime >= now) && (status !== 'cancelled' && status !== 'completed');
-            } else {
-                return (aptDateTime < now) || (status === 'cancelled' && status === 'completed');
-            }
+            return currentTab === 'upcoming' 
+                ? (aptDateTime >= now) && (status !== 'cancelled' && status !== 'completed')
+                : (aptDateTime < now) || (status === 'cancelled' || status === 'completed');
         });
         
-        // Sort timeline lists
-        if (currentTab === 'upcoming') {
-            timelineFiltered.sort((a, b) => parseAppointmentDateTime(a.date, a.time) - parseAppointmentDateTime(b.date, b.time));
-        } else {
-            timelineFiltered.sort((a, b) => parseAppointmentDateTime(b.date, b.time) - parseAppointmentDateTime(a.date, a.time));
-        }
+        timelineFiltered.sort((a, b) => {
+            return currentTab === 'upcoming'
+                ? parseAppointmentDateTime(a.date, a.time) - parseAppointmentDateTime(b.date, b.time)
+                : parseAppointmentDateTime(b.date, b.time) - parseAppointmentDateTime(a.date, a.time);
+        });
         
-        // Apply search and status filters
         const finalFiltered = timelineFiltered.filter(item => {
-            const doctorName = (item.doctorName || '').toLowerCase();
-            const reason = (item.reason || '').toLowerCase();
-            const matchesKeyword = doctorName.includes(keyword) || reason.includes(keyword);
-            
-            const itemStatus = item.status ? item.status.toLowerCase() : 'pending';
-            const matchesStatus = (filterValue === 'all') || (itemStatus === filterValue);
-            
+            const matchesKeyword = (item.doctorName || '').toLowerCase().includes(keyword) || (item.reason || '').toLowerCase().includes(keyword);
+            const matchesStatus = (filterValue === 'all') || ((item.status || 'pending').toLowerCase() === filterValue);
             return matchesKeyword && matchesStatus;
         });
 
         renderTable(finalFiltered);
-    }
-
-    // Setup DOM listeners
-    document.addEventListener('DOMContentLoaded', () => {
-        const searchInput = document.getElementById('tableSearch');
-        const statusFilter = document.getElementById('statusFilter');
-        const tabUpcoming = document.getElementById('tabUpcoming');
-        const tabPast = document.getElementById('tabPast');
-
-        if (searchInput) searchInput.addEventListener('input', applyFilters);
-        if (statusFilter) statusFilter.addEventListener('change', applyFilters);
-
-        if (tabUpcoming && tabPast) {
-            tabUpcoming.addEventListener('click', () => {
-                currentTab = 'upcoming';
-                tabUpcoming.classList.add('active-tab');
-                tabPast.classList.remove('active-tab');
-                applyFilters();
-            });
-
-            tabPast.addEventListener('click', () => {
-                currentTab = 'past';
-                tabPast.classList.add('active-tab');
-                tabUpcoming.classList.remove('active-tab');
-                applyFilters();
-            });
-        }
-    });
-
-    // Premium Interactive Session Logout Handler
-    const logoutLink = document.getElementById('logoutLink');
-    if (logoutLink) {
-        logoutLink.addEventListener('click', async (e) => {
-            e.preventDefault();
-            
-            const confirmLogout = await showConfirm(
-                "Account Logout",
-                "Are you sure you want to log out of your UTM Clinic patient panel?",
-                "fa-sign-out-alt"
-            );
-            
-            if (confirmLogout) {
-                await signOut(auth);
-                window.location.href = 'login.html';
-            }
-        });
     }
 </script>
 </body>

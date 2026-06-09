@@ -1,6 +1,16 @@
 // js/mc-generator.js
+
 export async function generateMCPDF(mcData) {
-    const html2pdf = await import('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.esm.min.js');
+    // Reference the globally exposed html2pdf instance safely loaded from our local script tag
+    const pdfEngine = window.html2pdf;
+    
+    if (!pdfEngine) {
+        console.error("Dependency Error: html2pdf engine layout context is missing in window root.");
+        alert("System component missing. Please refresh the page.");
+        return;
+    }
+    
+    // Create an isolated container for layout processing
     const tempDiv = document.createElement('div');
     tempDiv.style.padding = '40px';
     tempDiv.style.backgroundColor = 'white';
@@ -13,50 +23,79 @@ export async function generateMCPDF(mcData) {
     const mcNumber = `PKUJBMC${new Date().toISOString().slice(0,10).replace(/-/g,'')}${Math.floor(Math.random() * 1000)}`;
     const startDate = new Date(mcData.diagnosisDate);
     const endDate = new Date(startDate);
-    endDate.setDate(endDate.getDate() + (mcData.mcDays - 1));
+    endDate.setDate(endDate.getDate() + (parseInt(mcData.mcDays) - 1));
     const formatDate = (date) => date.toLocaleDateString('en-MY', { day: '2-digit', month: '2-digit', year: 'numeric' });
     
     tempDiv.innerHTML = `
-        <div style="border: 2px solid #802c44; padding: 30px; border-radius: 8px; max-width: 700px; margin: 0 auto;">
+        <div style="border: 2px solid #802c44; padding: 30px; border-radius: 8px; max-width: 700px; margin: 0 auto; color: #000;">
             <div style="text-align: center; margin-bottom: 25px; border-bottom: 2px solid #802c44; padding-bottom: 15px;">
-                <div style="width: 70px; height: 70px; background: #802c44; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: white; font-size: 28px; font-weight: bold; margin-bottom: 10px;">UTM</div>
+                <div style="width: 70px; height: 70px; background: #802c44; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: white; font-size: 28px; font-weight: bold; margin-bottom: 10px; margin-left: auto; margin-right: auto;">UTM</div>
                 <div style="font-size: 22px; font-weight: bold; color: #802c44;">Pusat Kesihatan Universiti</div>
                 <div style="font-size: 13px;">Universiti Teknologi Malaysia</div>
                 <div style="font-size: 11px;">Tel: 07-5537227</div>
             </div>
             <div style="text-align: right; font-size: 11px; color: #666; margin-bottom: 15px;">No. Siri: ${mcNumber}</div>
-            <div style="text-align: center; font-size: 18px; font-weight: bold; margin: 25px 0; text-transform: uppercase;">SIJIL AKUAN SAKIT<br><span style="font-size: 12px;">MEDICAL CERTIFICATE</span></div>
-            <p>Saya mengesahkan telah memeriksa:</p>
-            <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                <div><span style="font-weight: bold; width: 130px; display: inline-block;">Nama / Name</span>: <strong>${escapeHtml(mcData.patientName)}</strong></div>
-                <div style="margin-top: 8px;"><span style="font-weight: bold; width: 130px; display: inline-block;">No. Matrik / Matric No.</span>: <strong>${escapeHtml(mcData.matricNumber)}</strong></div>
-                <div style="margin-top: 8px;"><span style="font-weight: bold; width: 130px; display: inline-block;">Fakulti / Faculty</span>: <strong>${escapeHtml(mcData.faculty || '—')}</strong></div>
+            <div style="text-align: center; font-size: 18px; font-weight: bold; margin: 25px 0; text-transform: uppercase;">SIJIL AKUAN SAKIT<br><span style="font-size: 12px; font-weight: normal;">MEDICAL CERTIFICATE</span></div>
+            <p style="font-size: 14px; margin-bottom: 10px;">Saya mengesahkan telah memeriksa / *I certify that I have examined*:</p>
+            <div style="background: #f8fafc; padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px; margin: 15px 0; font-size: 14px;">
+                <div style="margin-bottom: 8px;"><span style="font-weight: bold; width: 160px; display: inline-block;">Nama / Name</span>: <strong style="text-transform: uppercase;">${escapeHtml(mcData.patientName)}</strong></div>
+                <div style="margin-bottom: 8px;"><span style="font-weight: bold; width: 160px; display: inline-block;">No. Matrik / Matric No.</span>: <strong>${escapeHtml(mcData.matricNumber)}</strong></div>
+                <div><span style="font-weight: bold; width: 160px; display: inline-block;">Fakulti / Faculty</span>: <strong>${escapeHtml(mcData.faculty || '—')}</strong></div>
             </div>
-            <p>dan mendapat beliau <strong>TIDAK SIHAT</strong> untuk bertugas / belajar<br>dan telah diberi cuti sakit selama <strong>${mcData.mcDays} HARI</strong></p>
-            <div style="background: #f8fafc; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                <div><span style="font-weight: bold; width: 130px; display: inline-block;">Dari / From</span>: <strong>${formatDate(startDate)}</strong></div>
-                <div style="margin-top: 8px;"><span style="font-weight: bold; width: 130px; display: inline-block;">Hingga / To</span>: <strong>${formatDate(endDate)}</strong></div>
+            <p style="font-size: 14px; line-height: 1.6;">dan mendapati beliau **TIDAK SIHAT** untuk bertugas / belajar dan telah diberi cuti sakit selama **${mcData.mcDays} HARI**.<br><em style="font-size: 13px; color: #555;">and found them UNFIT to attend duty / classes and is granted medical leave for ${mcData.mcDays} DAY(S).</em></p>
+            <div style="background: #f8fafc; padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px; margin: 15px 0; font-size: 14px;">
+                <div style="margin-bottom: 8px;"><span style="font-weight: bold; width: 160px; display: inline-block;">Dari / From</span>: <strong>${formatDate(startDate)}</strong></div>
+                <div><span style="font-weight: bold; width: 160px; display: inline-block;">Hingga / To</span>: <strong>${formatDate(endDate)}</strong></div>
             </div>
-            <div style="display: flex; justify-content: space-between; margin-top: 40px;">
-                <div><div>Tarikh / Date: ${today}</div><div>Masa Dicetak / Printed: ${currentTime}</div></div>
-                <div style="text-align: center;">
-                    ${mcData.doctorSignatureUrl ? `<img src="${mcData.doctorSignatureUrl}" style="max-width: 180px; max-height: 60px; margin-bottom: 10px;" />` : `<div style="margin-bottom: 25px;">_________________________</div>`}
-                    <div><strong>${escapeHtml(mcData.doctorName)}</strong></div>
-                    <div style="font-size: 12px;">${escapeHtml(mcData.doctorSpecialization)}</div>
-                    <div style="font-size: 11px;">${escapeHtml(mcData.doctorLicenseNumber || 'PEGAWAI PERUBATAN')}</div>
-                    <div style="font-size: 11px;">PUSAT KESIHATAN UNIVERSITI</div>
-                    <div style="font-size: 11px;">UNIVERSITI TEKNOLOGI MALAYSIA</div>
+            <div style="display: flex; justify-content: space-between; margin-top: 40px; font-size: 13px;">
+                <div style="align-self: flex-end;">
+                    <div>Tarikh / Date: <strong>${today}</strong></div>
+                    <div>Masa Dicetak / Printed: ${currentTime}</div>
+                </div>
+                <div style="text-align: center; min-width: 220px;">
+                    ${mcData.doctorSignatureUrl ? `<img src="${mcData.doctorSignatureUrl}" style="max-width: 180px; max-height: 60px; display: block; margin: 0 auto 5px;" />` : `<div style="margin-bottom: 45px;"></div>`}
+                    <div style="border-top: 1px dashed #000; padding-top: 5px;"><strong>${escapeHtml(mcData.doctorName)}</strong></div>
+                    <div style="font-size: 12px; color: #333;">${escapeHtml(mcData.doctorSpecialization || 'Pegawai Perubatan')}</div>
+                    <div style="font-size: 11px; color: #555;">No. Pendaftaran: ${escapeHtml(mcData.doctorLicenseNumber || 'MMC Registered')}</div>
+                    <div style="font-size: 11px; font-weight: bold; margin-top: 3px; color: #802c44;">PUSAT KESIHATAN UNIVERSITI (UTM)</div>
                 </div>
             </div>
-            <div style="margin-top: 25px; text-align: center; font-size: 10px; color: #999; border-top: 1px solid #eee; padding-top: 12px;">
-                <div>TRUE COPY | SALINAN BENAR</div>
-                <div>Document generated electronically</div>
+            <div style="margin-top: 30px; text-align: center; font-size: 10px; color: #94a3b8; border-top: 1px dashed #e2e8f0; padding-top: 12px;">
+                <div>SALINAN BENAR ELEKTRONIK / ELECTRONIC TRUE COPY</div>
+                <div>This document is generated automatically by UTM Clinic Portal. No physical stamp is required.</div>
             </div>
         </div>
     `;
+    
     document.body.appendChild(tempDiv);
-    const opt = { margin: [0.5, 0.5, 0.5, 0.5], filename: `MC_${mcData.patientName.replace(/\s/g, '_')}_${mcData.diagnosisDate}.pdf`, image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } };
-    await html2pdf.default().set(opt).from(tempDiv).save();
-    tempDiv.remove();
+    
+    const safeFileName = `MC_${mcData.patientName.replace(/[^a-zA-Z0-9]/g, '_')}_${mcData.diagnosisDate}.pdf`;
+
+    // Strict non-modular config payload layout targeting options
+    const opt = { 
+        margin: [0.4, 0.4, 0.4, 0.4], 
+        filename: safeFileName, 
+        image: { type: 'jpeg', quality: 0.98 }, 
+        html2canvas: { 
+            scale: 2, 
+            useCORS: true, 
+            logging: false 
+        }, 
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' } 
+    };
+    
+    try {
+        // Execute the direct layout transformation engine call
+        await pdfEngine().set(opt).from(tempDiv).save();
+    } catch (error) {
+        console.error("PDF generation layout processing issue:", error);
+        alert("An error occurred formatting the document canvas.");
+    } finally {
+        tempDiv.remove();
+    }
 }
-function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : m === '>' ? '&gt;' : m); }
+
+function escapeHtml(str) { 
+    if (!str) return ''; 
+    return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : m === '>' ? '&gt;' : m); 
+}

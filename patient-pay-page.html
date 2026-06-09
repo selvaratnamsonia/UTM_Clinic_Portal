@@ -413,7 +413,10 @@
         
         if (aptId) {
             currentAppointmentId = aptId;
-            document.getElementById('bankingReferenceId').innerText = `UTM-APT-${aptId.substring(0,8).toUpperCase()}`;
+            const refElement = document.getElementById('bankingReferenceId');
+            if (refElement) {
+                refElement.innerText = `UTM-APT-${aptId.substring(0,8).toUpperCase()}`;
+            }
             loadTargetAppointmentDetails(aptId);
         }
     }
@@ -514,6 +517,7 @@
         }
     }
 
+    // Toggle Selection States and Update active Panels
     document.querySelectorAll('.method-option').forEach(element => {
         element.addEventListener('click', () => {
             document.querySelectorAll('.method-option').forEach(opt => opt.classList.remove('selected'));
@@ -532,22 +536,39 @@
         });
     });
 
+    // Handle Core Action Stream Routing Logic
     document.getElementById('processPaymentBtn').addEventListener('click', async () => {
         if (!selectedMethod || !appointmentSnapshotData) return;
 
-        let details = {};
+        // --- BRANCH 1: FPX EXTERNAL REDIRECT ROUTE ---
         if (selectedMethod === 'fpx-panel') {
-            details.selectedBank = document.getElementById('fpxBankSelect').value;
-            if (!details.selectedBank) return;
-        } else if (selectedMethod === 'banking-panel') {
-            details.receiptUrlOrRef = document.getElementById('receiptUrlField').value.trim();
-            if (!details.receiptUrlOrRef) return;
+            const chosenBank = document.getElementById('fpxBankSelect').value;
+            if (!chosenBank) {
+                alert("Please select your preferred retail banking partner portal first.");
+                return;
+            }
+
+            const proceed = await showConfirm("Redirect to Gateway", "You will be redirected to the secure simulated FPX gateway.", "fa-external-link-alt");
+            if (!proceed) return;
+
+            // Route execution flow directly to your dedicated gateway view
+            window.location.href = `fpx-gateway.html?aptId=${currentAppointmentId}&bank=${encodeURIComponent(chosenBank)}`;
+            return; 
         }
 
-        const proceed = await showConfirm("Confirm Payment", "Finalize payment execution parameters?", "fa-credit-card");
+        // --- BRANCH 2: LOCAL FIRESTORE DEPOSIT ROUTE (TnG / Manual Banking) ---
+        let details = {};
+        if (selectedMethod === 'banking-panel') {
+            details.receiptUrlOrRef = document.getElementById('receiptUrlField').value.trim();
+            if (!details.receiptUrlOrRef) {
+                alert("Please enter your transaction index reference code.");
+                return;
+            }
+        }
+
+        const proceed = await showConfirm("Confirm Payment", "Proceed with submitting transaction verification details?", "fa-credit-card");
         if (!proceed) return;
 
-        // Immediately lock the UI button to completely block rapid triple-clicks
         const submitBtn = document.getElementById('processPaymentBtn');
         submitBtn.disabled = true;
         submitBtn.style.opacity = "0.5";
@@ -573,10 +594,6 @@
                 });
             });
 
-            const isManualVerificationRequired = (selectedMethod === 'tng-panel' || selectedMethod === 'banking-panel');
-            const calculatedStatus = isManualVerificationRequired ? "pending" : "verified";
-            const updatedAppointmentStatus = isManualVerificationRequired ? "pending-payment-verification" : "completed";
-
             const paymentRecordDocument = {
                 appointmentId: currentAppointmentId,
                 studentName: appointmentSnapshotData.patientName || "SIA JUN YU",
@@ -586,7 +603,7 @@
                 items: finalItemsList,
                 amount: billingSum,
                 paymentChannel: selectedMethod.replace('-panel', '').toUpperCase(),
-                status: calculatedStatus, 
+                status: "pending", 
                 transactionReference: details.receiptUrlOrRef || "",
                 createdAt: new Date() 
             };
@@ -595,22 +612,15 @@
 
             const docRef = doc(db, "appointments", currentAppointmentId);
             await updateDoc(docRef, {
-                status: updatedAppointmentStatus,
-                paymentStatus: calculatedStatus
+                status: "pending-payment-verification",
+                paymentStatus: "pending"
             });
 
-            if (isManualVerificationRequired) {
-                await showConfirm("Verification Submitted", "Your transaction is pending administrative review.", "fa-clock");
-                window.location.href = "appointments.html"; 
-            } else {
-                await showConfirm("Transaction Complete", "Receipt details recorded inside your ledger!", "fa-check-circle");
-                window.location.href = "appointments.html";
-            }
+            await showConfirm("Verification Submitted", "Your transaction has been flagged for clinic staff verification review.", "fa-clock");
+            window.location.href = "appointments.html"; 
 
         } catch (err) {
-            console.error("Critical error saving history log snapshot collection data:", err);
-            
-            // Re-enable button structure if connection context dropped completely
+            console.error("Critical error logging transaction record:", err);
             submitBtn.disabled = false;
             submitBtn.style.opacity = "1";
             submitBtn.style.cursor = "pointer";
@@ -618,11 +628,11 @@
         }
     });
 
+    // Account Logout Control
     const logoutLink = document.getElementById('logoutLink');
     if (logoutLink) {
         logoutLink.addEventListener('click', async (e) => {
             e.preventDefault(); 
-            
             const confirmLogout = await showConfirm(
                 "Account Logout", 
                 "Are you sure you want to log out of your UTM Clinic session?", 

@@ -149,6 +149,16 @@
         </div>
     </div>
 
+    <div class="modal-overlay fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 opacity-0 pointer-events-none" id="premiumDialogOverlay">
+        <div class="modal-box bg-white w-full max-w-md mx-4 rounded-2xl p-6 shadow-xl text-center">
+            <div id="dialogIconBox" class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
+                </div>
+            <h3 id="dialogTitle" class="text-lg font-bold text-slate-900 mb-2">Notification Title</h3>
+            <p id="dialogMessage" class="text-slate-500 text-sm leading-relaxed mb-6">Notification detailed summary description text goes right here.</p>
+            <button class="w-full py-2.5 text-sm font-semibold rounded-xl text-white transition-all shadow-md" id="dialogActionBtn">Acknowledge</button>
+        </div>
+    </div>
+
 <script type="module">
     import { auth, db } from './js/firebase-config.js';
     import { signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
@@ -193,6 +203,41 @@
         });
     });
 
+    // Premium Micro-dialog overlay engine interface implementation
+    function openPremiumNotification(type, title, message) {
+        const dialogOverlay = document.getElementById("premiumDialogOverlay");
+        const iconBox = document.getElementById("dialogIconBox");
+        const titleEl = document.getElementById("dialogTitle");
+        const messageEl = document.getElementById("dialogMessage");
+        const actionBtn = document.getElementById("dialogActionBtn");
+
+        titleEl.textContent = title;
+        messageEl.textContent = message;
+
+        // Reset dynamic style layouts classes completely before reassigning
+        iconBox.className = "w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 text-xl";
+        actionBtn.className = "w-full py-2.5 text-sm font-semibold rounded-xl text-white transition-all shadow-md";
+
+        if (type === "success") {
+            iconBox.classList.add("bg-emerald-50", "text-emerald-600");
+            iconBox.innerHTML = `<i class="fas fa-check-circle"></i>`;
+            actionBtn.classList.add("bg-emerald-600", "hover:bg-emerald-700");
+        } else if (type === "warning") {
+            iconBox.classList.add("bg-amber-50", "text-amber-600");
+            iconBox.innerHTML = `<i class="fas fa-exclamation-circle"></i>`;
+            actionBtn.classList.add("bg-amber-500", "hover:bg-amber-600");
+        } else {
+            iconBox.classList.add("bg-red-50", "text-red-600");
+            iconBox.innerHTML = `<i class="fas fa-times-circle"></i>`;
+            actionBtn.classList.add("bg-red-600", "hover:bg-red-700");
+        }
+
+        dialogOverlay.classList.add("active");
+        actionBtn.onclick = () => {
+            dialogOverlay.classList.remove("active");
+        };
+    }
+
     async function fetchStaffAppointments() {
         try {
             const wrapper = document.getElementById('appointmentsWrapper');
@@ -236,7 +281,17 @@
                 });
             }
 
-            processedList.sort((a, b) => new Date(b.date) - new Date(a.date));
+            // --- FIXED GRANULAR SORTING ENGINE (LATEST TO OLDEST) ---
+            const getFullDateTime = (dateStr, timeStr) => {
+                if (!dateStr) return new Date(0);
+                const time = timeStr || "12:00 AM";
+                return new Date(`${dateStr} ${time}`);
+            };
+
+            processedList.sort((a, b) => {
+                return getFullDateTime(b.date, b.time) - getFullDateTime(a.date, a.time);
+            });
+
             localAppointmentsCache = processedList;
             renderStaffView();
 
@@ -360,7 +415,6 @@
         document.querySelectorAll('.dispense-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const appointmentId = e.currentTarget.getAttribute('data-id');
-                // Redirect the staff to the medication list page to fulfill the medicine order
                 window.location.href = `staff-view-diagnosis.html?appointmentId=${appointmentId}`;
             });
         });
@@ -399,7 +453,7 @@
                     const newTime = timeSelect.value;
                     
                     if (!newDate || !newTime) {
-                        alert("Please provide both valid date and time allocation entries.");
+                        openPremiumNotification("warning", "Missing Configuration Entries", "Please provide both valid date and time allocation entries inside the input fields.");
                         return;
                     }
                     await rescheduleAppointment(appointmentId, newDate, newTime);
@@ -448,10 +502,10 @@
                 }
             }
             renderStaffView();
-            alert(`Appointment successfully updated to ${newStatus}!`);
+            openPremiumNotification("success", "Status Updated Successfully", `Appointment successfully updated to status: ${newStatus}!`);
         } catch (err) {
             console.error("Error updating appointment state:", err);
-            alert("Database write rejected: " + err.message);
+            openPremiumNotification("error", "Database Rejection Error", "Database write rejected: " + err.message);
         }
     }
 
@@ -469,16 +523,16 @@
                 if (!appointment.patientEmail || appointment.patientEmail.trim() === "") {
                     console.warn("Notification transmission bypassed: The structural patientEmail parameter mapping is currently blank.");
                     renderStaffView();
-                    alert("Appointment updated locally!\n(Note: Notification email skipped because recipient address profile is empty).");
+                    openPremiumNotification("success", "Rescheduled Locally", "Appointment updated locally!\n(Note: Notification email skipped because recipient address profile is empty).");
                     return;
                 }
 
                 sendEmailNotification(appointment, `Your appointment has been rescheduled to ${date} at ${time}. Status is reset to Pending verification.`);
             }
             renderStaffView();
-            alert("Appointment rescheduled successfully!");
+            openPremiumNotification("success", "Appointment Rescheduled", "The system has updated and saved your modifications to the clinic timetable successfully!");
         } catch (err) {
-            alert("Failed to reschedule: " + err.message);
+            openPremiumNotification("error", "Reschedule Process Aborted", "Failed to reschedule: " + err.message);
         }
     }
 

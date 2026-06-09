@@ -373,6 +373,41 @@
         getDoc
     } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
+    // =========================================================================
+    // HELPER UTILITIES (Placed on top to avoid execution order issues)
+    // =========================================================================
+    function parseAppointmentDateTime(dateStr, timeStr) {
+        if (!dateStr) return new Date(0);
+        if (!timeStr || timeStr === "Time TBD") return new Date(`${dateStr}T00:00:00`);
+
+        try {
+            const [time, modifier] = timeStr.split(' ');
+            let [hours, minutes] = time.split(':');
+            hours = parseInt(hours, 10);
+
+            if (modifier === 'PM' && hours < 12) hours += 12;
+            if (modifier === 'AM' && hours === 12) hours = 0;
+
+            const formattedHours = String(hours).padStart(2, '0');
+            const formattedMinutes = String(minutes).padStart(2, '0');
+
+            return new Date(`${dateStr}T${formattedHours}:${formattedMinutes}:00`);
+        } catch (e) {
+            console.error("Error parsing appointment date/time:", e);
+            return new Date(`${dateStr}T00:00:00`);
+        }
+    }
+
+    function formatDate(dateString) {
+        if (!dateString) return "-";
+        const date = new Date(dateString);
+        return date.toLocaleDateString("en-MY", {
+            day: "numeric",
+            month: "short",
+            year: "numeric"
+        });
+    }
+
     // =========================
     // AUTH CHECK
     // =========================
@@ -399,33 +434,15 @@
         }
     });
 
-    // =========================================================================
-    // HELPER: COMBINE "YYYY-MM-DD" AND "HH:MM AM/PM" INTO ACCURATE JS DATE OBJECT
-    // =========================================================================
-    function parseAppointmentDateTime(dateStr, timeStr) {
-        if (!dateStr) return new Date(0);
-        if (!timeStr || timeStr === "Time TBD") return new Date(`${dateStr}T00:00:00`);
-
-        // Parses time string segments safely (e.g., "04:30 PM")
-        const [time, modifier] = timeStr.split(' ');
-        let [hours, minutes] = time.split(':');
-        hours = parseInt(hours, 10);
-
-        if (modifier === 'PM' && hours < 12) hours += 12;
-        if (modifier === 'AM' && hours === 12) hours = 0;
-
-        const formattedHours = String(hours).padStart(2, '0');
-        const formattedMinutes = String(minutes).padStart(2, '0');
-
-        return new Date(`${dateStr}T${formattedHours}:${formattedMinutes}:00`);
-    }
-
     // =========================
     // LOAD DASHBOARD DATA
     // =========================
     async function loadDashboardData(userId) {
-        const todayStr = new Date().toISOString().split("T")[0];
-        const now = new Date(); // Precise current moment tracking for comparison
+        const now = new Date();
+        
+        // Normalize structural baseline for comparison to exactly start of today
+        const startOfToday = new Date();
+        startOfToday.setHours(0, 0, 0, 0);
 
         try {
             // =========================
@@ -447,19 +464,17 @@
             allAppointments.sort((a, b) => new Date(b.date) - new Date(a.date));
 
             // =========================
-            // 1. STATS: UPCOMING APPOINTMENTS (Fitted with accurate time comparisons)
+            // 1. STATS: UPCOMING APPOINTMENTS
             // =========================
             const upcomingAppointments = allAppointments.filter(apt => {
                 const statusValid = (apt.status === "pending" || apt.status === "confirmed");
                 const aptDateTime = parseAppointmentDateTime(apt.date, apt.time);
                 
-                // Must be active status and scheduled in the future
                 return statusValid && aptDateTime >= now;
             });
             
-            // Sort the array ascendingly (soonest upcoming appointment shows up on top)
+            // Sort ascendingly (soonest upcoming appointment on top)
             upcomingAppointments.sort((a, b) => parseAppointmentDateTime(a.date, a.time) - parseAppointmentDateTime(b.date, b.time));
-            
             document.getElementById("upcomingCount").innerText = upcomingAppointments.length;
 
             // =========================
@@ -477,8 +492,16 @@
 
             mcSnap.forEach((doc) => {
                 const mcData = doc.data();
-                if (mcData.status === "active" && mcData.endDate && mcData.endDate >= todayStr) {
-                    activeMcCount++;
+                if (mcData.endDate) {
+                    // Safe parsing of both ISO ("2026-06-16") and human formats ("16 Jun 2026")
+                    const certificateExpiry = new Date(mcData.endDate);
+                    
+                    if (!isNaN(certificateExpiry) && certificateExpiry >= startOfToday) {
+                        // Increments counter if explicitly marked active, or if implicitly active by valid duration
+                        if (mcData.status === "active" || mcData.status === undefined) {
+                            activeMcCount++;
+                        }
+                    }
                 }
             });
             document.getElementById("mcCount").innerText = activeMcCount;
@@ -566,19 +589,6 @@
                 <div class="empty-message">Failed to load system activity.</div>
             `;
         }
-    }
-
-    // =========================
-    // HELPER: FORMAT DATE
-    // =========================
-    function formatDate(dateString) {
-        if (!dateString) return "-";
-        const date = new Date(dateString);
-        return date.toLocaleDateString("en-MY", {
-            day: "numeric",
-            month: "short",
-            year: "numeric"
-        });
     }
 
     // =========================
