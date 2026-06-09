@@ -7,7 +7,7 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <link href="https://fonts.googleapis.com/css2=family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
@@ -180,17 +180,14 @@
     const filterButtons = document.querySelectorAll('#filterButtonsContainer .filter-btn');
     filterButtons.forEach(btn => {
         btn.addEventListener('click', () => {
-            // Remove active classes from all buttons
             filterButtons.forEach(b => {
                 b.classList.remove('active', 'bg-white', 'text-slate-900', 'shadow-sm');
                 b.classList.add('text-slate-600', 'hover:text-slate-900');
             });
 
-            // Add active classes to the clicked button
             btn.classList.add('active', 'bg-white', 'text-slate-900', 'shadow-sm');
             btn.classList.remove('text-slate-600', 'hover:text-slate-900');
 
-            // Update state and re-render standard filtered cards
             activeFilter = btn.getAttribute('data-filter');
             renderStaffView();
         });
@@ -304,6 +301,42 @@
                                     <i class="fas fa-times"></i> Cancel
                                 </button>
                             ` : ''}
+                            ${(isCompleted && item.hasDiagnosis) ? `
+                                <button class="dispense-btn flex items-center gap-2 px-4 py-2 bg-amber-50 text-amber-700 hover:bg-amber-600 hover:text-white rounded-xl text-xs font-bold transition-all" data-id="${item.id}">
+                                    <i class="fas fa-pills"></i> Dispense Medication
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+
+                    <div id="reschedule-panel-${item.id}" class="hidden border-t border-slate-100 pt-4 mt-2">
+                        <h4 class="text-sm font-bold text-slate-800 mb-3">Reschedule Appointment</h4>
+                        <div class="flex flex-wrap gap-4 items-end bg-slate-50 p-4 rounded-xl">
+                            <div class="w-full sm:w-auto">
+                                <label class="block text-xs font-bold text-slate-600 uppercase mb-1 tracking-wide">New Date</label>
+                                <input type="date" id="new-date-${item.id}" value="${item.date}" class="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-primary">
+                            </div>
+                            <div class="w-full sm:w-auto">
+                                <label class="block text-xs font-bold text-slate-600 uppercase mb-1 tracking-wide">New Time</label>
+                                <select id="new-time-${item.id}" class="w-full px-3 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-primary">
+                                    <option value="09:00 AM" ${timeString === '09:00 AM' ? 'selected' : ''}>09:00 AM</option>
+                                    <option value="09:30 AM" ${timeString === '09:30 AM' ? 'selected' : ''}>09:30 AM</option>
+                                    <option value="10:00 AM" ${timeString === '10:00 AM' ? 'selected' : ''}>10:00 AM</option>
+                                    <option value="10:30 AM" ${timeString === '10:30 AM' ? 'selected' : ''}>10:30 AM</option>
+                                    <option value="11:00 AM" ${timeString === '11:00 AM' ? 'selected' : ''}>11:00 AM</option>
+                                    <option value="11:30 AM" ${timeString === '11:30 AM' ? 'selected' : ''}>11:30 AM</option>
+                                    <option value="02:00 PM" ${timeString === '02:00 PM' ? 'selected' : ''}>02:00 PM</option>
+                                    <option value="02:30 PM" ${timeString === '02:30 PM' ? 'selected' : ''}>02:30 PM</option>
+                                    <option value="03:00 PM" ${timeString === '03:00 PM' ? 'selected' : ''}>03:00 PM</option>
+                                    <option value="03:30 PM" ${timeString === '03:30 PM' ? 'selected' : ''}>03:30 PM</option>
+                                    <option value="04:00 PM" ${timeString === '04:00 PM' ? 'selected' : ''}>04:00 PM</option>
+                                    <option value="04:30 PM" ${timeString === '04:30 PM' ? 'selected' : ''}>04:30 PM</option>
+                                </select>
+                            </div>
+                            <div class="flex gap-2 ml-auto w-full sm:w-auto pt-2 sm:pt-0">
+                                <button class="save-reschedule-btn bg-primary text-white text-xs font-bold px-4 py-2.5 rounded-lg hover:bg-primary-hover transition-all flex-1 sm:flex-none" data-id="${item.id}">Save Changes</button>
+                                <button class="close-reschedule-btn bg-slate-200 text-slate-700 text-xs font-bold px-4 py-2.5 rounded-lg hover:bg-slate-300 transition-all flex-1 sm:flex-none" data-id="${item.id}">Cancel</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -311,11 +344,9 @@
         });
         container.innerHTML = outputHtml;
 
-        // Bind events to dynamically generated buttons inside your lists
         attachCardActionListeners();
     }
 
-    // --- CARD BUTTON ACTION HANDLERS ---
     function attachCardActionListeners() {
         // Confirm Button
         document.querySelectorAll('.confirm-btn').forEach(btn => {
@@ -325,14 +356,53 @@
             });
         });
 
-        // Reschedule Trigger
+        // Dispense Button
+        document.querySelectorAll('.dispense-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const appointmentId = e.currentTarget.getAttribute('data-id');
+                // Redirect the staff to the medication list page to fulfill the medicine order
+                window.location.href = `staff-view-diagnosis.html?appointmentId=${appointmentId}`;
+            });
+        });
+
+        // Reschedule Trigger (Toggles Expandable Panel Box)
         document.querySelectorAll('.reschedule-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const appointmentId = e.currentTarget.getAttribute('data-id');
-                const newDate = prompt("Enter new appointment date (YYYY-MM-DD):");
-                const newTime = prompt("Enter new appointment time (e.g. 11:30 AM):");
-                if (newDate && newTime) {
-                    rescheduleAppointment(appointmentId, newDate, newTime);
+                const panel = document.getElementById(`reschedule-panel-${appointmentId}`);
+                if (panel) {
+                    panel.classList.toggle('hidden');
+                }
+            });
+        });
+
+        // Panel Cancel Button
+        document.querySelectorAll('.close-reschedule-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const appointmentId = e.currentTarget.getAttribute('data-id');
+                const panel = document.getElementById(`reschedule-panel-${appointmentId}`);
+                if (panel) {
+                    panel.classList.add('hidden');
+                }
+            });
+        });
+
+        // Panel Save Changes Action
+        document.querySelectorAll('.save-reschedule-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const appointmentId = e.currentTarget.getAttribute('data-id');
+                const dateInput = document.getElementById(`new-date-${appointmentId}`);
+                const timeSelect = document.getElementById(`new-time-${appointmentId}`);
+                
+                if (dateInput && timeSelect) {
+                    const newDate = dateInput.value;
+                    const newTime = timeSelect.value;
+                    
+                    if (!newDate || !newTime) {
+                        alert("Please provide both valid date and time allocation entries.");
+                        return;
+                    }
+                    await rescheduleAppointment(appointmentId, newDate, newTime);
                 }
             });
         });
@@ -363,19 +433,17 @@
         pendingCancellationId = null;
     }
 
-    // --- FIRESTORE DATABASE MUTATIONS ---
+    // --- FIRESTORE DATABASE ---
     async function updateAppointmentStatus(id, newStatus) {
         try {
             const docRef = doc(db, "appointments", id);
             await updateDoc(docRef, { status: newStatus });
             
-            // Update cache locally so it updates immediately without an entire roundtrip reload
             const appointment = localAppointmentsCache.find(item => item.id === id);
             if (appointment) {
                 appointment.status = newStatus;
                 
-                // Optional: Send Email alert confirmation via EmailJS
-                if (appointment.patientEmail) {
+                if (appointment.patientEmail && appointment.patientEmail.trim() !== "") {
                     sendEmailNotification(appointment, `Your appointment status has been updated to: ${newStatus.toUpperCase()}`);
                 }
             }
@@ -398,9 +466,14 @@
                 appointment.time = time;
                 appointment.status = 'pending';
 
-                if (appointment.patientEmail) {
-                    sendEmailNotification(appointment, `Your appointment has been rescheduled to ${date} at ${time}. Status is reset to Pending verification.`);
+                if (!appointment.patientEmail || appointment.patientEmail.trim() === "") {
+                    console.warn("Notification transmission bypassed: The structural patientEmail parameter mapping is currently blank.");
+                    renderStaffView();
+                    alert("Appointment updated locally!\n(Note: Notification email skipped because recipient address profile is empty).");
+                    return;
                 }
+
+                sendEmailNotification(appointment, `Your appointment has been rescheduled to ${date} at ${time}. Status is reset to Pending verification.`);
             }
             renderStaffView();
             alert("Appointment rescheduled successfully!");
@@ -410,7 +483,6 @@
     }
 
     function sendEmailNotification(appData, customMessage) {
-        // EmailJS template parameters mapper
         const templateParams = {
             to_email: appData.patientEmail,
             to_name: appData.patientName,
@@ -419,7 +491,6 @@
             appointment_time: appData.time
         };
 
-        // Note: Make sure to map your real service/template keys here
         emailjs.send('service_id', 'template_id', templateParams)
             .then(() => console.log('Email dispatched successfully!'))
             .catch((err) => console.warn('EmailJS delivery pipeline issue:', err));
