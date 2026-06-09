@@ -9,8 +9,6 @@
     <link rel="stylesheet" href="css/premium-dialog.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
-    <script src="js/html2pdf.bundle.min.js"></script>
-
     <style>
         :root {
             --primary: #802c44;
@@ -24,6 +22,7 @@
             --radius: 16px;
             --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
             
+            /* Payment Feature Custom Colors */
             --payment-amber: #d97706;
             --payment-amber-light: #fef3c7;
             --payment-amber-hover: #b45309;
@@ -226,7 +225,6 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            table-layout: fixed;
         }
 
         thead { background: #f8fafc; }
@@ -246,7 +244,6 @@
             border-top: 1px solid #f1f5f9;
             font-size: 15px;
             vertical-align: middle;
-            word-wrap: break-word;
         }
 
         tr:hover { background: #fcfcfc; }
@@ -269,6 +266,7 @@
         .badge.pending { background: #fef3c7; color: #b45309; }
         .badge.completed { background: #e0f2fe; color: #0369a1; }
         .badge.cancelled { background: #fee2e2; color: #dc2626; }
+        .badge.pending-payment-verification { background: #fee2e2; color: #d97706; background-color: #fef3c7; }
 
         /* --- Action Controls --- */
         .btn-icon {
@@ -297,6 +295,7 @@
              background: #dc2626 !important;
         }
 
+        /* --- Payment Feature Button Layout Style --- */
         .btn-pay-action {
             display: inline-flex;
             align-items: center;
@@ -312,7 +311,6 @@
             transition: all 0.2s ease-in-out;
             box-shadow: 0 2px 4px rgba(217, 119, 6, 0.04);
             text-decoration: none;
-            white-space: nowrap;
         }
 
         .btn-pay-action:hover {
@@ -322,6 +320,11 @@
             box-shadow: 0 4px 6px rgba(217, 119, 6, 0.15);
         }
 
+        .btn-pay-action i {
+            font-size: 14px;
+        }
+
+        /* --- MC Feature Button Layout Style --- */
         .btn-mc-action {
             display: inline-flex;
             align-items: center;
@@ -337,7 +340,6 @@
             transition: all 0.2s ease-in-out;
             box-shadow: 0 2px 4px rgba(5, 150, 105, 0.04);
             text-decoration: none;
-            white-space: nowrap;
         }
 
         .btn-mc-action:hover {
@@ -345,6 +347,10 @@
             border-color: #059669;
             color: var(--white);
             box-shadow: 0 4px 6px rgba(5, 150, 105, 0.15);
+        }
+
+        .btn-mc-action i {
+            font-size: 14px;
         }
 
         .btn-mc-action:disabled {
@@ -355,6 +361,7 @@
             box-shadow: none;
         }
 
+        /* Container adjustment for layout buttons alignment */
         .action-container {
             display: flex;
             align-items: center;
@@ -381,6 +388,7 @@
             font-style: italic;
         }
 
+        /* --- Layout Responsiveness --- */
         @media (max-width: 1024px) {
             .sidebar { width: 80px; }
             .logo-text, .nav-link span { display: none; }
@@ -446,6 +454,7 @@
                 <option value="confirmed">Confirmed</option>
                 <option value="completed">Completed</option>
                 <option value="pending">Pending</option>
+                <option value="pending-payment-verification">Pending Payment Verification</option>
                 <option value="cancelled">Cancelled</option>
             </select>
         </div>
@@ -453,11 +462,11 @@
         <table>
             <thead>
                 <tr>
-                    <th style="width: 25%;">Doctor</th>
-                    <th style="width: 20%;">Date & Time</th>
-                    <th style="width: 25%;">Reason</th>
-                    <th style="width: 10%;">Status</th>
-                    <th style="text-align: center; width: 20%;">Action</th>
+                    <th>Doctor</th>
+                    <th>Date & Time</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th style="text-align: center; width: 220px;">Action</th>
                 </tr>
             </thead>
             <tbody id="appointmentsTableBody">
@@ -470,40 +479,20 @@
 </main>
 
 <script type="module">
+    // --- Shared Premium Dialog Dynamic Import Engine ---
     import { showConfirm } from "./js/premium-dialog.js";
+
     import { auth, db } from './js/firebase-config.js';
     import { signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
     import { collection, query, where, getDocs, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+    
+    // Import your MC generator function
     import { generateMCPDF } from "./js/mc-generator.js";
 
     let allAppointments = []; 
     let currentTab = 'upcoming'; 
 
-    document.getElementById('tableSearch')?.addEventListener('input', applyFilters);
-    document.getElementById('statusFilter')?.addEventListener('change', applyFilters);
-
-    document.getElementById('tabUpcoming')?.addEventListener('click', function() {
-        currentTab = 'upcoming';
-        this.classList.add('active-tab');
-        document.getElementById('tabPast')?.classList.remove('active-tab');
-        applyFilters();
-    });
-
-    document.getElementById('tabPast')?.addEventListener('click', function() {
-        currentTab = 'past';
-        this.classList.add('active-tab');
-        document.getElementById('tabUpcoming')?.classList.remove('active-tab');
-        applyFilters();
-    });
-
-    document.getElementById('logoutLink')?.addEventListener('click', async (e) => {
-        e.preventDefault();
-        if (await showConfirm("Account Logout", "Are you sure you want to log out?", "fa-sign-out-alt")) {
-            await signOut(auth);
-            window.location.href = 'login.html';
-        }
-    });
-
+    // Authenticate account state configuration
     auth.onAuthStateChanged(async (user) => {
         if (!user) { 
             window.location.href = 'login.html'; 
@@ -512,6 +501,7 @@
         await loadAppointments(user.uid);
     });
 
+    // Query fetching handler
     async function loadAppointments(uid) {
         try {
             const q = query(collection(db, "appointments"), where("userId", "==", uid));
@@ -532,6 +522,7 @@
         }
     }
 
+    // Format doctor name display
     function getDoctorDisplayName(appointment) {
         if (appointment.doctorName && appointment.doctorName !== "") {
             return `Dr. ${appointment.doctorName}`;
@@ -542,6 +533,7 @@
         return "Awaiting Doctor Assignment";
     }
 
+    // Helper to accurately parse "YYYY-MM-DD" and "HH:MM AM/PM" into a comparable Date Object
     function parseAppointmentDateTime(dateStr, timeStr) {
         if (!dateStr) return new Date(0);
         if (!timeStr || timeStr === "Time TBD") return new Date(`${dateStr}T00:00:00`);
@@ -559,6 +551,7 @@
         return new Date(`${dateStr}T${formattedHours}:${formattedMinutes}:00`);
     }
 
+    // View interface rendering logic
     async function renderTable(appointmentsList) {
         const container = document.getElementById('appointmentsTableBody');
         if (!container) return;
@@ -572,8 +565,6 @@
         const now = new Date();
         
         for (const item of appointmentsList) {
-            if (!item.date) continue;
-
             const doctorDisplay = getDoctorDisplayName(item);
             const timeStr = item.time || "Time TBD";
             const reasonStr = item.reason || "General Consultation";
@@ -585,14 +576,25 @@
             const canCancel = (currentStatus === 'pending' || currentStatus === 'confirmed') && !isOverdue;
             const isCancelled = currentStatus === 'cancelled';
             const isCompleted = currentStatus === 'completed';
+            const isPendingVerification = currentStatus === 'pending-payment-verification';
 
             let actionHtml = '';
             if (isOverdue) {
                 actionHtml = '<span class="no-action overdue">Overdue</span>';
             } else if (canCancel) {
-                actionHtml = `<button class="btn-icon cancel-btn" title="Cancel Appointment" data-id="${item.id}"><i class="fas fa-trash-alt"></i></button>`;
+                actionHtml = `<button class="btn-icon cancel-btn" title="Cancel Appointment" data-id="${item.id}">
+                                <i class="fas fa-trash-alt"></i>
+                              </button>`;
             } else if (isCancelled) {
                 actionHtml = '<span class="no-action">Cancelled</span>';
+            } else if (isPendingVerification) {
+                actionHtml = `
+                    <div class="action-container">
+                        <button class="btn-mc-action download-mc-btn" title="Download Medical Certificate" data-id="${item.id}">
+                            <i class="fas fa-file-download"></i> Download MC
+                        </button>
+                        <span class="no-action" style="font-weight: 600; color: var(--payment-amber);">Verifying Payment...</span>
+                    </div>`;
             } else if (isCompleted) {
                 actionHtml = `
                     <div class="action-container">
@@ -607,12 +609,18 @@
                 actionHtml = '<span class="no-action">No action</span>';
             }
 
+            // User interface adjustments for status code labels
+            let displayStatus = currentStatus;
+            if (currentStatus === 'pending-payment-verification') {
+                displayStatus = 'Pending Verification';
+            }
+
             html += `
                 <tr>
                     <td class="doctor-info">${doctorDisplay}</td>
                     <td class="date-cell">${item.date} <br> <small>${timeStr}</small></td>
                     <td>${escapeHtml(reasonStr)}</td>
-                    <td><span class="badge ${currentStatus}">${currentStatus}</span></td>
+                    <td><span class="badge ${currentStatus}">${displayStatus}</span></td>
                     <td align="center">${actionHtml}</td>
                 </tr>
             `;
@@ -623,30 +631,29 @@
     }
     
     function bindTableActionListeners() {
-        document.querySelectorAll('.cancel-btn').forEach(btn => {
-            btn.replaceWith(btn.cloneNode(true)); 
-        });
-        
-        document.querySelectorAll('.download-mc-btn').forEach(btn => {
-            btn.replaceWith(btn.cloneNode(true));
-        });
-
+        // Cancel Action Button Interception
         document.querySelectorAll('.cancel-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 e.stopPropagation();
-                await cancelAppointment(btn.getAttribute('data-id'));
+                const appointmentId = btn.getAttribute('data-id');
+                await cancelAppointment(appointmentId);
             });
         });
 
+        // Automatic PDF Compilation & Save Interception
         document.querySelectorAll('.download-mc-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 e.stopPropagation();
+                const appointmentId = btn.getAttribute('data-id');
+                
+                // Show intuitive UI loading state indicator
                 const originalHtml = btn.innerHTML;
                 btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Downloading...`;
                 btn.disabled = true;
 
-                await handleMcAutoDownload(btn.getAttribute('data-id'));
+                await handleMcAutoDownload(appointmentId);
 
+                // Restore component design values back to initial state
                 btn.innerHTML = originalHtml;
                 btn.disabled = false;
             });
@@ -655,34 +662,53 @@
     
     function escapeHtml(str) {
         if (!str) return '';
-        return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
     }
 
     async function cancelAppointment(appointmentId) {
-        const confirmCancel = await showConfirm("Cancel Appointment", "Are you sure you want to cancel this scheduled clinic appointment?", "fa-exclamation-triangle");
+        const confirmCancel = await showConfirm(
+            "Cancel Appointment",
+            "Are you sure you want to cancel this scheduled clinic appointment?",
+            "fa-exclamation-triangle"
+        );
         if (!confirmCancel) return;
 
         try {
-            await updateDoc(doc(db, "appointments", appointmentId), { status: "cancelled" });
+            const appointmentDocRef = doc(db, "appointments", appointmentId);
+            await updateDoc(appointmentDocRef, { status: "cancelled" });
+            
             await showConfirm("Success", "Your appointment has been successfully cancelled.", "fa-check-circle");
             await loadAppointments(auth.currentUser.uid);
         } catch (error) {
+            console.error("Cancellation error:", error);
             await showConfirm("Failed", "Failed to cancel appointment: " + error.message, "fa-times-circle");
         }
     }
 
+    // Pipeline orchestrator fetching database elements to populate your generator interface
     async function handleMcAutoDownload(appointmentId) {
         try {
-            const aptSnap = await getDoc(doc(db, "appointments", appointmentId));
+            // 1. Fetch targeted appointment metrics
+            const appointmentDocRef = doc(db, "appointments", appointmentId);
+            const aptSnap = await getDoc(appointmentDocRef);
+
             if (!aptSnap.exists()) {
                 alert("Targeted clinic record tracking values missing.");
                 return;
             }
             const aptData = aptSnap.data();
 
-            const userSnap = await getDoc(doc(db, "users", aptData.userId));
+            // 2. Query structural information out of profile scope mapping parameters
+            const userDocRef = doc(db, "users", aptData.userId);
+            const userSnap = await getDoc(userDocRef);
             const userData = userSnap.exists() ? userSnap.data() : {};
 
+            // 3. Reorganize schema keys onto matching layouts inside mc-generator parameters
             const mcData = {
                 patientName: userData.name || aptData.patientName || "UTM Patient",
                 matricNumber: userData.matricNumber || "NOT RECORDED",
@@ -695,41 +721,104 @@
                 doctorSignatureUrl: aptData.doctorSignatureUrl || "" 
             };
 
+            // 4. Pass constructed schema maps out directly into the asynchronous processing stream
             await generateMCPDF(mcData);
 
         } catch (error) {
             console.error("Critical stream termination on MC engine processing:", error);
-            alert("An issue occurred structuring the PDF file. Please try downloading again.");
+            alert("An issue occurred structuralizing the PDF file. Please try downloading again.");
         }
     }
 
+    // Combined filter logic
     function applyFilters() {
-        const keyword = document.getElementById('tableSearch')?.value.toLowerCase().trim() || '';
-        const filterValue = document.getElementById('statusFilter')?.value || 'all';
+        const searchInput = document.getElementById('tableSearch');
+        const statusFilter = document.getElementById('statusFilter');
+        
+        const keyword = searchInput ? searchInput.value.toLowerCase().trim() : '';
+        const filterValue = statusFilter ? statusFilter.value : 'all';
+        
         const now = new Date();
 
         let timelineFiltered = allAppointments.filter(item => {
             const status = item.status ? item.status.toLowerCase() : 'pending';
             const aptDateTime = parseAppointmentDateTime(item.date, item.time);
             
-            return currentTab === 'upcoming' 
-                ? (aptDateTime >= now) && (status !== 'cancelled' && status !== 'completed')
-                : (aptDateTime < now) || (status === 'cancelled' || status === 'completed');
+            if (currentTab === 'upcoming') {
+                // If it requires payment confirmation, it is no longer an upcoming visit
+                return (aptDateTime >= now) && (status !== 'cancelled' && status !== 'completed' && status !== 'pending-payment-verification');
+            } else {
+                // Keep completed items or items waiting for payment confirmation in the Past history tab
+                return (aptDateTime < now) || (status === 'cancelled' || status === 'completed' || status === 'pending-payment-verification');
+            }
         });
         
-        timelineFiltered.sort((a, b) => {
-            return currentTab === 'upcoming'
-                ? parseAppointmentDateTime(a.date, a.time) - parseAppointmentDateTime(b.date, b.time)
-                : parseAppointmentDateTime(b.date, b.time) - parseAppointmentDateTime(a.date, a.time);
-        });
+        // Sort timeline lists
+        if (currentTab === 'upcoming') {
+            timelineFiltered.sort((a, b) => parseAppointmentDateTime(a.date, a.time) - parseAppointmentDateTime(b.date, b.time));
+        } else {
+            timelineFiltered.sort((a, b) => parseAppointmentDateTime(b.date, b.time) - parseAppointmentDateTime(a.date, a.time));
+        }
         
+        // Apply search and status filters
         const finalFiltered = timelineFiltered.filter(item => {
-            const matchesKeyword = (item.doctorName || '').toLowerCase().includes(keyword) || (item.reason || '').toLowerCase().includes(keyword);
-            const matchesStatus = (filterValue === 'all') || ((item.status || 'pending').toLowerCase() === filterValue);
+            const doctorName = (item.doctorName || '').toLowerCase();
+            const reason = (item.reason || '').toLowerCase();
+            const matchesKeyword = doctorName.includes(keyword) || reason.includes(keyword);
+            
+            const itemStatus = item.status ? item.status.toLowerCase() : 'pending';
+            const matchesStatus = (filterValue === 'all') || (itemStatus === filterValue);
+            
             return matchesKeyword && matchesStatus;
         });
 
         renderTable(finalFiltered);
+    }
+
+    // Setup DOM listeners
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchInput = document.getElementById('tableSearch');
+        const statusFilter = document.getElementById('statusFilter');
+        const tabUpcoming = document.getElementById('tabUpcoming');
+        const tabPast = document.getElementById('tabPast');
+
+        if (searchInput) searchInput.addEventListener('input', applyFilters);
+        if (statusFilter) statusFilter.addEventListener('change', applyFilters);
+
+        if (tabUpcoming && tabPast) {
+            tabUpcoming.addEventListener('click', () => {
+                currentTab = 'upcoming';
+                tabUpcoming.classList.add('active-tab');
+                tabPast.classList.remove('active-tab');
+                applyFilters();
+            });
+
+            tabPast.addEventListener('click', () => {
+                currentTab = 'past';
+                tabPast.classList.add('active-tab');
+                tabUpcoming.classList.remove('active-tab');
+                applyFilters();
+            });
+        }
+    });
+
+    // Premium Interactive Session Logout Handler
+    const logoutLink = document.getElementById('logoutLink');
+    if (logoutLink) {
+        logoutLink.addEventListener('click', async (e) => {
+            e.preventDefault();
+            
+            const confirmLogout = await showConfirm(
+                "Account Logout",
+                "Are you sure you want to log out of your UTM Clinic patient panel?",
+                "fa-sign-out-alt"
+            );
+            
+            if (confirmLogout) {
+                await signOut(auth);
+                window.location.href = 'login.html';
+            }
+        });
     }
 </script>
 </body>

@@ -171,14 +171,35 @@
         </div>
     </div>
 
+    <div id="deleteConfirmModal" class="hidden fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 transition-all duration-300">
+        <div class="bg-white w-full max-w-md rounded-custom shadow-2xl border border-borderCustom overflow-hidden p-6 text-center transform transition-transform duration-300 scale-100">
+            <div class="w-16 h-16 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto text-2xl mb-4 border border-red-100">
+                <i class="fas fa-exclamation-circle animate-pulse"></i>
+            </div>
+            <h3 class="text-xl font-bold text-text-dark mb-2">Delete Staff Account?</h3>
+            <p class="text-text-muted text-sm mb-6 leading-relaxed">
+                Are you absolutely sure you want to permanently delete <span id="deleteStaffTargetName" class="font-bold text-text-dark">this staff member</span>? This action is irreversible.
+            </p>
+            <div class="flex items-center justify-center gap-3">
+                <button id="cancelDeleteBtn" class="flex-1 max-w-[140px] py-2.5 text-sm font-semibold text-text-muted bg-slate-50 border border-borderCustom hover:bg-slate-100 rounded-[12px] transition-colors">
+                    No, Keep it
+                </button>
+                <button id="confirmDeleteBtn" class="flex-1 max-w-[140px] py-2.5 text-sm font-semibold bg-[#ef4444] text-white hover:bg-[#dc2626] rounded-[12px] transition-colors shadow-sm shadow-red-200">
+                    Yes, Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { db } from "./js/firebase-config.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
         import { collection, query, where, onSnapshot, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
         const auth = getAuth();
         let allStaff = []; 
-        let currentEditId = null; // Track mutations targeted at a specific document context signature
+        let currentEditId = null; 
+        let currentDeleteId = null; // Memory management storage for active selection elements
 
         // Check authentication state for secure page visibility
         onAuthStateChanged(auth, (user) => {
@@ -236,7 +257,6 @@
                     ? (nameParts[0][0] + nameParts[1][0]).toUpperCase() 
                     : nameParts[0][0] ? nameParts[0][0].toUpperCase() : "ST";
 
-                // Appended Edit Action Trigger control row button within the DOM layout segment string
                 htmlString += `
                     <tr class="hover:bg-bgBody/50 transition-colors">
                         <td class="px-6 py-4">
@@ -270,17 +290,15 @@
 
             tableBody.innerHTML = htmlString;
 
-            // Wire up interactive action deletion loops directly
+            // Wire up interactive action deletion via premium design modal interface pipeline
             document.querySelectorAll(".delete-btn").forEach(btn => {
-                btn.addEventListener("click", async (e) => {
-                    // Corrected 'doc.doc' syntax constraint vulnerability from previous source block safely
+                btn.addEventListener("click", (e) => {
                     const docId = e.currentTarget.getAttribute("data-id");
-                    if (confirm("Are you absolute sure you want to delete this staff record permanently?")) {
-                        try {
-                            await deleteDoc(doc(db, "users", docId));
-                        } catch (err) {
-                            alert("Failed to remove staff record item: " + err.message);
-                        }
+                    const staffData = allStaff.find(s => s.id === docId);
+                    if (staffData) {
+                        currentDeleteId = docId;
+                        document.getElementById("deleteStaffTargetName").innerText = staffData.name || "this staff member";
+                        toggleDeleteModal(true);
                     }
                 });
             });
@@ -319,7 +337,6 @@
 
             let targetDocRef;
 
-            // Assemble structured parameters matching layout maps context safely
             const staffPayloadData = {
                 name: name,
                 email: email,
@@ -332,10 +349,8 @@
 
             try {
                 if (currentEditId) {
-                    // Overwrite merge updates back inside tracking edit document explicitly
                     targetDocRef = doc(db, "users", currentEditId);
                 } else {
-                    // Generate new key signature dynamically
                     targetDocRef = doc(collection(db, "users"));
                     staffPayloadData.emailVerified = false;
                     staffPayloadData.createdAt = new Date().toISOString();
@@ -353,6 +368,19 @@
             }
         });
 
+        // Premium Confirmation Resolution Execution Core Function
+        async function executeDeletionProcess() {
+            if (!currentDeleteId) return;
+            try {
+                toggleDeleteModal(false);
+                await deleteDoc(doc(db, "users", currentDeleteId));
+                currentDeleteId = null;
+            } catch (err) {
+                console.error("Error clearing collection schema matching data identity profile: ", err);
+                alert("Failed to remove staff record item safely: " + err.message);
+            }
+        }
+
         // Handle structural setup for Add/Edit state controls safely
         function openAddModal() {
             currentEditId = null;
@@ -364,7 +392,6 @@
             currentEditId = staff.id;
             document.getElementById("modalTitle").innerHTML = `<i class="fas fa-user-edit mr-2"></i>Edit Staff Profile`;
             
-            // Map indexes directly inside target structural value fields
             document.getElementById("staffName").value = staff.name || "";
             document.getElementById("staffEmail").value = staff.email || "";
             document.getElementById("staffMatric").value = staff.matricNumber || "";
@@ -377,6 +404,10 @@
         // Global allocation binding configurations
         window.openAddModal = openAddModal;
         window.openEditModal = openEditModal;
+        
+        // Wire interface trigger handlers to operational confirmation parameters
+        document.getElementById("confirmDeleteBtn").addEventListener("click", executeDeletionProcess);
+        document.getElementById("cancelDeleteBtn").addEventListener("click", () => toggleDeleteModal(false));
     </script>
 
     <script>
@@ -390,7 +421,18 @@
                 document.getElementById('staffForm').reset();
             }
         }
+
+        function toggleDeleteModal(show) {
+            const deleteModal = document.getElementById('deleteConfirmModal');
+            if (show) {
+                deleteModal.classList.remove('hidden');
+            } else {
+                deleteModal.classList.add('hidden');
+            }
+        }
+
         window.toggleModal = toggleModal;
+        window.toggleDeleteModal = toggleDeleteModal;
     </script>
 </body>
 </html>

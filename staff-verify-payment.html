@@ -136,17 +136,17 @@ import {
 let localPaymentsCache = [];
 let activeTabFilter = "pending";
 
+// 1. Listen for Authentication Changes
 auth.onAuthStateChanged((user) => {
     if (!user) {
         window.location.href = "login.html";
         return;
     }
-
     fetchPaymentsData();
 });
 
+// 2. Handle Logout Feature
 const logoutBtn = document.getElementById("logoutBtn");
-
 if (logoutBtn) {
     logoutBtn.addEventListener("click", async () => {
         const confirmed = await showConfirm(
@@ -162,9 +162,9 @@ if (logoutBtn) {
     });
 }
 
+// 3. Fetch Data from Firestore Database
 async function fetchPaymentsData() {
     try {
-
         const paymentsQuery = query(collection(db, "payments"));
         const snap = await autoGetDocs(paymentsQuery);
 
@@ -173,30 +173,28 @@ async function fetchPaymentsData() {
             ...docItem.data()
         }));
 
+        // Sort data chronologically (Newest first)
         localPaymentsCache.sort((a, b) => {
-            return (b.createdAt?.seconds || 0) -
-                   (a.createdAt?.seconds || 0);
+            return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
         });
 
+        // Initial paint to layout container
         renderPaymentsList();
 
     } catch (error) {
-
-        console.error(error);
-
+        console.error("Firestore loading error: ", error);
         document.getElementById("paymentsContainer").innerHTML = `
-            <div class="bg-white rounded-xl p-8 text-center text-red-500">
-                Failed to load payments.
+            <div class="bg-white rounded-xl p-8 text-center text-red-500 font-medium">
+                Failed to load payments records. Please try again.
             </div>
         `;
     }
 }
 
+// Helper to escape HTML and prevent potential XSS injection issues
 function escapeHtml(text) {
-
     if (!text) return "";
-
-    return text
+    return String(text)
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
@@ -204,52 +202,31 @@ function escapeHtml(text) {
         .replace(/'/g, "&#039;");
 }
 
+// 4. Main Rendering Engine
 function renderPaymentsList() {
+    const container = document.getElementById("paymentsContainer");
+    if (!container) return;
 
-    const container =
-        document.getElementById("paymentsContainer");
+    const searchKeyword = document.getElementById("paymentSearch").value.toLowerCase().trim();
 
-    const searchKeyword =
-        document.getElementById("paymentSearch")
-        .value
-        .toLowerCase()
-        .trim();
-
+    // Filtering logic matching Tab selection
     let filteredData = localPaymentsCache.filter(payment => {
-
-        const status =
-            (payment.status ||
-            payment.paymentStatus ||
-            "pending")
-            .toLowerCase();
+        const status = (payment.status || payment.paymentStatus || "pending").toLowerCase();
 
         if (activeTabFilter === "pending") {
             return status === "pending";
         }
-
         if (activeTabFilter === "verified") {
-            return status === "verified";
+            return status === "verified" || status === "approved";
         }
-
-        return true;
+        return true; // "all" filter logic
     });
 
+    // Filtering logic matching Search Key inputs
     if (searchKeyword) {
-
         filteredData = filteredData.filter(payment => {
-
-            const studentName =
-                (payment.studentName ||
-                payment.patientName ||
-                "")
-                .toLowerCase();
-
-            const studentId =
-                (payment.studentId ||
-                payment.metricNumber ||
-                payment.matricNo ||
-                "")
-                .toLowerCase();
+            const studentName = (payment.studentName || payment.patientName || "").toLowerCase();
+            const studentId = (payment.studentId || payment.metricNumber || payment.matricNo || "").toLowerCase();
 
             return (
                 studentName.includes(searchKeyword) ||
@@ -258,278 +235,174 @@ function renderPaymentsList() {
         });
     }
 
+    // Guard view state for zero matching instances
     if (filteredData.length === 0) {
-
         container.innerHTML = `
-            <div class="bg-white rounded-xl border p-10 text-center text-gray-400">
-                No records found.
+            <div class="bg-white rounded-xl border p-10 text-center text-gray-400 font-medium shadow-sm">
+                No ${activeTabFilter !== 'all' ? activeTabFilter : ''} records found.
             </div>
         `;
-
         return;
     }
 
+    // Map through records to append layout structures
     container.innerHTML = filteredData.map(payment => {
+        const status = (payment.status || payment.paymentStatus || "pending").toLowerCase();
 
-        const status =
-            (payment.status ||
-            payment.paymentStatus ||
-            "pending")
-            .toLowerCase();
+        let badgeStyle = "bg-yellow-100 text-yellow-700 border border-yellow-200";
+        let displayStatus = "Pending";
 
-        let badgeStyle =
-            "bg-yellow-100 text-yellow-700";
-
-        if (status === "verified") {
-            badgeStyle =
-                "bg-green-100 text-green-700";
+        if (status === "verified" || status === "approved") {
+            badgeStyle = "bg-green-100 text-green-700 border border-green-200";
+            displayStatus = "Verified";
+        } else if (status === "rejected" || status === "cancelled") {
+            badgeStyle = "bg-red-100 text-red-700 border border-red-200";
+            displayStatus = "Cancelled";
         }
-
-        if (status === "rejected") {
-            badgeStyle =
-                "bg-red-100 text-red-700";
-        }
-
-        const displayStatus =
-            status === "rejected"
-            ? "Cancelled"
-            : status;
 
         let actionButtons = "";
-
         if (status === "pending") {
-
             actionButtons = `
                 <button
-                    class="btn-action-verify bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm"
+                    class="btn-action-verify bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-lg text-sm transition-colors"
                     data-id="${payment.id}">
                     Verify
                 </button>
-
                 <button
-                    class="btn-action-reject bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm"
+                    class="btn-action-reject bg-red-500 hover:bg-red-600 text-white font-medium px-4 py-2 rounded-lg text-sm transition-colors"
                     data-id="${payment.id}">
                     Reject
                 </button>
             `;
         }
 
-        const amount = parseFloat(
-            payment.amount ??
-            payment.amountDue ??
-            payment.totalFee ??
-            0
-        );
+        const amount = parseFloat(payment.amount ?? payment.amountDue ?? payment.totalFee ?? 0);
 
         return `
-            <div class="bg-white border border-gray-100 rounded-xl p-6 shadow-sm">
-
-                <div class="flex justify-between items-center mb-4">
-
-                    <div>
-
-                        <div class="flex items-center gap-3">
-
-                            <h3 class="font-bold text-lg">
-                                ${escapeHtml(
-                                    payment.studentName ||
-                                    payment.patientName ||
-                                    "Unknown Student"
-                                )}
-                            </h3>
-
-                            <span class="${badgeStyle} px-3 py-1 rounded-full text-xs font-semibold uppercase">
-                                ${displayStatus}
-                            </span>
-
-                        </div>
-
-                        <div class="text-sm text-gray-500 mt-2">
-                            ID:
-                            ${escapeHtml(
-                                payment.studentId ||
-                                payment.metricNumber ||
-                                payment.matricNo ||
-                                "N/A"
-                            )}
-                        </div>
-
-                        <div class="text-sm text-gray-500">
-                            Appointment:
-                            ${escapeHtml(
-                                payment.appointmentId ||
-                                "N/A"
-                            )}
-                        </div>
-
+            <div class="bg-white border border-gray-100 rounded-xl p-6 shadow-custom flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div class="space-y-1">
+                    <div class="flex items-center gap-3 flex-wrap">
+                        <h3 class="font-bold text-lg text-text-dark">
+                            ${escapeHtml(payment.studentName || payment.patientName || "Unknown Student")}
+                        </h3>
+                        <span class="${badgeStyle} px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider">
+                            ${displayStatus}
+                        </span>
                     </div>
-
-                    <div class="text-right">
-
-                        <div class="text-primary font-bold text-lg">
-                            RM ${amount.toFixed(2)}
-                        </div>
-
-                        <div class="mt-2 flex gap-2">
-                            ${actionButtons}
-                        </div>
-
+                    <div class="text-sm text-text-muted">
+                        <span class="font-medium text-gray-500">ID:</span> ${escapeHtml(payment.studentId || payment.metricNumber || payment.matricNo || "N/A")}
                     </div>
-
+                    <div class="text-sm text-text-muted">
+                        <span class="font-medium text-gray-500">Appointment:</span> ${escapeHtml(payment.appointmentId || "N/A")}
+                    </div>
                 </div>
 
+                <div class="flex flex-col items-start sm:items-end gap-3 w-full sm:w-auto border-t sm:border-t-0 pt-3 sm:pt-0 border-gray-100">
+                    <div class="text-primary font-bold text-xl">
+                        RM ${amount.toFixed(2)}
+                    </div>
+                    <div class="flex gap-2 w-full sm:w-auto">
+                        ${actionButtons}
+                    </div>
+                </div>
             </div>
         `;
-
     }).join("");
 
     bindDynamicActionListeners();
 }
 
+// 5. Action Listener Attachments (Verify / Reject)
 function bindDynamicActionListeners() {
+    document.querySelectorAll(".btn-action-verify").forEach(button => {
+        button.addEventListener("click", async () => {
+            const paymentId = button.dataset.id;
+            const confirmed = await showConfirm(
+                "Verify Payment",
+                "Approve this payment transaction?",
+                "fa-check-circle"
+            );
 
-    document
-        .querySelectorAll(".btn-action-verify")
-        .forEach(button => {
+            if (!confirmed) return;
 
-            button.addEventListener("click", async () => {
+            try {
+                await updateDoc(doc(db, "payments", paymentId), {
+                    status: "verified",
+                    paymentStatus: "verified",
+                    verifiedAt: new Date()
+                });
 
-                const paymentId =
-                    button.dataset.id;
-
-                const confirmed =
-                    await showConfirm(
-                        "Verify Payment",
-                        "Approve this payment?",
-                        "fa-check-circle"
-                    );
-
-                if (!confirmed) return;
-
-                try {
-
-                    await updateDoc(
-                        doc(db, "payments", paymentId),
-                        {
-                            status: "verified",
-                            paymentStatus: "verified",
-                            verifiedAt: new Date()
-                        }
-                    );
-
-                    const payment =
-                        localPaymentsCache.find(
-                            p => p.id === paymentId
-                        );
-
-                    if (payment) {
-
-                        payment.status = "verified";
-                        payment.paymentStatus = "verified";
-                    }
-
-                    renderPaymentsList();
-
-                } catch (error) {
-
-                    console.error(error);
-                    alert("Failed to verify payment.");
+                const payment = localPaymentsCache.find(p => p.id === paymentId);
+                if (payment) {
+                    payment.status = "verified";
+                    payment.paymentStatus = "verified";
                 }
-            });
+                renderPaymentsList();
+            } catch (error) {
+                console.error(error);
+                alert("Failed to update status.");
+            }
         });
+    });
 
-    document
-        .querySelectorAll(".btn-action-reject")
-        .forEach(button => {
+    document.querySelectorAll(".btn-action-reject").forEach(button => {
+        button.addEventListener("click", async () => {
+            const paymentId = button.dataset.id;
+            const confirmed = await showConfirm(
+                "Reject Payment",
+                "Reject this payment application?",
+                "fa-times-circle"
+            );
 
-            button.addEventListener("click", async () => {
+            if (!confirmed) return;
 
-                const paymentId =
-                    button.dataset.id;
+            try {
+                await updateDoc(doc(db, "payments", paymentId), {
+                    status: "rejected",
+                    paymentStatus: "rejected",
+                    rejectedAt: new Date()
+                });
 
-                const confirmed =
-                    await showConfirm(
-                        "Reject Payment",
-                        "Reject this payment?",
-                        "fa-times-circle"
-                    );
-
-                if (!confirmed) return;
-
-                try {
-
-                    await updateDoc(
-                        doc(db, "payments", paymentId),
-                        {
-                            status: "rejected",
-                            paymentStatus: "rejected",
-                            rejectedAt: new Date()
-                        }
-                    );
-
-                    const payment =
-                        localPaymentsCache.find(
-                            p => p.id === paymentId
-                        );
-
-                    if (payment) {
-
-                        payment.status = "rejected";
-                        payment.paymentStatus = "rejected";
-                    }
-
-                    renderPaymentsList();
-
-                } catch (error) {
-
-                    console.error(error);
-                    alert("Failed to reject payment.");
+                const payment = localPaymentsCache.find(p => p.id === paymentId);
+                if (payment) {
+                    payment.status = "rejected";
+                    payment.paymentStatus = "rejected";
                 }
-            });
+                renderPaymentsList();
+            } catch (error) {
+                console.error(error);
+                alert("Failed to update status.");
+            }
         });
+    });
 }
 
-document
-    .getElementById("tabPending")
-    .addEventListener("click", (e) => {
-        toggleTabs("pending", e.target);
-    });
-
-document
-    .getElementById("tabVerified")
-    .addEventListener("click", (e) => {
-        toggleTabs("verified", e.target);
-    });
-
-document
-    .getElementById("tabAll")
-    .addEventListener("click", (e) => {
-        toggleTabs("all", e.target);
-    });
-
-document
-    .getElementById("paymentSearch")
-    .addEventListener("input", renderPaymentsList);
-
-function toggleTabs(filter, element) {
-
+// 6. Navigation Control Adjustments
+function toggleTabs(filter, targetButton) {
     activeTabFilter = filter;
 
-    [
-        "tabPending",
-        "tabVerified",
-        "tabAll"
-    ].forEach(id => {
-
-        document.getElementById(id).className =
-            "px-5 py-2 text-sm font-semibold rounded-lg text-gray-600";
+    const tabIds = ["tabPending", "tabVerified", "tabAll"];
+    tabIds.forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) {
+            btn.className = "px-5 py-2 text-sm font-semibold rounded-lg text-gray-600 hover:text-gray-900 transition-all";
+        }
     });
 
-    element.className =
-        "px-5 py-2 text-sm font-semibold rounded-lg bg-primary text-white";
+    if (targetButton) {
+        targetButton.className = "px-5 py-2 text-sm font-semibold rounded-lg bg-primary text-white transition-all";
+    }
 
     renderPaymentsList();
 }
+
+// Attach Tab Navigation Event Listeners securely
+document.getElementById("tabPending").addEventListener("click", (e) => toggleTabs("pending", e.target));
+document.getElementById("tabVerified").addEventListener("click", (e) => toggleTabs("verified", e.target));
+document.getElementById("tabAll").addEventListener("click", (e) => toggleTabs("all", e.target));
+
+// Attach Real-Time Filter to Search Field Bar
+document.getElementById("paymentSearch").addEventListener("input", renderPaymentsList);
 </script>
 </body>
 </html>

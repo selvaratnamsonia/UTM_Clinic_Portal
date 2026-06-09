@@ -57,7 +57,9 @@
         .badge-pending { background: #fef3c7; color: #d97706; }
         .badge-confirmed { background: #dcfce7; color: #16a34a; }
         .badge-cancelled { background: #fee2e2; color: #dc2626; }
-        .badge-completed { background: #e0f2fe; color: #0284c7; }
+        .badge-completed { background: #dcfce7; color: #16a34a; }
+        .badge-diagnosed { background: #e0f2fe; color: #0284c7; }
+        .badge-pending-payment-verification { background: #fef3c7; color: #d97706; }
 
         /* Modal Smooth Animations */
         .modal-overlay {
@@ -151,8 +153,7 @@
 
     <div class="modal-overlay fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 opacity-0 pointer-events-none" id="premiumDialogOverlay">
         <div class="modal-box bg-white w-full max-w-md mx-4 rounded-2xl p-6 shadow-xl text-center">
-            <div id="dialogIconBox" class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 text-xl">
-                </div>
+            <div id="dialogIconBox" class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 text-xl"></div>
             <h3 id="dialogTitle" class="text-lg font-bold text-slate-900 mb-2">Notification Title</h3>
             <p id="dialogMessage" class="text-slate-500 text-sm leading-relaxed mb-6">Notification detailed summary description text goes right here.</p>
             <button class="w-full py-2.5 text-sm font-semibold rounded-xl text-white transition-all shadow-md" id="dialogActionBtn">Acknowledge</button>
@@ -198,12 +199,12 @@
             btn.classList.add('active', 'bg-white', 'text-slate-900', 'shadow-sm');
             btn.classList.remove('text-slate-600', 'hover:text-slate-900');
 
-            activeFilter = btn.getAttribute('data-filter');
+            activeFilter = btn.getAttribute('data-filter').toLowerCase().trim();
             renderStaffView();
         });
     });
 
-    // Premium Micro-dialog overlay engine interface implementation
+    // Premium Micro-dialog Engine
     function openPremiumNotification(type, title, message) {
         const dialogOverlay = document.getElementById("premiumDialogOverlay");
         const iconBox = document.getElementById("dialogIconBox");
@@ -214,7 +215,6 @@
         titleEl.textContent = title;
         messageEl.textContent = message;
 
-        // Reset dynamic style layouts classes completely before reassigning
         iconBox.className = "w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4 text-xl";
         actionBtn.className = "w-full py-2.5 text-sm font-semibold rounded-xl text-white transition-all shadow-md";
 
@@ -236,6 +236,29 @@
         actionBtn.onclick = () => {
             dialogOverlay.classList.remove("active");
         };
+    }
+
+    // Cross-Browser Deterministic Time Builder Logic
+    function parseAppointmentDateTime(dateStr, timeStr) {
+        if (!dateStr) return new Date(0);
+        const timeValue = timeStr || "12:00 AM";
+        
+        try {
+            const [time, modifier] = timeValue.split(' ');
+            let [hours, minutes] = time.split(':');
+            hours = parseInt(hours, 10);
+            minutes = parseInt(minutes, 10);
+
+            if (modifier === 'PM' && hours < 12) hours += 12;
+            if (modifier === 'AM' && hours === 12) hours = 0;
+
+            const formattedHours = String(hours).padStart(2, '0');
+            const formattedMinutes = String(minutes).padStart(2, '0');
+
+            return new Date(`${dateStr}T${formattedHours}:${formattedMinutes}:00`);
+        } catch(e) {
+            return new Date(dateStr);
+        }
     }
 
     async function fetchStaffAppointments() {
@@ -281,15 +304,9 @@
                 });
             }
 
-            // --- FIXED GRANULAR SORTING ENGINE (LATEST TO OLDEST) ---
-            const getFullDateTime = (dateStr, timeStr) => {
-                if (!dateStr) return new Date(0);
-                const time = timeStr || "12:00 AM";
-                return new Date(`${dateStr} ${time}`);
-            };
-
+            // Order Latest Created to Oldest
             processedList.sort((a, b) => {
-                return getFullDateTime(b.date, b.time) - getFullDateTime(a.date, a.time);
+                return parseAppointmentDateTime(b.date, b.time) - parseAppointmentDateTime(a.date, a.time);
             });
 
             localAppointmentsCache = processedList;
@@ -308,7 +325,8 @@
 
         const targetData = localAppointmentsCache.filter(item => {
             if (activeFilter === "all") return true;
-            return item.status && item.status.toLowerCase() === activeFilter;
+            const statusStr = item.status ? item.status.toLowerCase().trim() : 'pending';
+            return statusStr === activeFilter;
         });
 
         if (targetData.length === 0) {
@@ -318,13 +336,17 @@
 
         let outputHtml = "";
         targetData.forEach(item => {
-            const currentStatus = item.status ? item.status.toLowerCase() : 'pending';
+            const rawStatus = item.status ? item.status.toLowerCase().trim() : 'pending';
+            // Uniform class assignment helper
+            const statusClassName = rawStatus.replace(/\s+/g, '-');
+
             const timeString = item.time || "10:00 AM";
             const reasonString = item.reason || "General Checkup";
 
-            const isPending = (currentStatus === 'pending');
-            const isConfirmed = (currentStatus === 'confirmed');
-            const isCompleted = (currentStatus === 'completed');
+            const isPending = (rawStatus === 'pending');
+            const isConfirmed = (rawStatus === 'confirmed');
+            const isDiagnosed = (rawStatus === 'diagnosed');
+            const isCompleted = (rawStatus === 'completed');
             const isActionable = (isPending || isConfirmed);
 
             const escapeHtml = (str) => String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -335,7 +357,7 @@
                         <div class="space-y-1.5">
                             <div class="flex items-center gap-3 flex-wrap">
                                 <h3 class="text-lg font-bold text-text-dark">${escapeHtml(item.patientName)}</h3>
-                                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold tracking-wide uppercase badge-${currentStatus}">${currentStatus}</span>
+                                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold tracking-wide uppercase badge-${statusClassName}">${item.status || 'Pending'}</span>
                             </div>
                             <p class="text-xs font-semibold text-text-muted tracking-wider">${escapeHtml(item.matricNo)}</p>
                             <div class="text-sm text-text-dark pt-1"><strong class="font-semibold">Date & Time:</strong> ${item.date} at ${timeString}</div>
@@ -356,7 +378,7 @@
                                     <i class="fas fa-times"></i> Cancel
                                 </button>
                             ` : ''}
-                            ${(isCompleted && item.hasDiagnosis) ? `
+                            ${(isDiagnosed || (isCompleted && item.hasDiagnosis)) ? `
                                 <button class="dispense-btn flex items-center gap-2 px-4 py-2 bg-amber-50 text-amber-700 hover:bg-amber-600 hover:text-white rounded-xl text-xs font-bold transition-all" data-id="${item.id}">
                                     <i class="fas fa-pills"></i> Dispense Medication
                                 </button>
@@ -403,7 +425,7 @@
     }
 
     function attachCardActionListeners() {
-        // Confirm Button
+        // Confirm Button Action
         document.querySelectorAll('.confirm-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 const appointmentId = e.currentTarget.getAttribute('data-id');
@@ -411,7 +433,7 @@
             });
         });
 
-        // Dispense Button
+        // Dispense Routing Action
         document.querySelectorAll('.dispense-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const appointmentId = e.currentTarget.getAttribute('data-id');
@@ -419,7 +441,7 @@
             });
         });
 
-        // Reschedule Trigger (Toggles Expandable Panel Box)
+        // Toggle Reschedule Panel Box
         document.querySelectorAll('.reschedule-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const appointmentId = e.currentTarget.getAttribute('data-id');
@@ -430,7 +452,7 @@
             });
         });
 
-        // Panel Cancel Button
+        // Close Panel Box Link Actions
         document.querySelectorAll('.close-reschedule-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const appointmentId = e.currentTarget.getAttribute('data-id');
@@ -441,7 +463,7 @@
             });
         });
 
-        // Panel Save Changes Action
+        // Save Modifications Engine Hook
         document.querySelectorAll('.save-reschedule-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 const appointmentId = e.currentTarget.getAttribute('data-id');
@@ -461,7 +483,7 @@
             });
         });
 
-        // Cancel Trigger
+        // Prompt Cancel Confirmation Dialog Box
         document.querySelectorAll('.cancel-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 pendingCancellationId = e.currentTarget.getAttribute('data-id');
@@ -470,7 +492,7 @@
         });
     }
 
-    // Modal Interaction Handlers
+    // Modal Interaction Listeners
     document.getElementById('abortCancelBtn').addEventListener('click', () => {
         closeCancelModal();
     });
@@ -487,7 +509,7 @@
         pendingCancellationId = null;
     }
 
-    // --- FIRESTORE DATABASE ---
+    // --- FIRESTORE STATUS WRITER FUNCTIONS ---
     async function updateAppointmentStatus(id, newStatus) {
         try {
             const docRef = doc(db, "appointments", id);
@@ -498,7 +520,7 @@
                 appointment.status = newStatus;
                 
                 if (appointment.patientEmail && appointment.patientEmail.trim() !== "") {
-                    sendEmailNotification(appointment, `Your appointment status has been updated to: ${newStatus.toUpperCase()}`);
+                    sendEmailNotification(appointment, `Your clinic appointment status has been updated to: ${newStatus.toUpperCase()}`);
                 }
             }
             renderStaffView();
@@ -521,9 +543,8 @@
                 appointment.status = 'pending';
 
                 if (!appointment.patientEmail || appointment.patientEmail.trim() === "") {
-                    console.warn("Notification transmission bypassed: The structural patientEmail parameter mapping is currently blank.");
                     renderStaffView();
-                    openPremiumNotification("success", "Rescheduled Locally", "Appointment updated locally!\n(Note: Notification email skipped because recipient address profile is empty).");
+                    openPremiumNotification("success", "Rescheduled Locally", "Appointment updated locally!\n(Note: Notification email skipped because recipient profile is empty).");
                     return;
                 }
 
@@ -545,6 +566,7 @@
             appointment_time: appData.time
         };
 
+        // Note: Remember to update service_id & template_id inside your EmailJS Control Panel dashboard
         emailjs.send('service_id', 'template_id', templateParams)
             .then(() => console.log('Email dispatched successfully!'))
             .catch((err) => console.warn('EmailJS delivery pipeline issue:', err));

@@ -275,7 +275,7 @@
             
             <div class="amount-highlight">
                 <span class="summary-label" style="color: var(--fpx-teal); font-weight: 700;">Amount Due:</span>
-                <span class="amount-val" id="paymentAmount">RM 9.00</span>
+                <span class="amount-val" id="paymentAmount">Calculating...</span>
             </div>
         </div>
 
@@ -329,7 +329,16 @@
 
     <script type="module">
         import { db } from './js/firebase-config.js';
-        import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+        import { 
+            doc, 
+            getDoc, 
+            updateDoc, 
+            collection, 
+            query, 
+            where, 
+            getDocs, 
+            setDoc 
+        } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
         // Generate dynamic random mock transaction reference elements
         document.getElementById('fpxRefNum').innerText = `FPX-${Math.floor(100000000 + Math.random() * 900000000)}`;
@@ -337,6 +346,10 @@
         // Extract targeted tracking appointment unique query identifiers
         const urlParams = new URLSearchParams(window.location.search);
         const aptId = urlParams.get('aptId');
+
+        // Global placeholders for tracking invoice totals and user profiles data
+        let globalDerivedTotal = 0.00;
+        let appointmentMeta = {};
 
         if (!aptId) {
             alert("Critical Error: Missing Appointment parameters context.");
@@ -346,17 +359,47 @@
             fetchAppointmentPricing(aptId);
         }
 
-        // Fetch dynamic balance amount directly from Firestore record parameters
+        // Fetch dynamic balance amount directly from Firestore diagnosis record parameters
         async function fetchAppointmentPricing(id) {
             try {
-                const docSnap = await getDoc(doc(db, "appointments", id));
-                if (docSnap.exists() && docSnap.data().totalAmount) {
-                    // Inject real dynamic balance metrics directly into container layout text lines
-                    const amount = docSnap.data().totalAmount;
-                    document.getElementById('paymentAmount').innerText = `RM ${parseFloat(amount).toFixed(2)}`;
+                // Fetch basic snapshot metadata ahead of time to collect structural references
+                const aptSnap = await getDoc(doc(db, "appointments", id));
+                if (aptSnap.exists()) {
+                    appointmentMeta = aptSnap.data();
+                    if (appointmentMeta.totalAmount) {
+                        globalDerivedTotal = parseFloat(appointmentMeta.totalAmount);
+                    }
                 }
+
+                // Query the diagnosis collection matching the current appointmentId
+                const diagnosisCollection = collection(db, "diagnosis");
+                const q = query(diagnosisCollection, where("appointmentId", "==", id));
+                const querySnapshot = await getDocs(q);
+
+                if (!querySnapshot.empty) {
+                    const diagnosisDocData = querySnapshot.docs[0].data();
+                    let itemizedTotal = 0.00;
+                    
+                    // If additionalItems field exists, loop through and calculate subtotal sums
+                    if (diagnosisDocData.additionalItems && Array.isArray(diagnosisDocData.additionalItems)) {
+                        diagnosisDocData.additionalItems.forEach(item => {
+                            const cost = parseFloat(item.cost || 0);
+                            const qty = parseInt(item.quantity || 1);
+                            itemizedTotal += (cost * qty);
+                        });
+                    }
+
+                    if (itemizedTotal > 0) {
+                        globalDerivedTotal = itemizedTotal;
+                    }
+                }
+
+                // Inject accurate calculated metrics directly into container context
+                document.getElementById('paymentAmount').innerText = `RM ${globalDerivedTotal.toFixed(2)}`;
+
             } catch (err) {
                 console.warn("Pricing parameters missing, falling back to basic mock value:", err);
+                document.getElementById('paymentAmount').innerText = "RM 0.00";
             }
         }
 
@@ -368,6 +411,7 @@
             const overlay = document.getElementById('loaderOverlay');
             const ldrTitle = document.getElementById('loaderTitle');
             const ldrSub = document.getElementById('loaderSubtitle');
+            const currentRef = document.getElementById('fpxRefNum').innerText;
 
             // Trigger step 1 overlay tracking
             overlay.style.display = 'flex';
@@ -384,12 +428,26 @@
                 ldrSub.innerText = "Generating dynamic validation verification parameters...";
 
                 try {
-                    // Update Database Status directly to alert clinic staff console
+                    // 1. Update status parameters directly inside targeted appointment reference log
                     await updateDoc(doc(db, "appointments", aptId), {
                         status: "Pending-Payment-Verification",
                         fpxBankProvider: selectedBank,
-                        fpxPaymentRef: document.getElementById('fpxRefNum').innerText,
+                        fpxPaymentRef: currentRef,
                         paymentTimestamp: new Date().toISOString()
+                    });
+
+                    // 2. Generate new document under `payments` collection so staff tracking views capture the alert entry
+                    const newPaymentRef = doc(db, "payments", currentRef);
+                    await setDoc(newPaymentRef, {
+                        appointmentId: aptId,
+                        amount: globalDerivedTotal,
+                        status: "pending",
+                        paymentStatus: "pending",
+                        fpxBankProvider: selectedBank,
+                        fpxPaymentRef: currentRef,
+                        studentId: appointmentMeta.studentId || appointmentMeta.matricNo || appointmentMeta.patientId || "N/A",
+                        studentName: appointmentMeta.studentName || appointmentMeta.patientName || "Unknown Student",
+                        createdAt: { seconds: Math.floor(Date.now() / 1000) }
                     });
 
                     // Final step redirecting cleanly back to account history

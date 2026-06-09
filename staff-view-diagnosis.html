@@ -169,7 +169,6 @@
             align-items: center;
         }
 
-        /* Billing Summary Highlight Box */
         .total-summary-box {
             background: var(--primary-light);
             border: 1px solid var(--primary);
@@ -182,7 +181,6 @@
             color: var(--primary);
         }
 
-        /* Form Row Layout inside Form container */
         .form-row {
             display: grid;
             grid-template-columns: 2fr 1fr 1fr;
@@ -274,7 +272,7 @@
 
     const urlParams = new URLSearchParams(window.location.search);
     const appointmentId = urlParams.get('appointmentId');
-    let dynamicDiagnosisDocId = null; // Store document key reference for updates
+    let dynamicDiagnosisDocId = null;
 
     function showToast(message, isError = false) {
         const toast = document.createElement('div');
@@ -333,12 +331,11 @@
             }
 
             const diagnosisDoc = diagnosisSnap.docs[0];
-            dynamicDiagnosisDocId = diagnosisDoc.id; // Save to global scope variable
+            dynamicDiagnosisDocId = diagnosisDoc.id; 
             const diagnosisData = diagnosisDoc.id ? diagnosisDoc.data() : {};
             
             let finalDoctorName = "Dr. Sia Jun Yu"; 
 
-            // Build medications HTML table component
             let medicationsHtml = '';
             if (diagnosisData.medications && Array.isArray(diagnosisData.medications) && diagnosisData.medications.length > 0) {
                 medicationsHtml = `
@@ -379,7 +376,6 @@
                 medicationsHtml = '<p style="color: var(--text-muted);">No medications prescribed.</p>';
             }
 
-            // Build Additional Items Table Section
             let totalCostAccumulated = 0;
             let additionalItemsHtml = `
                 <table class="billing-table">
@@ -419,7 +415,6 @@
                 </div>
             ` : '<div class="info-item"><div class="info-label">Medical Certificate</div><div class="info-value">❌ Not issued</div></div>';
 
-            // Inject core layout and view nodes
             contentDiv.innerHTML = `
                 <div class="info-grid">
                     <div class="info-item">
@@ -485,7 +480,6 @@
                 </div>
             `;
 
-            // Setup programmatic context event handlers
             attachDispenseListeners();
             attachBillingFormListeners();
 
@@ -513,7 +507,6 @@
                 addItemBtn.disabled = true;
                 addItemBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
 
-                // Locate structural instance document path inside Firestore
                 const diagnosisDocRef = doc(db, "diagnosis", dynamicDiagnosisDocId);
 
                 const payloadItem = {
@@ -523,14 +516,19 @@
                     addedAt: new Date().toISOString()
                 };
 
-                // Atomic array inject statement execution
+                // 1. Add item to diagnosis log
                 await updateDoc(diagnosisDocRef, {
                     additionalItems: arrayUnion(payloadItem)
                 });
 
+                // 2. Sync fix: Flip appointment state to "diagnosed" so patient panel demands payment
+                const appointmentDocRef = doc(db, "appointments", appointmentId);
+                await updateDoc(appointmentDocRef, {
+                    status: "diagnosed"
+                });
+
                 showToast(`✅ Added ${name} successfully to patient bill!`);
                 
-                // Live hot refresh payload framework update view instantly
                 loadDiagnosis();
             } catch (err) {
                 console.error("Failed executing database update push: ", err);

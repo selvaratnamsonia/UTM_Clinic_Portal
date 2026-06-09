@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Medication Inventory - UTM Clinic</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <script>
@@ -43,8 +43,6 @@
         @media (max-width: 768px) {
             .sidebar-text { display: none; }
         }
-        
-        /* Toast notification styling updated to match theme */
         .toast {
             position: fixed;
             bottom: 30px;
@@ -55,9 +53,13 @@
             border-radius: 12px;
             font-size: 14px;
             font-weight: 500;
+            text-align: left;
             z-index: 1000;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             animation: slideIn 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         .toast.error { background: #ef4444; }
         .toast.warning { background: #f59e0b; }
@@ -68,7 +70,7 @@
     </style>
 </head>
 <body class="flex min-h-screen font-sans">
-
+ 
     <aside class="w-[80px] md:w-[280px] bg-white border-r border-borderCustom py-8 flex flex-col sticky top-0 h-screen transition-all duration-300">
         <div class="flex items-center gap-3 px-4 md:px-6 pb-10 justify-center md:justify-start">
             <div class="w-[42px] h-[42px] bg-primary rounded-[12px] flex items-center justify-center flex-shrink-0">
@@ -76,7 +78,7 @@
             </div>
             <div class="sidebar-text text-[22px] font-bold text-primary whitespace-nowrap">UTM Clinic</div>
         </div>
-
+ 
         <nav class="flex flex-col gap-1.5 px-3">
             <a href="staff_dashboard.html" class="flex items-center gap-3 px-4 py-3 text-text-muted hover:bg-primary-light hover:text-primary rounded-[12px] font-medium transition-all duration-300 justify-center md:justify-start">
                 <i class="fas fa-home text-lg"></i>
@@ -95,7 +97,7 @@
                 <span class="sidebar-text">Medication List</span>
             </a>
         </nav>
-
+ 
         <div class="px-3 border-t border-borderCustom pt-5 mt-auto">
             <button id="logoutBtn" class="flex items-center gap-3 px-4 py-3 text-[#ef4444] hover:bg-[#fef2f2] rounded-[12px] font-medium transition-all duration-300 justify-center md:justify-start w-full text-left">
                 <i class="fas fa-sign-out-alt text-lg"></i>
@@ -103,7 +105,7 @@
             </button>
         </div>
     </aside>
-
+ 
     <main class="flex-1 p-6 md:p-10 overflow-y-auto">
         <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
             <div>
@@ -114,39 +116,37 @@
                 <i class="fas fa-plus"></i> Add Medication
             </button>
         </header>
-
+ 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             <div class="bg-white p-6 rounded-custom border border-borderCustom shadow-custom flex items-center gap-5">
                 <div class="w-14 h-14 rounded-[14px] flex items-center justify-center text-2xl bg-[#f0fdf4] text-[#22c55e]">
                     <i class="fas fa-check-circle"></i>
                 </div>
-                <div class="stat-info">
+                <div>
                     <h3 id="totalMedications" class="text-2xl font-bold text-text-dark">0</h3>
                     <p class="text-sm text-text-muted whitespace-nowrap">Total Medications</p>
                 </div>
             </div>
-
             <div class="bg-white p-6 rounded-custom border border-borderCustom shadow-custom flex items-center gap-5">
                 <div class="w-14 h-14 rounded-[14px] flex items-center justify-center text-2xl bg-[#fffbeb] text-[#d97706]">
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
-                <div class="stat-info">
+                <div>
                     <h3 id="lowStockCount" class="text-2xl font-bold text-text-dark">0</h3>
                     <p class="text-sm text-text-muted whitespace-nowrap">Low Stock (&lt; 50 units)</p>
                 </div>
             </div>
-
             <div class="bg-white p-6 rounded-custom border border-borderCustom shadow-custom flex items-center gap-5">
                 <div class="w-14 h-14 rounded-[14px] flex items-center justify-center text-2xl bg-[#fdf2f2] text-primary">
                     <i class="fas fa-boxes"></i>
                 </div>
-                <div class="stat-info">
+                <div>
                     <h3 id="outOfStockCount" class="text-2xl font-bold text-text-dark">0</h3>
                     <p class="text-sm text-text-muted whitespace-nowrap">Out of Stock</p>
                 </div>
             </div>
         </div>
-
+ 
         <div class="bg-white rounded-custom border border-borderCustom shadow-custom overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full min-w-[800px] text-left border-collapse">
@@ -170,23 +170,29 @@
             </div>
         </div>
     </main>
-
+ 
     <div id="medicationModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
         <div class="bg-white rounded-custom shadow-xl border border-borderCustom w-full max-w-md overflow-hidden p-6 mx-4">
-            <h3 class="text-xl font-bold text-text-dark mb-4" id="modalTitle">Add New Medication</h3>
+            <h3 class="text-xl font-bold text-text-dark mb-1" id="modalTitle">Add New Medication</h3>
+            <p id="modalSubtitle" class="text-sm text-text-muted mb-4">If the same name, dosage, and form already exists, stock will be added together.</p>
             <form id="medicationForm" class="space-y-4">
                 <input type="hidden" id="medicationId">
                 <div>
                     <label class="block text-sm font-semibold text-text-dark mb-1">Medication Name</label>
-                    <input type="text" id="medName" required class="w-full px-4 py-2 border border-borderCustom rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                    <input type="text" id="medName" required
+                        class="w-full px-4 py-2 border border-borderCustom rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                        placeholder="e.g. Panadol">
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-text-dark mb-1">Dosage (e.g., 500mg, 10mcg)</label>
-                    <input type="text" id="medDosage" required class="w-full px-4 py-2 border border-borderCustom rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                    <label class="block text-sm font-semibold text-text-dark mb-1">Dosage (e.g. 500mg, 10mcg)</label>
+                    <input type="text" id="medDosage" required
+                        class="w-full px-4 py-2 border border-borderCustom rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                        placeholder="e.g. 500mg">
                 </div>
                 <div>
                     <label class="block text-sm font-semibold text-text-dark mb-1">Form</label>
-                    <select id="medForm" required class="w-full px-4 py-2 border border-borderCustom rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white">
+                    <select id="medForm" required
+                        class="w-full px-4 py-2 border border-borderCustom rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white">
                         <option value="Tablet">Tablet</option>
                         <option value="Capsule">Capsule</option>
                         <option value="Inhaler">Inhaler</option>
@@ -196,110 +202,340 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-text-dark mb-1">Stock Quantity</label>
-                    <input type="number" id="medStock" required min="0" class="w-full px-4 py-2 border border-borderCustom rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary">
+                    <label class="block text-sm font-semibold text-text-dark mb-1" id="stockLabel">Stock Quantity</label>
+                    <input type="number" id="medStock" required min="0"
+                        class="w-full px-4 py-2 border border-borderCustom rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                        placeholder="e.g. 100">
+                    <p id="stockHint" class="text-xs text-text-muted mt-1 hidden">
+                        <i class="fas fa-info-circle text-blue-400"></i>
+                        Adding stock to an existing entry will sum with the current total.
+                    </p>
                 </div>
                 <div class="flex gap-3 justify-end pt-2">
-                    <button type="button" id="closeModalBtn" class="px-4 py-2 border border-borderCustom rounded-lg text-text-muted hover:bg-gray-50">Cancel</button>
-                    <button type="submit" class="px-5 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition shadow-sm">Save Medication</button>
+                    <button type="button" id="closeModalBtn"
+                        class="px-4 py-2 border border-borderCustom rounded-lg text-text-muted hover:bg-gray-50 transition">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                        class="px-5 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition shadow-sm">
+                        Save Medication
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 
+    <div id="deleteConfirmationModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-[24px] shadow-xl w-full max-w-md overflow-hidden p-8 mx-4 text-center transform scale-95 transition-transform duration-300">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-50 mb-4">
+                <i class="fas fa-exclamation-triangle text-red-500 text-xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">Delete Medication</h3>
+            <p class="text-sm text-gray-500 mb-6">Are you certain you wish to delete this medication? This action will permanently remove it from inventory.</p>
+            <div class="flex gap-3 justify-center">
+                <button type="button" id="cancelDeleteBtn"
+                    class="flex-1 max-w-[160px] py-2.5 bg-[#f1f5f9] text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition">
+                    No, Keep It
+                </button>
+                <button type="button" id="confirmDeleteBtn"
+                    class="flex-1 max-w-[160px] py-2.5 bg-[#dc2626] text-white font-medium rounded-xl hover:bg-red-700 transition shadow-sm">
+                    Yes, Delete
+                </button>
+            </div>
+        </div>
+    </div>
+ 
     <script type="module">
         import { auth, db } from './js/firebase-config.js';
         import { signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-        import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
-
+        import {
+            collection, getDocs, addDoc, doc, updateDoc, deleteDoc
+        } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+ 
         let medicationsCache = [];
-        const tableBody = document.getElementById("medicationTableBody");
+        let medicationIdToDelete = null; // Track item scheduled for removal
+ 
+        const tableBody         = document.getElementById("medicationTableBody");
+        const medicationModal   = document.getElementById("medicationModal");
+        const medicationForm    = document.getElementById("medicationForm");
+        const modalTitle        = document.getElementById("modalTitle");
+        const modalSubtitle     = document.getElementById("modalSubtitle");
+        const stockHint         = document.getElementById("stockHint");
+        const stockLabel        = document.getElementById("stockLabel");
+        const addMedicationBtn  = document.getElementById("addMedicationBtn");
+        const closeModalBtn     = document.getElementById("closeModalBtn");
 
-        function showToast(message, type = 'success') {
-            const toast = document.createElement('div');
-            toast.className = `toast ${type === 'error' ? 'error' : (type === 'warning' ? 'warning' : '')}`;
-            toast.innerHTML = `<i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${message}`;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
+        // Custom Delete Elements
+        const deleteConfirmationModal = document.getElementById("deleteConfirmationModal");
+        const cancelDeleteBtn = document.getElementById("cancelDeleteBtn");
+        const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+ 
+        // ── Helpers ────────────────────────────────────────────────────────────
+ 
+        function normalize(str) {
+            return (str || '').trim().toLowerCase();
         }
-
+ 
+        function showToast(message, type = 'success') {
+            const icons = { success: 'fa-check-circle', error: 'fa-exclamation-circle', warning: 'fa-exclamation-triangle' };
+            const toast = document.createElement('div');
+            toast.className = `toast ${type !== 'success' ? type : ''}`;
+            toast.innerHTML = `<i class="fas ${icons[type] || icons.success}"></i> ${message}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3500);
+        }
+ 
+        // ── Auth guard ─────────────────────────────────────────────────────────
+ 
         auth.onAuthStateChanged((user) => {
             if (!user) { window.location.href = 'login.html'; return; }
             loadMedicationsInventory();
         });
-
-        // Handle Logout Action
-        const logoutBtn = document.getElementById('logoutBtn');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', async () => {
-                await signOut(auth);
-                window.location.href = 'login.html';
-            });
-        }
-
+ 
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await signOut(auth);
+            window.location.href = 'login.html';
+        });
+ 
+        // ── Load & render table ────────────────────────────────────────────────
+ 
         async function loadMedicationsInventory() {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center py-8 text-text-muted">
+                        <i class="fas fa-spinner fa-spin mr-2 text-primary"></i>Loading inventory data...
+                    </td>
+                </tr>`;
+ 
             try {
-                const querySnapshot = await getDocs(collection(db, "medications"));
+                const snapshot = await getDocs(collection(db, "medications"));
                 medicationsCache = [];
                 tableBody.innerHTML = '';
-                
+ 
                 let total = 0, lowStock = 0, outOfStock = 0;
-                
-                querySnapshot.forEach((documentObj) => {
+ 
+                if (snapshot.empty) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="text-center py-12 text-text-muted">
+                                <i class="fas fa-pills text-4xl mb-3 block text-gray-300"></i>
+                                No medications found. Click <strong>Add Medication</strong> to get started.
+                            </td>
+                        </tr>`;
+                    updateStats(0, 0, 0);
+                    return;
+                }
+ 
+                snapshot.forEach((documentObj) => {
                     const data = documentObj.data();
-                    const id = documentObj.id;
-                    const stock = parseInt(data.stock || 0);
+                    const id   = documentObj.id;
+                    const stock = parseInt(data.stock ?? 0);
+ 
                     total++;
-                    
-                    if (stock === 0) outOfStock++;
-                    else if (stock <= 50) lowStock++;
-                    
+                    if (stock === 0)       outOfStock++;
+                    else if (stock <= 50)  lowStock++;
+ 
                     medicationsCache.push({ id, ...data });
-                    
-                    let stockBadgeClass = "bg-green-100 text-green-700";
-                    let stockText = `${stock} units`;
+ 
+                    let badgeClass = "bg-green-100 text-green-700";
+                    let badgeText  = `${stock} units`;
                     if (stock === 0) {
-                        stockBadgeClass = "bg-red-100 text-red-700";
-                        stockText = "OUT OF STOCK";
+                        badgeClass = "bg-red-100 text-red-700";
+                        badgeText  = "OUT OF STOCK";
                     } else if (stock <= 50) {
-                        stockBadgeClass = "bg-yellow-100 text-yellow-700";
-                        stockText = `${stock} units (Low)`;
+                        badgeClass = "bg-yellow-100 text-yellow-700";
+                        badgeText  = `${stock} units (Low)`;
                     }
-
+ 
                     const row = document.createElement('tr');
                     row.className = "hover:bg-gray-50/50 transition border-b border-borderCustom/50";
                     row.innerHTML = `
-                        <td class="px-6 py-4 font-bold text-text-dark">${data.name || 'N/A'}</td>
+                        <td class="px-6 py-4 font-bold text-text-dark capitalize">${data.name || 'N/A'}</td>
                         <td class="px-6 py-4 text-text-muted">${data.dosage || 'N/A'}</td>
                         <td class="px-6 py-4 text-text-muted">${data.form || 'Tablet'}</td>
                         <td class="px-6 py-4">
-                            <span class="px-2.5 py-1 text-xs font-semibold rounded-full ${stockBadgeClass}">
-                                ${stockText}
+                            <span class="px-2.5 py-1 text-xs font-semibold rounded-full ${badgeClass}">
+                                ${badgeText}
                             </span>
                         </td>
                         <td class="px-6 py-4 text-right space-x-3">
-                            <button class="text-blue-500 hover:text-blue-700 edit-btn transition" data-id="${id}"><i class="fas fa-edit"></i></button>
-                            <button class="text-red-500 hover:text-red-700 delete-btn transition" data-id="${id}"><i class="fas fa-trash-alt"></i></button>
+                            <button class="text-blue-500 hover:text-blue-700 edit-btn transition" data-id="${id}" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="text-red-500 hover:text-red-700 delete-btn transition" data-id="${id}" title="Delete">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
                         </td>
                     `;
                     tableBody.appendChild(row);
                 });
-                
-                document.getElementById('totalMedications').textContent = total;
-                document.getElementById('lowStockCount').textContent = lowStock;
-                document.getElementById('outOfStockCount').textContent = outOfStock;
-                
-                // Placeholder hook function call for listeners instantiation implementation
-                if (window.attachActionListeners) { window.attachActionListeners(); }
-                
-                if (lowStock > 0) showToast(`${lowStock} medication(s) are running low on stock (≤ 50 units)`, 'warning');
-                if (outOfStock > 0) showToast(`${outOfStock} medication(s) are out of stock. Please restock.`, 'error');
-                
+ 
+                updateStats(total, lowStock, outOfStock);
+                attachActionListeners();
+ 
             } catch (error) {
-                console.error("Database query error:", error);
-                tableBody.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-red-500">Error loading inventory. Please refresh.</td></tr>`;
+                console.error("Error loading medications:", error);
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-red-500">
+                            <i class="fas fa-exclamation-circle mr-2"></i>Error loading inventory. Please refresh.
+                        </td>
+                    </tr>`;
             }
         }
+ 
+        function updateStats(total, lowStock, outOfStock) {
+            document.getElementById('totalMedications').textContent = total;
+            document.getElementById('lowStockCount').textContent    = lowStock;
+            document.getElementById('outOfStockCount').textContent  = outOfStock;
+        }
+ 
+        // ── Action listeners ───────────────────────────────────────────────────
+ 
+        function attachActionListeners() {
+            document.querySelectorAll(".edit-btn").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    const medication = medicationsCache.find(m => m.id === btn.dataset.id);
+                    if (medication) openModal(medication);
+                });
+            });
+ 
+            document.querySelectorAll(".delete-btn").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    // Open the redesigned custom dialog window instead of default browser confirm
+                    medicationIdToDelete = btn.dataset.id;
+                    deleteConfirmationModal.classList.remove("hidden");
+                });
+            });
+        }
+ 
+        // ── Custom Delete Handlers ──────────────────────────────────────────────
+        
+        function closeDeleteModal() {
+            deleteConfirmationModal.classList.add("hidden");
+            medicationIdToDelete = null;
+        }
+
+        cancelDeleteBtn.addEventListener("click", closeDeleteModal);
+
+        deleteConfirmationModal.addEventListener("click", (e) => {
+            if (e.target === deleteConfirmationModal) closeDeleteModal();
+        });
+
+        confirmDeleteBtn.addEventListener("click", async () => {
+            if (!medicationIdToDelete) return;
+            try {
+                await deleteDoc(doc(db, "medications", medicationIdToDelete));
+                showToast("Medication deleted.", "error");
+                closeDeleteModal();
+                loadMedicationsInventory();
+            } catch (err) {
+                console.error("Delete error:", err);
+                showToast("Failed to delete medication.", "error");
+                closeDeleteModal();
+            }
+        });
+
+        // ── Modal open / close ─────────────────────────────────────────────────
+ 
+        function openModal(medication = null) {
+            medicationForm.reset();
+            stockHint.classList.add('hidden');
+ 
+            if (medication) {
+                modalTitle.textContent    = "Edit Medication";
+                modalSubtitle.textContent = "Update the details or stock quantity directly.";
+                stockLabel.textContent    = "Stock Quantity";
+ 
+                document.getElementById("medicationId").value = medication.id;
+                document.getElementById("medName").value      = medication.name    || '';
+                document.getElementById("medDosage").value    = medication.dosage  || '';
+                document.getElementById("medForm").value      = medication.form    || 'Tablet';
+                document.getElementById("medStock").value     = medication.stock   ?? 0;
+ 
+                document.getElementById("medName").disabled   = false;
+                document.getElementById("medDosage").disabled = false;
+            } else {
+                modalTitle.textContent    = "Add Medication";
+                modalSubtitle.textContent = "If the same name, dosage, and form already exist, stock will be added together.";
+                stockLabel.textContent    = "Stock Quantity to Add";
+                stockHint.classList.remove('hidden');
+ 
+                document.getElementById("medicationId").value = "";
+                document.getElementById("medName").disabled   = false;
+                document.getElementById("medDosage").disabled = false;
+            }
+ 
+            medicationModal.classList.remove("hidden");
+        }
+ 
+        function closeModal() {
+            medicationModal.classList.add("hidden");
+            medicationForm.reset();
+        }
+ 
+        addMedicationBtn.addEventListener("click", () => openModal());
+        closeModalBtn.addEventListener("click", closeModal);
+ 
+        medicationModal.addEventListener("click", (e) => {
+            if (e.target === medicationModal) closeModal();
+        });
+ 
+        // ── Form submit ────────────────────────────────────────────────────────
+ 
+        medicationForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+ 
+            const id           = document.getElementById("medicationId").value;
+            const inputName    = normalize(document.getElementById("medName").value);
+            const inputDosage  = normalize(document.getElementById("medDosage").value);
+            const inputForm    = document.getElementById("medForm").value;
+            const inputStock   = parseInt(document.getElementById("medStock").value || 0);
+ 
+            if (!inputName || !inputDosage) {
+                showToast("Name and dosage are required.", "error");
+                return;
+            }
+ 
+            const payload = {
+                name:   inputName,
+                dosage: inputDosage,
+                form:   inputForm,
+                stock:  inputStock
+            };
+ 
+            try {
+                if (id) {
+                    await updateDoc(doc(db, "medications", id), payload);
+                    showToast("Medication updated successfully!");
+                } else {
+                    const duplicate = medicationsCache.find(m =>
+                        normalize(m.name)   === inputName   &&
+                        normalize(m.dosage) === inputDosage &&
+                        normalize(m.form)   === inputForm.toLowerCase()
+                    );
+ 
+                    if (duplicate) {
+                        const newTotal = parseInt(duplicate.stock ?? 0) + inputStock;
+                        await updateDoc(doc(db, "medications", duplicate.id), {
+                            stock: newTotal,
+                            form:  inputForm
+                        });
+                        showToast(`Stock updated! ${duplicate.name} ${duplicate.dosage} (${inputForm}) is now ${newTotal} units.`);
+                    } else {
+                        await addDoc(collection(db, "medications"), payload);
+                        showToast("New medication added to inventory.");
+                    }
+                }
+ 
+                closeModal();
+                loadMedicationsInventory();
+ 
+            } catch (err) {
+                console.error("Save error:", err);
+                showToast("Failed to save medication. Please try again.", "error");
+            }
+        });
     </script>
 </body>
 </html>

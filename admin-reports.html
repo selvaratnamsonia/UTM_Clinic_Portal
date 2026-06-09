@@ -364,7 +364,7 @@
             </div>
             <div class="chart-card">
                 <div class="chart-title">
-                    <i class="fas fa-pie-chart" style="color: var(--primary);"></i> Gateway Share Distribution
+                    <i class="fas fa-pie-chart" style="color: var(--primary);"></i> Practitioner Workload Distribution
                 </div>
                 <div class="chart-container">
                     <canvas id="gatewayPieChart"></canvas>
@@ -378,26 +378,28 @@
                     <i class="fas fa-history" style="color: var(--primary);"></i> Relational Transaction History Streams
                 </div>
             </div>
-            <table class="reports-table">
-                <thead>
-                    <tr>
-                        <th>Appointment Date</th>
-                        <th>Time Slot</th>
-                        <th>Patient Name</th>
-                        <th>Assigned Doctor</th>
-                        <th>Reason for Visit</th>
-                        <th>Payment Status</th>
-                        <th>Total Remittance</th>
-                    </tr>
-                </thead>
-                <tbody id="reportsTableBody">
-                    <tr>
-                        <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 30px;">
-                            <i class="fas fa-spinner fa-spin"></i> Parsing institutional accounting entries...
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="overflow-x-auto">
+                <table class="reports-table">
+                    <thead>
+                        <tr>
+                            <th>Appointment Date</th>
+                            <th>Time Slot</th>
+                            <th>Patient Name</th>
+                            <th>Assigned Doctor</th>
+                            <th>Reason for Visit</th>
+                            <th>Payment Status</th>
+                            <th>Total Remittance</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportsTableBody">
+                        <tr>
+                            <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 30px;">
+                                <i class="fas fa-spinner fa-spin"></i> Parsing institutional accounting entries...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </main>
 
@@ -406,11 +408,10 @@
         import { collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
         import { signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
-        let rawAppointmentsDataset = [];
+        let rawPaymentsDataset = [];
         let lineChartInstance = null;
         let pieChartInstance = null;
 
-        // Set interactive initial limits logic for date inputs
         function setupDatePickersDefault() {
             const end = new Date();
             const start = new Date();
@@ -425,27 +426,34 @@
                 setupDatePickersDefault();
                 initializeChartComponents();
 
-                // User Story #105: Query appointments collection filtering target parameter constraints
-                const appointmentsCollectionRef = collection(db, "appointments");
-                const q = query(appointmentsCollectionRef, where("status", "==", "confirmed"));
-                const snapshot = await getDocs(q);
+                // Point directly to the payments collection where transactions are settled successfully
+                const paymentsCollectionRef = collection(db, "payments");
                 
-                rawAppointmentsDataset = [];
+                // Fetch all payment history streams to allow client-side date range filtering
+                const snapshot = await getDocs(paymentsCollectionRef);
+                
+                rawPaymentsDataset = [];
                 snapshot.forEach(docSnapshot => {
-                    rawAppointmentsDataset.push({
-                        id: docSnapshot.id,
-                        ...docSnapshot.data()
-                    });
+                    const data = docSnapshot.data();
+                    // Normalize statuses to catch successful collections (e.g., "PAID", "COMPLETED", "SUCCESS")
+                    // Exclude "REJECTED" or "FAILED" options based on database records
+                    const statusCheck = (data.paymentStatus || data.status || "").toUpperCase();
+                    if (statusCheck !== "REJECTED" && statusCheck !== "FAILED" && statusCheck !== "") {
+                        rawPaymentsDataset.push({
+                            id: docSnapshot.id,
+                            ...data
+                        });
+                    }
                 });
 
                 processAndRenderMetrics();
 
             } catch (error) {
                 console.error("Critical error mapping reports tracking dataset streams:", error);
+                document.getElementById('reportsTableBody').innerHTML = `<tr><td colspan="7" style="text-align: center; color: #ef4444; padding: 20px;"><i class="fas fa-exclamation-circle"></i> Failed to pull logs from Firestore database. Check configuration.</td></tr>`;
             }
         }
 
-        // User Story #106 & #107 processing sequence loops
         function processAndRenderMetrics() {
             const startFilterStr = document.getElementById('startDateInput').value;
             const endFilterStr = document.getElementById('endDateInput').value;
@@ -460,48 +468,55 @@
             const endDate = endFilterStr ? new Date(endFilterStr) : null;
             if (endDate) endDate.setHours(23, 59, 59, 999);
 
-            // Filter and arrange appointments sequentially by chronological date string constraints
-            const filteredList = rawAppointmentsDataset.filter(appt => {
-                if (!appt.date) return false;
-                const apptDate = new Date(appt.date);
+            // Filter out items matching chronological boundaries based on appointmentDate
+            const filteredList = rawPaymentsDataset.filter(payment => {
+                if (!payment.appointmentDate) return false;
+                const paymentDate = new Date(payment.appointmentDate);
                 
-                if (startDate && apptDate < startDate) return false;
-                if (endDate && apptDate > endDate) return false;
+                if (startDate && paymentDate < startDate) return false;
+                if (endDate && paymentDate > endDate) return false;
                 return true;
-            }).sort((a, b) => new Date(b.date) - new Date(a.date));
+            }).sort((a, b) => new Date(b.appointmentDate) - new Date(a.appointmentDate));
 
             if (filteredList.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 20px;">No report parameters matching structural logs discovered inside chosen range.</td></tr>`;
+                tableBody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 30px;">No transaction history streams discovered inside the chosen range.</td></tr>`;
                 document.getElementById('totalPaidAmountDisplay').innerText = "RM 0.00";
                 document.getElementById('paidAppointmentsCountDisplay').innerText = "0";
                 updateInteractiveCharts([]);
                 return;
             }
 
-            // Loop array data to write out functional table elements layout
-            filteredList.forEach(appt => {
-                const flatFee = 5.00; // Standard outpatient clinical consultation tracking flat fee metric unit
-                totalPaidAmount += flatFee;
+            // Loop and render inside table node dynamically
+            filteredList.forEach(payment => {
+                // Parse dynamic financial metrics safely from database fields
+                const remittanceValue = parseFloat(payment.amount) || 0.00;
+                totalPaidAmount += remittanceValue;
                 paidCount++;
 
+                // Map reason text safely if present in sub-items array or direct field values
+                let reasonForVisit = payment.reason || "General Health Consultation";
+                if (payment.items && payment.items[0] && payment.items[0].itemName) {
+                    reasonForVisit = payment.items[0].itemName;
+                }
+
                 tableBody.innerHTML += `
-                    <tr>
-                        <td><strong>${appt.date}</strong></td>
-                        <td>${appt.time || 'N/A'}</td>
-                        <td>${appt.patientName || 'Anonymous Student'}</td>
-                        <td>${appt.doctorName || 'General Practitioner'}</td>
-                        <td><span style="color: var(--text-muted); font-size:13px;">${appt.reason || 'General Health Consultation'}</span></td>
+                    <tr class="hover:bg-slate-50 transition-colors duration-150">
+                        <td><strong>${payment.appointmentDate}</strong></td>
+                        <td>${payment.appointmentTime || 'N/A'}</td>
+                        <td>${payment.studentId || 'Patient Account'}</td>
+                        <td>${payment.doctorName || 'General Practitioner'}</td>
+                        <td><span style="color: var(--text-muted); font-size:13px;">${reasonForVisit}</span></td>
                         <td>
                             <span class="status-badge status-verified">
-                                <i class="fas fa-check-circle"></i> Paid Settled
+                                <i class="fas fa-check-circle"></i> ${payment.paymentChannel || 'Settle'} Paid
                             </span>
                         </td>
-                        <td><strong>RM ${flatFee.toFixed(2)}</strong></td>
+                        <td><strong>RM ${remittanceValue.toFixed(2)}</strong></td>
                     </tr>
                 `;
             });
 
-            // User Story #106: Inject output updates safely
+            // Write updates out safely to dashboard components interfaces
             document.getElementById('totalPaidAmountDisplay').innerText = `RM ${totalPaidAmount.toFixed(2)}`;
             document.getElementById('paidAppointmentsCountDisplay').innerText = paidCount;
 
@@ -531,11 +546,12 @@
             const dailyAggregates = {};
             const practitionerShares = {};
 
-            [...dataset].reverse().forEach(appt => {
-                const dayKey = appt.date || "Unknown";
-                dailyAggregates[dayKey] = (dailyAggregates[dayKey] || 0) + 5.00;
+            [...dataset].reverse().forEach(payment => {
+                const dayKey = payment.appointmentDate || "Unknown";
+                const amt = parseFloat(payment.amount) || 0;
+                dailyAggregates[dayKey] = (dailyAggregates[dayKey] || 0) + amt;
 
-                const docKey = appt.doctorName || "General Staff";
+                const docKey = payment.doctorName || "General Practitioner";
                 practitionerShares[docKey] = (practitionerShares[docKey] || 0) + 1;
             });
 
@@ -549,12 +565,12 @@
         }
 
         function triggerDataLedgerCsvDownload() {
-            if (rawAppointmentsDataset.length === 0) return;
+            if (rawPaymentsDataset.length === 0) return;
 
-            let csvPayloadString = "Date,Time,Patient Name,Doctor Name,Reason,Status,Amount (RM)\n";
+            let csvPayloadString = "Date,Time,Patient/Student ID,Doctor Name,Status,Amount (RM)\n";
 
-            rawAppointmentsDataset.forEach(row => {
-                csvPayloadString += `"${row.date || ''}","${row.time || ''}","${row.patientName || ''}","${row.doctorName || ''}","${row.reason || ''}","Paid","5.00"\n`;
+            rawPaymentsDataset.forEach(row => {
+                csvPayloadString += `"${row.appointmentDate || ''}","${row.appointmentTime || ''}","${row.studentId || ''}","${row.doctorName || ''}","Paid","${row.amount || '0'}"\n`;
             });
 
             const elementAnchorBlob = new Blob([csvPayloadString], { type: 'text/csv;charset=utf-8;' });
