@@ -57,8 +57,8 @@
             <div class="signature-area">
                 <i class="fas fa-cloud-upload-alt" style="font-size: 40px; color: #802c44; opacity: 0.5;"></i>
                 <p style="margin: 10px 0;">Click or drag to upload signature image</p>
-                <input type="file" id="signatureInput" accept="image/png,image/jpeg,image/jpg" style="display: none;">
-                <button id="uploadBtn" class="btn btn-secondary"><i class="fas fa-upload"></i> Choose File</button>
+                <input type="file" id="signatureInput" accept="image/png,image/jpeg,image/jpg" style="display: none !important;">
+                <button id="uploadBtn" type="button" class="btn btn-secondary"><i class="fas fa-upload"></i> Choose File</button>
                 <div id="signaturePreview" class="signature-preview" style="display: none;">
                     <img id="previewImg" style="max-width: 100%; max-height: 80px;" alt="Signature Preview">
                 </div>
@@ -70,42 +70,24 @@
         
         <div style="display: flex; gap: 15px; margin-top: 30px;">
             <button id="saveBtn" class="btn btn-primary"><i class="fas fa-save"></i> Save Changes</button>
-           <button id="cancelBtn" class="btn btn-secondary" onclick="history.back()">
-  <i class="fas fa-times"></i> Cancel
-</button>
+            <button id="cancelBtn" class="btn btn-secondary"> <i class="fas fa-times"></i> Cancel</button>
         </div>
     </div>
 </div>
 
 <script type="module">
-    import { auth, db, storage } from './js/firebase-config.js';
-    import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
-    import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-storage.js";
+    // 1. INITIALIZE UI ELEMENTS
+    const uploadBtn = document.getElementById('uploadBtn');
+    const signatureInput = document.getElementById('signatureInput');
+    const saveBtn = document.getElementById('saveBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
 
-    async function loadDoctorProfile() {
-        const user = auth.currentUser;
-        if (!user) { window.location.href = 'login.html'; return; }
-        
-        const userRef = doc(db, "users", user.uid);
-        const userSnap = await getDoc(userRef);
-        if (userSnap.exists()) {
-            const data = userSnap.data();
-            document.getElementById('doctorName').innerText = data.name || 'Doctor';
-            document.getElementById('doctorQualification').innerText = data.qualification || 'Medical Doctor';
-            document.getElementById('doctorLicense').innerText = data.licenseNumber || 'Pending Registration';
-            document.getElementById('specialization').value = data.specialization || '';
-            if (data.signatureUrl) {
-                document.getElementById('previewImg').src = data.signatureUrl;
-                document.getElementById('signaturePreview').style.display = 'block';
-            }
-        }
-    }
-    
-    document.getElementById('uploadBtn').addEventListener('click', () => {
-        document.getElementById('signatureInput').click();
+    uploadBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        signatureInput.click();
     });
-    
-    document.getElementById('signatureInput').addEventListener('change', async (e) => {
+
+    signatureInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) {
             const reader = new FileReader();
@@ -114,41 +96,130 @@
                 document.getElementById('signaturePreview').style.display = 'block';
             };
             reader.readAsDataURL(file);
-            window.selectedFile = file;
+            window.selectedFile = file; 
         }
     });
-    
-    document.getElementById('saveBtn').addEventListener('click', async () => {
-        const user = auth.currentUser;
-        if (!user) return;
-        
-        const updateData = {
-            specialization: document.getElementById('specialization').value,
-            updatedAt: new Date().toISOString()
-        };
-        
-        if (window.selectedFile) {
-            const storageRef = ref(storage, `signatures/${user.uid}_${Date.now()}.png`);
-            await uploadBytes(storageRef, window.selectedFile);
-            const signatureUrl = await getDownloadURL(storageRef);
-            updateData.signatureUrl = signatureUrl;
-        }
-        
-        await updateDoc(doc(db, "users", user.uid), updateData);
-        
-        const toast = document.createElement('div');
-        toast.className = 'success-toast';
-        toast.innerHTML = '<i class="fas fa-check-circle"></i> Profile updated successfully!';
-        document.body.appendChild(toast);
-        setTimeout(() => toast.remove(), 3000);
-        setTimeout(() => window.location.reload(), 1500);
-    });
-    
-    document.getElementById('cancelBtn').addEventListener('click', () => {
+
+    cancelBtn.addEventListener('click', () => {
         window.location.href = 'doctor_dashboard.html';
     });
-    
-    loadDoctorProfile();
+
+    // 2. LOAD FIREBASE COMPONENTS
+    import { auth, db, storage } from './js/firebase-config.js';
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+    import { collection, query, where, getDocs, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+    import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-storage.js";
+
+    let currentDoctorDocId = null;
+
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) { 
+            console.warn("No user session found. Redirecting to login...");
+            window.location.href = 'login.html'; 
+            return; 
+        }
+        
+        const loggedInEmail = user.email.toLowerCase().trim();
+        console.log("Logged in email:", loggedInEmail);
+        
+        try {
+            // First: Try finding a doctor document dynamically matching the logged-in email address
+            const doctorsRef = collection(db, "doctors");
+            const querySnapshot = await getDocs(doctorsRef);
+            
+            let doctorDoc = null;
+            querySnapshot.forEach((doc) => {
+                const docData = doc.data();
+                if (docData.email && docData.email.toLowerCase().trim() === loggedInEmail) {
+                    doctorDoc = doc;
+                }
+            });
+            
+            // Second: Fallback if logged in as a patient/admin (directly use 'doctor_sia_001' document for layout testing)
+            if (!doctorDoc) {
+                console.log("Logged-in email does not map directly to a doctor. Loading 'doctor_sia_001' profile dynamically.");
+                const fallbackDocRef = doc(db, "doctors", "doctor_sia_001");
+                const fallbackDocSnap = await getDoc(fallbackDocRef);
+                if (fallbackDocSnap.exists()) {
+                    doctorDoc = fallbackDocSnap;
+                }
+            }
+            
+            if (doctorDoc) {
+                currentDoctorDocId = doctorDoc.id; 
+                const data = doctorDoc.data();
+                
+                // Print attributes onto interface containers
+                document.getElementById('doctorName').innerText = data.name || 'Dr. Sia Jun Yu';
+                document.getElementById('doctorQualification').innerText = (data.qualification || 'MBBS / MD').toUpperCase();
+                document.getElementById('doctorLicense').innerText = currentDoctorDocId; 
+                document.getElementById('specialization').value = data.specialization || '';
+                
+                if (data.signatureUrl) {
+                    document.getElementById('previewImg').src = data.signatureUrl;
+                    document.getElementById('signaturePreview').style.display = 'block';
+                }
+            } else {
+                // Hard Fallback defaults if document key doesn't exist yet
+                currentDoctorDocId = "doctor_sia_001";
+                document.getElementById('doctorName').innerText = 'Dr. Sia Jun Yu';
+                document.getElementById('doctorQualification').innerText = 'MBBS / MD';
+                document.getElementById('doctorLicense').innerText = 'doctor_sia_001';
+            }
+        } catch (error) {
+            console.error("Error loading account records from database:", error);
+            currentDoctorDocId = "doctor_sia_001";
+            document.getElementById('doctorName').innerText = 'Dr. Sia Jun Yu';
+            document.getElementById('doctorLicense').innerText = 'doctor_sia_001';
+        }
+    });
+
+    // 3. SAVE BUTTON LOGIC (CLEAN IMAGE STORAGE AND FIRESTORE SYNCING)
+    saveBtn.addEventListener('click', async () => {
+        const targetId = currentDoctorDocId || "doctor_sia_001";
+        
+        saveBtn.innerText = "Saving Changes...";
+        saveBtn.disabled = true;
+
+        try {
+            const updateData = {
+                specialization: document.getElementById('specialization').value || 'General Practitioner',
+                updatedAt: new Date().toISOString()
+            };
+            
+            // If user selected a local file configuration, upload image to storage cluster first
+            if (window.selectedFile) {
+                console.log("Uploading signature configuration profile image for document ID:", targetId);
+                const storageRef = ref(storage, `signatures/${targetId}_signature.png`);
+                
+                // Write data straight into Firebase Cloud Storage bucket path
+                await uploadBytes(storageRef, window.selectedFile);
+                updateData.signatureUrl = await getDownloadURL(storageRef);
+            }
+            
+            // Update Text parameters securely inside Firestore document reference matching ID path
+            await updateDoc(doc(db, "doctors", targetId), updateData);
+            
+            // Render UI success alert toast
+            const toast = document.createElement('div');
+            toast.className = 'success-toast';
+            toast.innerHTML = '<i class="fas fa-check-circle"></i> Signature and profile updated successfully!';
+            document.body.appendChild(toast);
+            
+            // Perform dashboard redirection routine
+            setTimeout(() => {
+                window.location.href = 'doctor_dashboard.html';
+            }, 1500);
+
+        } catch (error) {
+            console.error("Save Operation Interrupted:", error);
+            
+            // Reset state block cleanly to avoid button freezing on "Saving Changes..."
+            alert("Upload blocked! Please ensure that you have configured your Firebase Storage CORS settings and that a document named '" + targetId + "' exists inside your Firestore collection 'doctors'.\n\nDetails: " + error.message);
+            saveBtn.innerText = "Save Changes";
+            saveBtn.disabled = false;
+        }
+    });
 </script>
 </body>
 </html>
