@@ -123,14 +123,15 @@
 
     <script type="module">
 import { showConfirm } from "./js/premium-dialog.js";
-import { auth, db, autoGetDocs } from "./js/firebase-config.js";
+import { auth, db } from "./js/firebase-config.js"; // Removed autoGetDocs wrapper dependency
 import { signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
 import {
     collection,
     query,
     doc,
-    updateDoc
+    updateDoc,
+    getDocs // Using standard Firebase SDK loader directly
 } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
 let localPaymentsCache = [];
@@ -165,13 +166,22 @@ if (logoutBtn) {
 // 3. Fetch Data from Firestore Database
 async function fetchPaymentsData() {
     try {
+        console.log("Checking Firestore connection... Fetching from 'payments' collection...");
+        
+        // Using standard getDocs here to ensure stability
         const paymentsQuery = query(collection(db, "payments"));
-        const snap = await autoGetDocs(paymentsQuery);
+        const snap = await getDocs(paymentsQuery);
 
-        localPaymentsCache = snap.docs.map(docItem => ({
-            id: docItem.id,
-            ...docItem.data()
-        }));
+        console.log(`Successfully fetched ${snap.size} documents from 'payments' collection.`);
+
+        localPaymentsCache = snap.docs.map(docItem => {
+            const data = docItem.data();
+            console.log("Raw Document loaded:", { id: docItem.id, ...data });
+            return {
+                id: docItem.id,
+                ...data
+            };
+        });
 
         // Sort data chronologically (Newest first)
         localPaymentsCache.sort((a, b) => {
@@ -185,7 +195,7 @@ async function fetchPaymentsData() {
         console.error("Firestore loading error: ", error);
         document.getElementById("paymentsContainer").innerHTML = `
             <div class="bg-white rounded-xl p-8 text-center text-red-500 font-medium">
-                Failed to load payments records. Please try again.
+                Failed to load payments records. Error: ${error.message}
             </div>
         `;
     }
@@ -209,18 +219,24 @@ function renderPaymentsList() {
 
     const searchKeyword = document.getElementById("paymentSearch").value.toLowerCase().trim();
 
+    console.log(`Running rendering pipeline. Active Tab Filter: [${activeTabFilter}]`);
+
     // Filtering logic matching Tab selection
     let filteredData = localPaymentsCache.filter(payment => {
-        const status = (payment.status || payment.paymentStatus || "pending").toLowerCase();
+        // Look through multiple possible field names just in case
+        const status = String(payment.status || payment.paymentStatus || payment.appointmentStatus || "").toLowerCase();
 
+        // HYPER-FLEXIBLE CHECK: If it contains "pending", show it in the pending tab
         if (activeTabFilter === "pending") {
-            return status === "pending";
+            return status.includes("pending") || status === "";
         }
         if (activeTabFilter === "verified") {
-            return status === "verified" || status === "approved";
+            return status === "verified" || status === "approved" || status === "success";
         }
         return true; // "all" filter logic
     });
+
+    console.log(`Filtered data count for tab [${activeTabFilter}]: ${filteredData.length} records.`);
 
     // Filtering logic matching Search Key inputs
     if (searchKeyword) {
@@ -239,7 +255,7 @@ function renderPaymentsList() {
     if (filteredData.length === 0) {
         container.innerHTML = `
             <div class="bg-white rounded-xl border p-10 text-center text-gray-400 font-medium shadow-sm">
-                No ${activeTabFilter !== 'all' ? activeTabFilter : ''} records found.
+                No ${activeTabFilter !== 'all' ? activeTabFilter : ''} records found in database.
             </div>
         `;
         return;
@@ -247,12 +263,12 @@ function renderPaymentsList() {
 
     // Map through records to append layout structures
     container.innerHTML = filteredData.map(payment => {
-        const status = (payment.status || payment.paymentStatus || "pending").toLowerCase();
+        const status = String(payment.status || payment.paymentStatus || "").toLowerCase();
 
         let badgeStyle = "bg-yellow-100 text-yellow-700 border border-yellow-200";
-        let displayStatus = "Pending";
+        let displayStatus = "Pending Verification";
 
-        if (status === "verified" || status === "approved") {
+        if (status === "verified" || status === "approved" || status === "success") {
             badgeStyle = "bg-green-100 text-green-700 border border-green-200";
             displayStatus = "Verified";
         } else if (status === "rejected" || status === "cancelled") {
@@ -261,7 +277,8 @@ function renderPaymentsList() {
         }
 
         let actionButtons = "";
-        if (status === "pending") {
+        // Show controls for anything that isn't fully completed/cancelled yet
+        if (!status.includes("verified") && !status.includes("approved") && !status.includes("success") && !status.includes("reject") && !status.includes("cancel")) {
             actionButtons = `
                 <button
                     class="btn-action-verify bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 rounded-lg text-sm transition-colors"
@@ -293,7 +310,7 @@ function renderPaymentsList() {
                         <span class="font-medium text-gray-500">ID:</span> ${escapeHtml(payment.studentId || payment.metricNumber || payment.matricNo || "N/A")}
                     </div>
                     <div class="text-sm text-text-muted">
-                        <span class="font-medium text-gray-500">Appointment:</span> ${escapeHtml(payment.appointmentId || "N/A")}
+                        <span class="font-medium text-gray-500">Appointment ID:</span> ${escapeHtml(payment.appointmentId || "N/A")}
                     </div>
                 </div>
 
@@ -326,21 +343,31 @@ function bindDynamicActionListeners() {
             if (!confirmed) return;
 
             try {
+                const payment = localPaymentsCache.find(p => p.id === paymentId);
+                const linkedAppointmentId = payment ? payment.appointmentId : null;
+
                 await updateDoc(doc(db, "payments", paymentId), {
                     status: "verified",
                     paymentStatus: "verified",
                     verifiedAt: new Date()
                 });
 
-                const payment = localPaymentsCache.find(p => p.id === paymentId);
+                if (linkedAppointmentId) {
+                    await updateDoc(doc(db, "appointments", linkedAppointmentId), {
+                        status: "verified" 
+                    });
+                }
+
                 if (payment) {
                     payment.status = "verified";
                     payment.paymentStatus = "verified";
                 }
                 renderPaymentsList();
+                await showConfirm("Verification Clear", "Transaction records checked and confirmed.", "fa-check-circle");
+
             } catch (error) {
-                console.error(error);
-                alert("Failed to update status.");
+                console.error("Verification processing error:", error);
+                alert("Failed to update status values accurately.");
             }
         });
     });
@@ -357,21 +384,31 @@ function bindDynamicActionListeners() {
             if (!confirmed) return;
 
             try {
+                const payment = localPaymentsCache.find(p => p.id === paymentId);
+                const linkedAppointmentId = payment ? payment.appointmentId : null;
+
                 await updateDoc(doc(db, "payments", paymentId), {
                     status: "rejected",
                     paymentStatus: "rejected",
                     rejectedAt: new Date()
                 });
 
-                const payment = localPaymentsCache.find(p => p.id === paymentId);
+                if (linkedAppointmentId) {
+                    await updateDoc(doc(db, "appointments", linkedAppointmentId), {
+                        status: "diagnosed" 
+                    });
+                }
+
                 if (payment) {
                     payment.status = "rejected";
                     payment.paymentStatus = "rejected";
                 }
                 renderPaymentsList();
+                await showConfirm("Rejected", "Payment application rejected securely.", "fa-info-circle");
+
             } catch (error) {
-                console.error(error);
-                alert("Failed to update status.");
+                console.error("Rejection processing error:", error);
+                alert("Failed to update status values accurately.");
             }
         });
     });

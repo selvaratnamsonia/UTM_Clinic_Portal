@@ -454,10 +454,10 @@
             
             <select class="filter-select" id="statusFilter">
                 <option value="all">All Statuses</option>
-                <option value="confirmed">Confirmed</option>
-                <option value="completed">Completed</option>
                 <option value="pending">Pending</option>
+                <option value="confirmed">Confirmed</option>
                 <option value="pending-payment-verification">Pending Payment Verification</option>
+                <option value="completed">Completed</option>
                 <option value="cancelled">Cancelled</option>
             </select>
         </div>
@@ -487,38 +487,47 @@
 
     import { auth, db } from './js/firebase-config.js';
     import { signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-    import { collection, query, where, getDocs, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+    import { collection, query, where, onSnapshot, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
     let allAppointments = []; 
     let currentTab = 'upcoming'; 
+    let appointmentsListenerUnsubscribe = null; // Track listener to avoid duplicates
 
     // Authenticate account state configuration
-    auth.onAuthStateChanged(async (user) => {
+    auth.onAuthStateChanged((user) => {
         if (!user) { 
+            if (appointmentsListenerUnsubscribe) appointmentsListenerUnsubscribe();
             window.location.href = 'login.html'; 
             return; 
         }
-        await loadAppointments(user.uid);
+        setupAppointmentsListener(user.uid);
     });
 
-    // Query fetching handler
-    async function loadAppointments(uid) {
+    // Real-Time Query Listener Handler
+    function setupAppointmentsListener(uid) {
         try {
             const q = query(collection(db, "appointments"), where("userId", "==", uid));
-            const snap = await getDocs(q);
             
-            if (snap.empty) {
-                document.getElementById('appointmentsTableBody').innerHTML = '<tr><td colspan="5" class="empty-row-msg">No appointments found in your account history.</td></tr>';
-                allAppointments = [];
-                return;
-            }
-            
-            allAppointments = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            applyFilters(); 
+            // Detach previous listener if it exists
+            if (appointmentsListenerUnsubscribe) appointmentsListenerUnsubscribe();
+
+            // Establish real-time sync with Firestore
+            appointmentsListenerUnsubscribe = onSnapshot(q, (snap) => {
+                if (snap.empty) {
+                    document.getElementById('appointmentsTableBody').innerHTML = '<tr><td colspan="5" class="empty-row-msg">No appointments found in your account history.</td></tr>';
+                    allAppointments = [];
+                    return;
+                }
+                
+                allAppointments = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                applyFilters(); 
+            }, (error) => {
+                console.error("Firestore real-time sync error:", error);
+                document.getElementById('appointmentsTableBody').innerHTML = '<tr><td colspan="5" class="empty-row-msg" style="color:red;">Error syncing medical database. Please refresh.</td></tr>';
+            });
             
         } catch (error) {
-            console.error("Firestore read error:", error);
-            document.getElementById('appointmentsTableBody').innerHTML = '<tr><td colspan="5" class="empty-row-msg" style="color:red;">Error connecting to medical database. Please refresh and try again.</td></tr>';
+            console.error("Firestore setup error:", error);
         }
     }
 
@@ -578,6 +587,7 @@
             const isCompleted = currentStatus === 'completed';
             const isDiagnosed = currentStatus === 'diagnosed';
             const isPendingVerification = currentStatus === 'pending-payment-verification';
+            const isVerified = currentStatus === 'verified' || currentStatus === 'approved'; 
 
             let actionHtml = '';
             if (isOverdue) {
@@ -594,7 +604,7 @@
                         <button class="btn-mc-action download-mc-btn" title="Download Medical Certificate" data-id="${item.id}">
                             <i class="fas fa-file-download"></i> Download MC
                         </button>
-                        <span class="no-action" style="font-weight: 600; color: var(--payment-amber);">Verifying Payment...</span>
+                        <span class="no-action" style="font-weight: 600; color: #d97706;">Verifying Payment...</span>
                     </div>`;
             } else if (isCompleted || isDiagnosed) {
                 actionHtml = `
@@ -606,6 +616,14 @@
                             <i class="fas fa-credit-card"></i> Pay Fee
                         </button>
                     </div>`;
+            } else if (isVerified) { 
+                actionHtml = `
+                    <div class="action-container">
+                        <button class="btn-mc-action download-mc-btn" title="Download Medical Certificate" data-id="${item.id}">
+                            <i class="fas fa-file-download"></i> Download MC
+                        </button>
+                        <span class="no-action" style="font-weight: 600; color: #16a34a;"><i class="fas fa-check"></i> Paid & Settled</span>
+                    </div>`;
             } else {
                 actionHtml = '<span class="no-action">No action</span>';
             }
@@ -615,6 +633,8 @@
                 displayStatus = 'Pending Verification';
             } else if (currentStatus === 'diagnosed') {
                 displayStatus = 'Diagnosed';
+            } else if (isVerified) {
+                displayStatus = 'Verified';
             }
 
             html += `
@@ -622,7 +642,7 @@
                     <td class="doctor-info">${doctorDisplay}</td>
                     <td class="date-cell">${item.date} <br> <small>${timeStr}</small></td>
                     <td>${escapeHtml(reasonStr)}</td>
-                    <td><span class="badge ${currentStatus}">${displayStatus}</span></td>
+                    <td><span class="badge ${isVerified ? 'verified' : currentStatus}">${displayStatus}</span></td>
                     <td align="center">${actionHtml}</td>
                 </tr>
             `;
@@ -679,9 +699,8 @@
         try {
             const appointmentDocRef = doc(db, "appointments", appointmentId);
             await updateDoc(appointmentDocRef, { status: "cancelled" });
-            
             await showConfirm("Success", "Your appointment has been successfully cancelled.", "fa-check-circle");
-            await loadAppointments(auth.currentUser.uid);
+            // Note: Real-time listener handles UI update automatically here
         } catch (error) {
             console.error("Cancellation error:", error);
             await showConfirm("Failed", "Failed to cancel appointment: " + error.message, "fa-times-circle");
@@ -691,38 +710,46 @@
     // PDF Compilation & Layout Rendering Pipeline
     async function handleMcAutoDownload(appointmentId) {
         try {
+            if (!window.html2canvas) {
+                throw new Error("html2canvas library asset is not loaded in global document scope.");
+            }
+
             // 1. Fetch the Appointment Record
             const appointmentDocRef = doc(db, "appointments", appointmentId);
             const aptSnap = await getDoc(appointmentDocRef);
 
             if (!aptSnap.exists()) {
-                alert("Targeted clinic record tracking values missing.");
+                await showConfirm("Error", "Targeted clinic record tracking values missing.", "fa-times-circle");
                 return;
             }
             const aptData = aptSnap.data();
 
-            // 2. Fetch the User Profile Record
-            const userDocRef = doc(db, "users", aptData.userId);
-            const userSnap = await getDoc(userDocRef);
-            const userData = userSnap.exists() ? userSnap.data() : {};
-
-            // 3. Fetch the Diagnosis Record to get correct MC Days
-            let actualMCDays = aptData.mcDays || 1; 
+            // 2. Fetch the Diagnosis Record to verify MC eligibility
+            let actualMCDays = 0;
             const diagnosisRef = collection(db, "diagnosis");
             const q = query(diagnosisRef, where("appointmentId", "==", appointmentId));
             const diagnosisSnap = await getDocs(q);
 
             if (!diagnosisSnap.empty) {
                 const diagnosisData = diagnosisSnap.docs[0].data();
-                if (diagnosisData.mcDays) {
-                    actualMCDays = diagnosisData.mcDays;
+                
+                // UX Security Check: Guard against downloading an MC if doctor didn't explicitly issue one
+                if (!diagnosisData.mcIssued) {
+                    await showConfirm("No MC Authorized", "The examining physician did not issue a Medical Certificate for this consultation entry.", "fa-ban");
+                    return;
                 }
+                actualMCDays = diagnosisData.mcDays || 1;
             } else {
-                console.warn("No diagnosis record found. Defaulting to 1 MC day.");
+                await showConfirm("Record Missing", "No authenticated diagnosis records match this appointment token sequence.", "fa-exclamation-circle");
+                return;
             }
 
+            // 3. Fetch the User Profile Record
+            const userDocRef = doc(db, "users", aptData.userId);
+            const userSnap = await getDoc(userDocRef);
+            const userData = userSnap.exists() ? userSnap.data() : {};
+
             // 4. Restructure dataset elements dynamically
-            // FIX: Added userData.matricId and userData.fullName fallbacks here!
             const mcData = {
                 patientName: userData.fullName || userData.name || aptData.patientName || "UTM Patient",
                 matricNumber: userData.matricId || userData.matricNumber || aptData.matricId || aptData.matricNo || aptData.studentId || "NOT RECORDED",
@@ -735,7 +762,6 @@
                 doctorSignatureUrl: aptData.doctorSignatureUrl || "" 
             };
 
-            // Inject an invisible layout box directly into DOM scope to map styles accurately
             const mcContainer = document.createElement('div');
             mcContainer.style.position = 'absolute';
             mcContainer.style.left = '-9999px';
@@ -746,7 +772,6 @@
             mcContainer.style.color = '#1e293b';
             mcContainer.style.fontFamily = "'Plus Jakarta Sans', Arial, sans-serif";
 
-            // Premium visual design template layout injection
             mcContainer.innerHTML = `
                 <div style="border: 4px double #802c44; padding: 40px; min-height: 1000px; position: relative;">
                     <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #802c44; padding-bottom: 20px; margin-bottom: 40px;">
@@ -823,12 +848,11 @@
             pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
             pdf.save(`UTM_MC_${mcData.patientName.replace(/\s+/g, '_')}.pdf`);
 
-            // Garbage cleanup drop
             document.body.removeChild(mcContainer);
 
         } catch (error) {
             console.error("Critical stream termination on MC engine processing:", error);
-            alert("An issue occurred structuring the PDF certificate file. Please try downloading again.");
+            await showConfirm("Download Failed", "An issue occurred structuring the PDF certificate file. Please try downloading again.", "fa-times-circle");
         }
     }
 
@@ -847,11 +871,9 @@
             const aptDateTime = parseAppointmentDateTime(item.date, item.time);
             
             if (currentTab === 'upcoming') {
-                // "diagnosed" status shifts the appointment straight out of the upcoming panel logic
-                return (aptDateTime >= now) && (status !== 'cancelled' && status !== 'completed' && status !== 'pending-payment-verification' && status !== 'diagnosed');
+                return (aptDateTime >= now) && (status !== 'cancelled' && status !== 'completed' && status !== 'pending-payment-verification' && status !== 'diagnosed' && status !== 'verified' && status !== 'approved');
             } else {
-                // If it is past time OR explicitly marked cancelled, completed, pending verification, or diagnosed, it lands in Past panel
-                return (aptDateTime < now) || (status === 'cancelled' || status === 'completed' || status === 'pending-payment-verification' || status === 'diagnosed');
+                return (aptDateTime < now) || (status === 'cancelled' || status === 'completed' || status === 'pending-payment-verification' || status === 'diagnosed' || status === 'verified' || status === 'approved');
             }
         });
         
@@ -867,7 +889,11 @@
             const matchesKeyword = doctorName.includes(keyword) || reason.includes(keyword);
             
             const itemStatus = item.status ? item.status.toLowerCase() : 'pending';
-            const matchesStatus = (filterValue === 'all') || (itemStatus === filterValue);
+            let matchesStatus = (filterValue === 'all') || (itemStatus === filterValue);
+            
+            if (filterValue === 'verified') {
+                matchesStatus = (itemStatus === 'verified' || itemStatus === 'approved');
+            }
             
             return matchesKeyword && matchesStatus;
         });
@@ -875,32 +901,30 @@
         renderTable(finalFiltered);
     }
 
-    // Setup DOM listeners
-    document.addEventListener('DOMContentLoaded', () => {
-        const searchInput = document.getElementById('tableSearch');
-        const statusFilter = document.getElementById('statusFilter');
-        const tabUpcoming = document.getElementById('tabUpcoming');
-        const tabPast = document.getElementById('tabPast');
+    // Elements selection and setup
+    const searchInput = document.getElementById('tableSearch');
+    const statusFilter = document.getElementById('statusFilter');
+    const tabUpcoming = document.getElementById('tabUpcoming');
+    const tabPast = document.getElementById('tabPast');
 
-        if (searchInput) searchInput.addEventListener('input', applyFilters);
-        if (statusFilter) statusFilter.addEventListener('change', applyFilters);
+    if (searchInput) searchInput.addEventListener('input', applyFilters);
+    if (statusFilter) statusFilter.addEventListener('change', applyFilters);
 
-        if (tabUpcoming && tabPast) {
-            tabUpcoming.addEventListener('click', () => {
-                currentTab = 'upcoming';
-                tabUpcoming.classList.add('active-tab');
-                tabPast.classList.remove('active-tab');
-                applyFilters();
-            });
+    if (tabUpcoming && tabPast) {
+        tabUpcoming.addEventListener('click', () => {
+            currentTab = 'upcoming';
+            tabUpcoming.classList.add('active-tab');
+            tabPast.classList.remove('active-tab');
+            applyFilters();
+        });
 
-            tabPast.addEventListener('click', () => {
-                currentTab = 'past';
-                tabPast.classList.add('active-tab');
-                tabUpcoming.classList.remove('active-tab');
-                applyFilters();
-            });
-        }
-    });
+        tabPast.addEventListener('click', () => {
+            currentTab = 'past';
+            tabPast.classList.add('active-tab');
+            tabUpcoming.classList.remove('active-tab');
+            applyFilters();
+        });
+    }
 
     // Premium Interactive Session Logout Handler
     const logoutLink = document.getElementById('logoutLink');

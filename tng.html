@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Touch 'n Go eWallet Secure Gateway</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <style>
+        :root {
+            --tng-blue: #0052b4;
+            --tng-blue-hover: #003f8a;
+            --tng-light: #e0f2fe;
+            --bg-body: #f1f5f9;
+            --white: #ffffff;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --success: #10b981;
+            --border-color: #e2e8f0;
+            --radius: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background: var(--bg-body);
+            color: var(--text-dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .gateway-container {
+            width: 100%;
+            max-width: 480px;
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        /* Gateway Header */
+        .gateway-header {
+            background: var(--tng-blue);
+            color: var(--white);
+            padding: 24px;
+            text-align: center;
+            position: relative;
+        }
+
+        .tng-logo-text {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 4px;
+        }
+
+        .tng-logo-subtitle {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0.8;
+            font-weight: 600;
+        }
+
+        /* Order Summary Box */
+        .order-summary {
+            background: #fafbfc;
+            border-bottom: 1px dashed var(--border-color);
+            padding: 24px;
+            text-align: center;
+        }
+
+        .merchant-label {
+            font-size: 13px;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+
+        .merchant-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 16px;
+        }
+
+        .amount-display {
+            font-size: 36px;
+            font-weight: 800;
+            color: var(--tng-blue);
+        }
+
+        /* Form & Interaction Body */
+        .gateway-body {
+            padding: 28px 24px;
+        }
+
+        .payment-notice {
+            background: var(--tng-light);
+            border: 1px solid #bae6fd;
+            padding: 14px;
+            border-radius: 12px;
+            color: #0369a1;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 24px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+        }
+
+        .payment-notice i {
+            margin-top: 3px;
+            font-size: 15px;
+        }
+
+        .meta-group {
+            margin-bottom: 20px;
+        }
+
+        .meta-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            padding: 10px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .meta-row span:first-child {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .meta-row span:last-child {
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        /* Action Buttons */
+        .btn-tng-pay {
+            width: 100%;
+            background: var(--tng-blue);
+            color: var(--white);
+            border: none;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 82, 180, 0.2);
+        }
+
+        .btn-tng-pay:hover {
+            background: var(--tng-blue-hover);
+        }
+
+        .btn-tng-cancel {
+            width: 100%;
+            background: transparent;
+            color: var(--text-muted);
+            border: none;
+            padding: 14px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: color 0.2s;
+        }
+
+        .btn-tng-cancel:hover {
+            color: #ef4444;
+        }
+
+        /* Processing/Success Screen Overlay */
+        .screen-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--white);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            text-align: center;
+            z-index: 10;
+        }
+
+        .spinner-icon {
+            font-size: 48px;
+            color: var(--tng-blue);
+            margin-bottom: 20px;
+        }
+
+        .success-icon {
+            font-size: 64px;
+            color: var(--success);
+            margin-bottom: 20px;
+            animation: scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes scaleIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .status-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .status-desc {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+
+<div class="gateway-container">
+    <div id="statusOverlay" class="screen-overlay">
+        <div id="spinnerView">
+            <i class="fas fa-circle-notch fa-spin spinner-icon"></i>
+            <div class="status-title">Processing Transaction</div>
+            <div class="status-desc">Connecting to Touch 'n Go secure asset layers... Please do not close or refresh this view frame.</div>
+        </div>
+        <div id="successView" style="display: none;">
+            <i class="fas fa-check-circle success-icon"></i>
+            <div class="status-title">Payment Successful!</div>
+            <div class="status-desc" id="successRefMessage">Your payment ledger verification transaction signature was submitted securely.</div>
+        </div>
+    </div>
+
+    <div class="gateway-header">
+        <div class="tng-logo-text">touch 'n go</div>
+        <div class="tng-logo-subtitle">eWallet Gateway</div>
+    </div>
+
+    <div class="order-summary">
+        <div class="merchant-label">MERCHANT PROVIDER</div>
+        <div class="merchant-name"><i class="fas fa-clinic-medical" style="color: #802c44;"></i> Universiti Teknologi Malaysia Clinic</div>
+        <div class="amount-display" id="displayAmount">RM 0.00</div>
+    </div>
+
+    <div class="gateway-body">
+        <div class="payment-notice">
+            <i class="fas fa-shield-alt"></i>
+            <div>This context maps a secure sandboxed integration. Clicking below directly executes dynamic ledger state transitions inside Firestore.</div>
+        </div>
+
+        <div class="meta-group">
+            <div class="meta-row">
+                <span>Appointment Link Identifier</span>
+                <span id="displayAptId">Fetching ID Token...</span>
+            </div>
+            <div class="meta-row">
+                <span>Account Channel Target</span>
+                <span>TnG Mobile Wallet App Context</span>
+            </div>
+        </div>
+
+        <button type="button" class="btn-tng-pay" id="confirmTngPaymentBtn">
+            <i class="fas fa-lock"></i> Pay Securely Now
+        </button>
+        
+        <button type="button" class="btn-tng-cancel" id="cancelTngPaymentBtn">
+            Cancel and Return to Clinic
+        </button>
+    </div>
+</div>
+
+<script type="module">
+    import { db, auth } from './js/firebase-config.js';
+    import { 
+        doc, 
+        getDoc, 
+        updateDoc, 
+        collection, 
+        addDoc,
+        query,
+        where,
+        getDocs 
+    } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+    let targetAppointmentId = "";
+    let extractedAmount = 0.00;
+    let loadedAppointmentData = null;
+
+    // Parse configuration routing parameters directly out of the URI query context string
+    function parseGatewayParams() {
+        const urlParams = new URLSearchParams(window.location.search);
+        targetAppointmentId = urlParams.get('aptId') || urlParams.get('appointmentId');
+        const rawAmount = urlParams.get('amount');
+
+        if (targetAppointmentId) {
+            document.getElementById('displayAptId').innerText = targetAppointmentId.toUpperCase();
+            preloadAppointmentAndInvoiceDetails(targetAppointmentId);
+        } else {
+            document.getElementById('displayAptId').innerText = "ERROR: Missing Reference Token";
+        }
+
+        if (rawAmount) {
+            extractedAmount = parseFloat(rawAmount);
+            document.getElementById('displayAmount').innerText = `RM ${extractedAmount.toFixed(2)}`;
+        }
+    }
+
+    // Resolves and processes relational clinic records in advance to prepare payment packet structures
+    async function preloadAppointmentAndInvoiceDetails(aptId) {
+        try {
+            const aptRef = doc(db, "appointments", aptId);
+            const aptSnap = await getDoc(aptRef);
+
+            if (aptSnap.exists()) {
+                loadedAppointmentData = aptSnap.data();
+            }
+        } catch (err) {
+            console.error("Relational schema compilation pipeline error preloading records:", err);
+        }
+    }
+
+    // Executes the complete system write function upon simulated authorization completion
+    document.getElementById('confirmTngPaymentBtn').addEventListener('click', async () => {
+        if (!targetAppointmentId) {
+            alert("Payment payload cannot build. Secure transaction routing parameters are missing.");
+            return;
+        }
+
+        // Engage UI state overlay pipelines
+        const overlay = document.getElementById('statusOverlay');
+        const spinnerView = document.getElementById('spinnerView');
+        const successView = document.getElementById('successView');
+
+        overlay.style.display = 'flex';
+
+        try {
+            const finalItemsList = [];
+            
+            // Re-fetch diagnostic sub-elements to ensure zero structural variations
+            if (loadedAppointmentData && loadedAppointmentData.prescriptions) {
+                loadedAppointmentData.prescriptions.forEach(med => {
+                    let price = med.cost ? parseFloat(med.cost) : 0.00;
+                    if (price > 0) {
+                        let qty = med.quantity ? parseInt(med.quantity) : 1;
+                        finalItemsList.push({
+                            itemName: `Medication: ${med.name}`,
+                            unitCost: price,
+                            quantity: qty,
+                            subtotal: price * qty
+                        });
+                    }
+                });
+            }
+
+            const diagnosisQuery = query(collection(db, "diagnosis"), where("appointmentId", "==", targetAppointmentId));
+            const diagnosisSnapshot = await getDocs(diagnosisQuery);
+
+            diagnosisSnapshot.forEach((docSnapshot) => {
+                const diagnosisData = docSnapshot.data();
+                const extraItems = diagnosisData.additionalItems || [];
+                extraItems.forEach(item => {
+                    let name = item.itemName || "Medical Material Support";
+                    let price = item.cost !== undefined ? parseFloat(item.cost) : 0.00;
+                    let qty = item.quantity !== undefined ? parseInt(item.quantity) : 1;
+                    finalItemsList.push({
+                        itemName: name,
+                        unitCost: price,
+                        quantity: qty,
+                        subtotal: price * qty
+                    });
+                });
+            });
+
+            // If empty, compile standard outpatient fallback structure matching the pay page logic
+            if (finalItemsList.length === 0) {
+                finalItemsList.push({
+                    itemName: "Standard Outpatient Service Fee",
+                    unitCost: extractedAmount > 0 ? extractedAmount : 5.00,
+                    quantity: 1,
+                    subtotal: extractedAmount > 0 ? extractedAmount : 5.00
+                });
+            }
+
+            // Generate a secure simulation tracking index reference hash
+            const tngReferenceIndex = "TNG-" + Math.random().toString(36).substr(2, 9).toUpperCase();
+
+            // Construct transaction payload properties mapping the dynamic system structural values
+            const paymentRecordDocument = {
+                appointmentId: targetAppointmentId,
+                studentName: loadedAppointmentData?.patientName || "SIA JUN YU",
+                studentId: loadedAppointmentData?.matricNo || loadedAppointmentData?.matricNumber || "A24DW0420", 
+                appointmentDate: loadedAppointmentData?.date || "2026-06-10",
+                appointmentTime: loadedAppointmentData?.time || "09:00 AM",
+                items: finalItemsList,
+                amount: extractedAmount > 0 ? extractedAmount : 5.00,
+                paymentChannel: "TNG",
+                status: "pending", // Keeps the verification routing loop active for clinic staff validation
+                transactionReference: tngReferenceIndex,
+                createdAt: new Date() 
+            };
+
+            // Write verification transaction ledger parameters directly to firestore
+            await addDoc(collection(db, "payments"), paymentRecordDocument);
+
+            // Execute master database update adjustments across the structural target nodes
+            const docRef = doc(db, "appointments", targetAppointmentId);
+            await updateDoc(docRef, {
+                status: "pending-payment-verification",
+                paymentStatus: "pending"
+            });
+
+            // Transition gateway screen state variables to completed layout views
+            setTimeout(() => {
+                spinnerView.style.display = 'none';
+                successView.style.display = 'block';
+                document.getElementById('successRefMessage').innerText = `Transaction Reference: ${tngReferenceIndex}. Your payment payload has been successfully flagged for staff verification.`;
+                
+                // Finalize session flow by returning back to standard list framework views
+                setTimeout(() => {
+                    window.location.href = "appointments.html";
+                }, 3500);
+            }, 1800);
+
+        } catch (error) {
+            console.error("Critical core payment authorization stream failure:", error);
+            alert("A system pipeline error occurred parsing your Firestore database parameters.");
+            overlay.style.display = 'none';
+        }
+    });
+
+    // Handle standard cancellation pipeline routes
+    document.getElementById('cancelTngPaymentBtn').addEventListener('click', () => {
+        window.location.href = targetAppointmentId ? `patient-pay-page.html?aptId=${targetAppointmentId}` : "appointments.html";
+    });
+
+    // Initialize Page Execution Runtime Core
+    window.addEventListener('DOMContentLoaded', parseGatewayParams);
+</script>
+</body>
+</html>
