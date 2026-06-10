@@ -6,439 +6,82 @@
     <title>Book Appointment - UTM Clinic Portal</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <style>
-        :root {
-            --primary: #802c44;
-            --primary-light: #f4e8ec;
-            --bg-body: #f8fafc;
-            --white: #ffffff;
-            --text-dark: #1e293b;
-            --text-muted: #64748b;
-            --border-color: #e2e8f0;
-            --radius: 16px;
-            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-
-        body {
-            display: flex;
-            min-height: 100vh;
-            background: var(--bg-body);
-            color: var(--text-dark);
-        }
-
-        /* --- Sidebar --- */
-        .sidebar {
-            width: 280px;
-            background: var(--white);
-            border-right: 1px solid var(--border-color);
-            padding: 30px 0 20px 0;
-            display: flex;
-            flex-direction: column;
-            position: sticky;
-            top: 0;
-            height: 100vh;
-        }
-
-        .logo-container {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 0 25px 30px;
-        }
-
-        .logo-box {
-            width: 42px;
-            height: 42px;
-            background: var(--primary);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            box-shadow: 0 4px 10px rgba(128, 44, 68, 0.3);
-        }
-
-        .logo-img {
-            width: 80%;
-            height: 80%;
-            object-fit: contain;
-        }
-
-        .logo-text {
-            font-size: 22px;
-            font-weight: 700;
-            color: var(--primary);
-            letter-spacing: -0.5px;
-        }
-
-        .nav-links {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-            padding: 0 15px;
-            flex: 1;
-        }
-
-        .nav-link {
-            padding: 12px 18px;
-            color: var(--text-muted);
-            border-radius: 12px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            text-decoration: none;
-        }
-
-        .nav-link i {
-            font-size: 18px;
-            width: 24px;
-        }
-
-        .nav-link:hover {
-            background: var(--primary-light);
-            color: var(--primary);
-        }
-
-        .nav-link.active {
-            background: var(--primary);
-            color: white;
-            box-shadow: 0 4px 12px rgba(128, 44, 68, 0.2);
-        }
-
-        /* Sidebar User Profile Card */
-        .sidebar-profile {
-            margin-top: auto;
-            padding: 15px 12px;
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .profile-avatar {
-            width: 40px;
-            height: 40px;
-            background: var(--primary-light);
-            color: var(--primary);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 14px;
-            flex-shrink: 0;
-        }
-
-        .profile-info {
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-        }
-
-        .profile-name {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-dark);
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .profile-email {
-            font-size: 11px;
-            color: var(--text-muted);
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        /* --- Main Content --- */
-        .main {
-            flex: 1;
-            padding: 40px 60px;
-            overflow-y: auto;
-        }
-
-        header {
-            margin-bottom: 40px;
-        }
-
-        h1 {
-            font-size: 32px;
-            font-weight: 700;
-            color: var(--text-dark);
-            margin-bottom: 8px;
-        }
-
-        .subtitle {
-            color: var(--text-muted);
-            font-size: 16px;
-        }
-
-        /* --- Form Card --- */
-        .form-card {
-            background: var(--white);
-            border-radius: var(--radius);
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow);
-            padding: 32px;
-            margin-bottom: 30px;
-        }
-
-        .form-group {
-            margin-bottom: 28px;
-        }
-
-        label {
-            display: block;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-dark);
-            margin-bottom: 10px;
-        }
-
-        label i {
-            margin-right: 8px;
-            color: var(--primary);
-        }
-
-        input, textarea {
-            width: 100%;
-            padding: 14px 16px;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            font-size: 14px;
-            transition: all 0.2s;
-            font-family: inherit;
-            background: var(--white);
-        }
-
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(128, 44, 68, 0.1);
-        }
-
-        /* Time Slots */
-        .time-slots {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-            gap: 12px;
-            margin-top: 8px;
-        }
-
-        .time-slot {
-            padding: 12px 8px;
-            text-align: center;
-            background: #f8fafc;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-
-        .time-slot:hover {
-            background: var(--primary-light);
-            border-color: var(--primary);
-        }
-
-        .time-slot.selected {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        .time-slot.disabled {
-            background: #f1f5f9;
-            color: #94a3b8;
-            cursor: not-allowed;
-            text-decoration: line-through;
-        }
-
-        .time-slot.disabled:hover {
-            background: #f1f5f9;
-            border-color: var(--border-color);
-        }
-
-        /* Action Buttons */
-        .action-buttons {
-            display: flex;
-            gap: 16px;
-            margin-top: 24px;
-        }
-
-        .btn-primary {
-            flex: 1;
-            padding: 14px 24px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-primary:hover {
-            background: #612134;
-            transform: translateY(-2px);
-        }
-
-        .btn-primary:disabled {
-            background: #cbd5e1;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .btn-secondary {
-            flex: 1;
-            padding: 14px 24px;
-            background: white;
-            color: var(--text-muted);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-secondary:hover {
-            background: #f8fafc;
-            border-color: var(--primary);
-            color: var(--primary);
-        }
-
-        /* Info Card */
-        .info-card {
-            background: var(--white);
-            border-radius: var(--radius);
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow);
-            padding: 24px;
-        }
-
-        .info-card h3 {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .info-card h3 i {
-            color: var(--primary);
-        }
-
-        .guidelines-list {
-            list-style: none;
-        }
-
-        .guidelines-list li {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            margin-bottom: 16px;
-            font-size: 14px;
-            color: var(--text-muted);
-            line-height: 1.5;
-        }
-
-        .guidelines-list li i {
-            color: var(--primary);
-            margin-top: 2px;
-            min-width: 18px;
-        }
-
-        .alert {
-            padding: 14px 18px;
-            border-radius: 12px;
-            margin-bottom: 24px;
-            font-size: 14px;
-            display: none;
-        }
-
-        .alert-success {
-            background: #dcfce7;
-            color: #15803d;
-            border: 1px solid #bbf7d0;
-        }
-
-        .alert-error {
-            background: #fee2e2;
-            color: #b91c1c;
-            border: 1px solid #fecaca;
-        }
-
-        .alert-info {
-            background: #e0f2fe;
-            color: #0369a1;
-            border: 1px solid #bae6fd;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: var(--text-muted);
-            font-size: 13px;
-            grid-column: 1 / -1;
-        }
-
-        @media (max-width: 1024px) {
-            .sidebar { width: 80px; }
-            .logo-text, .nav-link span, .sidebar-profile { display: none; }
-            .nav-link { justify-content: center; padding: 15px; }
-            .main { padding: 30px; }
-        }
+        /* Same styles as your original – unchanged, omitted for brevity */
+        :root { --primary: #802c44; --primary-light: #f4e8ec; --bg-body: #f8fafc; --white: #ffffff; --text-dark: #1e293b; --text-muted: #64748b; --border-color: #e2e8f0; --radius: 16px; --shadow: 0 10px 15px -3px rgba(0,0,0,0.05),0 4px 6px -2px rgba(0,0,0,0.02); }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { display: flex; min-height: 100vh; background: var(--bg-body); color: var(--text-dark); }
+        .sidebar { width: 280px; background: var(--white); border-right: 1px solid var(--border-color); padding: 30px 0 20px 0; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+        .logo-container { display: flex; align-items: center; gap: 12px; padding: 0 25px 30px; }
+        .logo-box { width: 42px; height: 42px; background: var(--primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden; box-shadow: 0 4px 10px rgba(128,44,68,0.3); }
+        .logo-img { width: 80%; height: 80%; object-fit: contain; }
+        .logo-text { font-size: 22px; font-weight: 700; color: var(--primary); letter-spacing: -0.5px; }
+        .nav-links { display: flex; flex-direction: column; gap: 5px; padding: 0 15px; flex: 1; }
+        .nav-link { padding: 12px 18px; color: var(--text-muted); border-radius: 12px; font-weight: 500; transition: all 0.3s ease; display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .nav-link i { font-size: 18px; width: 24px; }
+        .nav-link:hover { background: var(--primary-light); color: var(--primary); }
+        .nav-link.active { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(128,44,68,0.2); }
+        .sidebar-profile { margin-top: auto; padding: 15px 12px; border-top: 1px solid var(--border-color); display: flex; align-items: center; gap: 12px; }
+        .profile-avatar { width: 40px; height: 40px; background: var(--primary-light); color: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+        .profile-info { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+        .profile-name { font-size: 14px; font-weight: 600; color: var(--text-dark); overflow: hidden; text-overflow: ellipsis; }
+        .profile-email { font-size: 11px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; }
+        .main { flex: 1; padding: 40px 60px; overflow-y: auto; }
+        header { margin-bottom: 40px; }
+        h1 { font-size: 32px; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; }
+        .subtitle { color: var(--text-muted); font-size: 16px; }
+        .form-card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border-color); box-shadow: var(--shadow); padding: 32px; margin-bottom: 30px; }
+        .form-group { margin-bottom: 28px; }
+        label { display: block; font-size: 14px; font-weight: 600; color: var(--text-dark); margin-bottom: 10px; }
+        label i { margin-right: 8px; color: var(--primary); }
+        input, textarea { width: 100%; padding: 14px 16px; border: 1px solid var(--border-color); border-radius: 12px; font-size: 14px; transition: all 0.2s; font-family: inherit; background: var(--white); }
+        input:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(128,44,68,0.1); }
+        .time-slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; margin-top: 8px; }
+        .time-slot { padding: 12px 8px; text-align: center; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 12px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .time-slot:hover { background: var(--primary-light); border-color: var(--primary); }
+        .time-slot.selected { background: var(--primary); color: white; border-color: var(--primary); }
+        .time-slot.disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; text-decoration: line-through; }
+        .time-slot.disabled:hover { background: #f1f5f9; border-color: var(--border-color); }
+        .action-buttons { display: flex; gap: 16px; margin-top: 24px; }
+        .btn-primary { flex: 1; padding: 14px 24px; background: var(--primary); color: white; border: none; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-primary:hover { background: #612134; transform: translateY(-2px); }
+        .btn-primary:disabled { background: #cbd5e1; cursor: not-allowed; transform: none; }
+        .btn-secondary { flex: 1; padding: 14px 24px; background: white; color: var(--text-muted); border: 1px solid var(--border-color); border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+        .btn-secondary:hover { background: #f8fafc; border-color: var(--primary); color: var(--primary); }
+        .info-card { background: var(--white); border-radius: var(--radius); border: 1px solid var(--border-color); box-shadow: var(--shadow); padding: 24px; }
+        .info-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        .info-card h3 i { color: var(--primary); }
+        .guidelines-list { list-style: none; }
+        .guidelines-list li { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; font-size: 14px; color: var(--text-muted); line-height: 1.5; }
+        .guidelines-list li i { color: var(--primary); margin-top: 2px; min-width: 18px; }
+        .alert { padding: 14px 18px; border-radius: 12px; margin-bottom: 24px; font-size: 14px; display: none; }
+        .alert-success { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+        .alert-error { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+        .alert-info { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+        .loading { text-align: center; padding: 20px; color: var(--text-muted); font-size: 13px; grid-column: 1 / -1; }
+        @media (max-width: 1024px) { .sidebar { width: 80px; } .logo-text, .nav-link span, .sidebar-profile { display: none; } .nav-link { justify-content: center; padding: 15px; } .main { padding: 30px; } }
     </style>
 </head>
 <body>
 
 <aside class="sidebar">
     <div class="logo-container">
-        <div class="logo-box">
-            <img src="images/Clinic-logo.png" alt="UTM Clinic Logo" class="logo-img">
-        </div>
+        <div class="logo-box"><img src="images/Clinic-logo.png" alt="UTM Clinic Logo" class="logo-img"></div>
         <div class="logo-text">UTM Clinic</div>
     </div>
     <nav class="nav-links">
-        <a href="patient_dashboard.html" class="nav-link">
-            <i class="fas fa-columns"></i> <span>Dashboard</span>
-        </a>
-        <a href="appointments.html" class="nav-link">
-            <i class="fas fa-calendar-alt"></i> <span>My Appointments</span>
-        </a>
-        <a href="book-appointment.html" class="nav-link active">
-            <i class="fas fa-plus-circle"></i> <span>Book Appointment</span>
-        </a>
-        <a href="patient-profile.html" class="nav-link">
-            <i class="fas fa-user-circle"></i> <span>Profile</span>
-        </a>
-        
+        <a href="patient_dashboard.html" class="nav-link"><i class="fas fa-columns"></i> <span>Dashboard</span></a>
+        <a href="appointments.html" class="nav-link"><i class="fas fa-calendar-alt"></i> <span>My Appointments</span></a>
+        <a href="book-appointment.html" class="nav-link active"><i class="fas fa-plus-circle"></i> <span>Book Appointment</span></a>
+        <a href="patient-profile.html" class="nav-link"><i class="fas fa-user-circle"></i> <span>Profile</span></a>
         <div class="sidebar-profile" id="userProfileIndicator">
-          
+            <div class="profile-avatar" id="userAvatar">U</div>
+            <div class="profile-info">
+                <div class="profile-name" id="profileName">User</div>
+                <div class="profile-email" id="profileEmail">user@example.com</div>
             </div>
         </div>
-
-        <a href="#" id="logoutLink" class="nav-link" style="color: #ef4444;">
-            <i class="fas fa-sign-out-alt"></i> <span>Logout</span>
-        </a>
+        <a href="#" id="logoutLink" class="nav-link" style="color: #ef4444;"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
     </nav>
 </aside>
 
@@ -447,16 +90,13 @@
         <h1>Book Appointment</h1>
         <p class="subtitle">Select your preferred date and time for consultation</p>
     </header>
-
     <div id="alertMessage" class="alert"></div>
-
     <div class="form-card">
         <form id="appointmentForm">
             <div class="form-group">
                 <label for="date"><i class="fas fa-calendar-alt"></i> Preferred Date</label>
                 <input type="date" id="date" required>
             </div>
-
             <div class="form-group">
                 <label><i class="fas fa-clock"></i> Available Time Slots</label>
                 <div id="timeSlotsContainer" class="time-slots">
@@ -464,23 +104,16 @@
                 </div>
                 <input type="hidden" id="selectedTime">
             </div>
-
             <div class="form-group">
                 <label for="reason"><i class="fas fa-stethoscope"></i> Reason for Visit</label>
                 <textarea id="reason" rows="4" placeholder="Describe your symptoms or reason for consultation..." required></textarea>
             </div>
-
             <div class="action-buttons">
-                <button type="submit" class="btn-primary" id="submitBtn">
-                    <i class="fas fa-check-circle"></i> Confirm Booking
-                </button>
-                <button type="button" class="btn-secondary" id="cancelBtn">
-                    <i class="fas fa-times"></i> Cancel
-                </button>
+                <button type="submit" class="btn-primary" id="submitBtn"><i class="fas fa-check-circle"></i> Confirm Booking</button>
+                <button type="button" class="btn-secondary" id="cancelBtn"><i class="fas fa-times"></i> Cancel</button>
             </div>
         </form>
     </div>
-
     <div class="info-card">
         <h3><i class="fas fa-clinic-medical"></i> Booking Guidelines</h3>
         <ul class="guidelines-list">
@@ -494,11 +127,25 @@
 </main>
 
 <script type="module">
+    // ============================================================
+    // Import Firebase modules
+    // ============================================================
     import { auth, db } from './js/firebase-config.js';
     import { signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-    import { collection, query, where, getDocs, addDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+    import { 
+        collection, 
+        query, 
+        where, 
+        getDocs, 
+        doc, 
+        getDoc, 
+        setDoc,      // <-- NEW: used to create document with custom ID
+        updateDoc    // <-- NEW: used to increment the counter
+    } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
-    // Predefined time slots
+    // ============================================================
+    // Constants & State
+    // ============================================================
     const TIME_SLOTS = [
         "09:00 AM", "09:30 AM", "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM",
         "12:00 PM", "12:30 PM", "02:00 PM", "02:30 PM", "03:00 PM", "03:30 PM",
@@ -507,112 +154,93 @@
 
     let currentSelectedSlot = null;
     let bookedSlots = [];
-    let isSubmitting = false; // Tracks if a request is actively hitting Firebase
+    let isSubmitting = false;          // Prevents double submission
 
-    // Helper function to convert "HH:MM AM/PM" string to a minutes integer (e.g., "09:30 AM" -> 570)
+    // Helper: convert "HH:MM AM/PM" to total minutes (for past-time comparison)
     function parseTimeToMinutes(timeStr) {
         const [time, modifier] = timeStr.split(' ');
         let [hours, minutes] = time.split(':').map(Number);
-        
         if (hours === 12) {
             hours = modifier === 'PM' ? 12 : 0;
         } else if (modifier === 'PM') {
             hours += 12;
         }
-        
         return (hours * 60) + minutes;
     }
 
-    // Auth check and profile loader synchronization
+    // ============================================================
+    // Authentication & User Profile (sidebar)
+    // ============================================================
     auth.onAuthStateChanged(async (user) => {
         if (!user) {
             window.location.href = 'login.html';
-        } else {
-            // Render profile parameters into layout sidebar frame
-            try {
-                document.getElementById('profileEmail').textContent = user.email || '';
-                const userRef = doc(db, "users", user.uid);
-                const userSnap = await getDoc(userRef);
-                
-                if (userSnap.exists()) {
-                    const name = userSnap.data().name || 'Patient';
-                    document.getElementById('profileName').textContent = name;
-                    document.getElementById('userAvatar').textContent = name.charAt(0).toUpperCase();
-                } else {
-                    document.getElementById('profileName').textContent = 'Patient';
-                }
-            } catch (error) {
-                console.error("Error setting up profile panel context:", error);
+            return;
+        }
+        try {
+            document.getElementById('profileEmail').textContent = user.email || '';
+            const userRef = doc(db, "users", user.uid);
+            const userSnap = await getDoc(userRef);
+            if (userSnap.exists()) {
+                const name = userSnap.data().name || 'Patient';
+                document.getElementById('profileName').textContent = name;
+                document.getElementById('userAvatar').textContent = name.charAt(0).toUpperCase();
+            } else {
+                document.getElementById('profileName').textContent = 'Patient';
             }
+        } catch (error) {
+            console.error("Profile load error:", error);
         }
     });
 
-    // Load booked appointments for selected date
+    // ============================================================
+    // Slot Availability Logic
+    // ============================================================
     async function loadBookedSlots(date) {
         if (!date) return [];
-        
         try {
-            const appointmentsQuery = query(
+            const q = query(
                 collection(db, "appointments"),
                 where("date", "==", date),
                 where("status", "in", ["pending", "confirmed"])
             );
-            const appointmentsSnap = await getDocs(appointmentsQuery);
-            const bookedTimes = [];
-            appointmentsSnap.forEach((doc) => {
-                const data = doc.data();
-                if (data.time) {
-                    bookedTimes.push(data.time);
-                }
-            });
-            return bookedTimes;
+            const snap = await getDocs(q);
+            return snap.docs.map(doc => doc.data().time).filter(t => t);
         } catch (error) {
             console.error("Error loading booked slots:", error);
             return [];
         }
     }
 
-    // Render time slots with dynamic past-time filtering
     async function renderTimeSlots() {
         const date = document.getElementById('date').value;
         const container = document.getElementById('timeSlotsContainer');
-        
         if (!date) {
             container.innerHTML = '<div class="loading"><i class="fas fa-calendar-alt"></i> Select a date to view available slots</div>';
             return;
         }
-        
         container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-pulse"></i> Loading available slots...</div>';
-        
         bookedSlots = await loadBookedSlots(date);
         container.innerHTML = '';
         currentSelectedSlot = null;
         document.getElementById('selectedTime').value = '';
 
-        // Get the system's exact current date and time calculations
         const now = new Date();
-        const localTodayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+        const localTodayStr = now.toISOString().split('T')[0];
         const currentMinutesNow = (now.getHours() * 60) + now.getMinutes();
-        
+
         TIME_SLOTS.forEach(slot => {
             const slotDiv = document.createElement('div');
             slotDiv.className = 'time-slot';
-            
-            // Check 1: Has this time slot already been taken in Firestore?
             const isBooked = bookedSlots.includes(slot);
-            
-            // Check 2: Is the booking for today, and has this time slot physically passed?
-            const isTimePast = (date === localTodayStr) && (parseTimeToMinutes(slot) <= currentMinutesNow);
+            const isPastTime = (date === localTodayStr && parseTimeToMinutes(slot) <= currentMinutesNow);
 
-            if (isBooked || isTimePast) {
+            if (isBooked || isPastTime) {
                 slotDiv.classList.add('disabled');
-                slotDiv.innerHTML = `<i class="fas fa-ban" style="font-size: 10px;"></i> ${slot}`;
+                slotDiv.innerHTML = `<i class="fas fa-ban"></i> ${slot}`;
             } else {
                 slotDiv.innerHTML = `<i class="fas fa-clock"></i> ${slot}`;
                 slotDiv.addEventListener('click', () => {
-                    document.querySelectorAll('.time-slot').forEach(el => {
-                        el.classList.remove('selected');
-                    });
+                    document.querySelectorAll('.time-slot').forEach(el => el.classList.remove('selected'));
                     slotDiv.classList.add('selected');
                     currentSelectedSlot = slot;
                     document.getElementById('selectedTime').value = slot;
@@ -623,9 +251,7 @@
     }
 
     function setMinDate() {
-        const dateInput = document.getElementById('date');
-        const today = new Date().toISOString().split('T')[0];
-        dateInput.min = today;
+        document.getElementById('date').min = new Date().toISOString().split('T')[0];
     }
 
     function showAlert(message, type) {
@@ -634,18 +260,46 @@
         alertDiv.className = `alert alert-${type}`;
         alertDiv.style.display = 'block';
         window.scrollTo({ top: 0, behavior: 'smooth' });
-        setTimeout(() => {
-            alertDiv.style.display = 'none';
-        }, 5000);
+        setTimeout(() => alertDiv.style.display = 'none', 5000);
     }
 
+    // ============================================================
+    // Custom Sequential ID Generation (Counter Pattern)
+    // ============================================================
+    /**
+     * Generates the next appointment ID like "Appoint_001", "Appoint_002", ...
+     * Uses a separate "counters" collection to store the last used number.
+     * If the counter document does not exist, it initialises it with nextId = 1.
+     */
+    async function getNextAppointmentId() {
+        const counterRef = doc(db, "counters", "appointments");
+        // Try to read the counter
+        let counterSnap = await getDoc(counterRef);
+        let nextNum;
+        if (!counterSnap.exists()) {
+            // First time ever: create the counter with initial value 1
+            await setDoc(counterRef, { nextId: 1 });
+            nextNum = 1;
+        } else {
+            nextNum = counterSnap.data().nextId;
+            // Increment the counter for next time
+            await updateDoc(counterRef, { nextId: nextNum + 1 });
+        }
+        // Format as three‑digit zero‑padded number, e.g. "001"
+        const padded = nextNum.toString().padStart(3, '0');
+        return `Appoint_${padded}`;
+    }
+
+    // ============================================================
+    // Booking Submission (with custom ID)
+    // ============================================================
     async function submitAppointment() {
         const date = document.getElementById('date').value;
         const reason = document.getElementById('reason').value;
         const time = document.getElementById('selectedTime').value;
         
         const now = new Date();
-        const localTodayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+        const localTodayStr = now.toISOString().split('T')[0];
         const currentMinutesNow = (now.getHours() * 60) + now.getMinutes();
 
         if (!date || date < localTodayStr) {
@@ -660,112 +314,103 @@
             showAlert("Please provide a reason for your visit", "error");
             return false;
         }
-        
-        // Double check time validity against real-time on submission
         if (date === localTodayStr && parseTimeToMinutes(time) <= currentMinutesNow) {
-            showAlert("This time slot has just passed. Please pick a future slot.", "error");
+            showAlert("This time slot has already passed. Please pick a future slot.", "error");
             await renderTimeSlots();
             return false;
         }
 
-        const currentBookedSlots = await loadBookedSlots(date);
-        if (currentBookedSlots.includes(time)) {
-            showAlert("Sorry, this time slot has been taken. Please select another.", "error");
+        const currentBooked = await loadBookedSlots(date);
+        if (currentBooked.includes(time)) {
+            showAlert("Sorry, this time slot has just been taken. Please select another.", "error");
             await renderTimeSlots();
             return false;
         }
-        
         return true;
     }
 
-    // Event listeners
-    document.getElementById('date').addEventListener('change', () => {
-        renderTimeSlots();
-    });
-    
+    // Event: date picker change → refresh slots
+    document.getElementById('date').addEventListener('change', () => renderTimeSlots());
+
+    // Event: form submission
     document.getElementById('appointmentForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        
-        // 1. Instantly drop out if user has already triggered a click request
-        if (isSubmitting) return;
-        
+        if (isSubmitting) return;   // prevent double‑click
+
         const submitBtn = document.getElementById('submitBtn');
-        
-        // 2. Lock UI controls before starting asynchronous database calls
         isSubmitting = true;
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Booking...';
-        
+
         try {
-            // 3. Run validation rules
             const isValid = await submitAppointment();
             if (!isValid) {
-                // Release constraints if validation catches an issue
                 isSubmitting = false;
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Confirm Booking';
                 return;
             }
-            
+
             const date = document.getElementById('date').value;
             const reason = document.getElementById('reason').value;
             const time = document.getElementById('selectedTime').value;
             const user = auth.currentUser;
-            
+
+            // Get patient name from Firestore
             const userRef = doc(db, "users", user.uid);
             const userSnap = await getDoc(userRef);
             const patientName = userSnap.exists() ? userSnap.data().name : 'Patient';
-            
-            // 4. Secure single execution document dispatch
-            await addDoc(collection(db, "appointments"), {
+
+            // ========================================================
+            // CUSTOM ID GENERATION – HUMAN READABLE & SEQUENTIAL
+            // ========================================================
+            const appointmentId = await getNextAppointmentId();   // e.g. "Appoint_005"
+
+            // Save the appointment document using setDoc() with our custom ID
+            await setDoc(doc(db, "appointments", appointmentId), {
                 userId: user.uid,
                 patientName: patientName,
-                doctorId: "",
-                doctorName: "",
                 date: date,
                 time: time,
                 reason: reason,
-                status: "pending",
+                status: "pending",          // doctor will later "claim" it
+                doctorId: "",               // empty until a doctor claims
+                doctorName: "",
                 createdAt: new Date().toISOString()
             });
-            
-            showAlert(`Appointment booked successfully for ${date} at ${time}! A doctor will review and assign themselves shortly.`, "success");
-            
+
+            showAlert(`Appointment booked successfully for ${date} at ${time}! A doctor will review shortly.`, "success");
+
+            // Reset form fields
             document.getElementById('reason').value = '';
             document.getElementById('selectedTime').value = '';
             currentSelectedSlot = null;
-            await renderTimeSlots();
-            
+            await renderTimeSlots();          // refresh available slots
+
+            // Redirect after 3 seconds
             setTimeout(() => {
                 window.location.href = "patient_dashboard.html";
             }, 3000);
-            
+
         } catch (error) {
-            console.error("Error booking appointment:", error);
+            console.error("Booking error:", error);
             showAlert("Error: " + error.message, "error");
-            
-            // Re-enable if structural database write issues break the promise
             isSubmitting = false;
             submitBtn.disabled = false;
             submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> Confirm Booking';
         }
     });
-    
+
     document.getElementById('cancelBtn').addEventListener('click', () => {
         window.location.href = "patient_dashboard.html";
     });
 
-    // Logout
     document.getElementById('logoutLink').addEventListener('click', async (e) => {
         e.preventDefault();
-        try {
-            await signOut(auth);
-            window.location.href = 'login.html';
-        } catch (error) {
-            console.error("Error signing out:", error);
-        }
+        await signOut(auth);
+        window.location.href = 'login.html';
     });
-    
+
     setMinDate();
 </script>
 </body>

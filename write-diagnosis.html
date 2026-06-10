@@ -1,4 +1,4 @@
-<!-- Sonia Selvaratnam 22/5/2026 -->
+<!-- Sonia Selvaratnam 10/6/2026 - Added custom ID using appointmentId -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -106,14 +106,17 @@
   </div>
 
   <script type="module">
+    // Import Firebase functions
     import { auth, db } from './js/firebase-config.js';
-    import { doc, getDoc, collection, addDoc, updateDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+    import { doc, getDoc, collection, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
+    // Get appointment ID from URL parameter (e.g., ?id=Appoint_001)
     const urlParams = new URLSearchParams(window.location.search);
     const appointmentId = urlParams.get('id');
     let globalUserId = "";
     let medicationsList = [];
 
+    // Helper: display toast notifications
     function showToast(message, type = 'success') {
       const toast = document.createElement('div');
       toast.className = `toast ${type === 'error' ? 'error' : (type === 'warning' ? 'warning' : '')}`;
@@ -122,7 +125,7 @@
       setTimeout(() => toast.remove(), 3000);
     }
 
-    // Load medications from Firestore for dropdown
+    // Load all available medications from Firestore (for dropdown)
     async function loadMedicationsForDropdown() {
       try {
         const querySnapshot = await getDocs(collection(db, "medications"));
@@ -137,6 +140,7 @@
       }
     }
 
+    // Load patient details from the appointment and user collections
     async function loadPatientDetails() {
       if (!appointmentId) {
         showToast("No appointment ID provided", "error");
@@ -153,6 +157,7 @@
 
         const appointmentData = appointmentSnap.data();
         globalUserId = appointmentData.userId;
+        // Display appointment reference (show first 8 chars)
         document.getElementById('appointmentIdDisplay').textContent = `Appointment #${appointmentId.substring(0, 8)}`;
         document.getElementById('patientNameDisplay').textContent = appointmentData.patientName || "Unknown Patient";
         document.getElementById('appointmentDateDisplay').textContent = `${appointmentData.date} at ${appointmentData.time || 'TBD'}`;
@@ -169,7 +174,7 @@
       }
     }
 
-    // Dynamic Medication Selector with stock awareness
+    // Dynamically create a medication row in the prescription section
     function addMedicationRow(medicationData = null) {
       const container = document.getElementById("medicationContainer");
       const emptyDiv = document.getElementById("emptyMedication");
@@ -206,7 +211,7 @@
         </div>
       `;
 
-      // Add stock warning listener
+      // Add stock warning listener (show low stock warning)
       const selectEl = medicationDiv.querySelector('.med-select');
       const warningDiv = medicationDiv.querySelector('.stock-warning');
       selectEl.addEventListener('change', () => {
@@ -223,6 +228,7 @@
         }
       });
       
+      // If medicationData is provided (e.g., when loading a draft), pre-fill values
       if (medicationData) {
         const selectEl = medicationDiv.querySelector('.med-select');
         for (let i = 0; i < selectEl.options.length; i++) {
@@ -240,9 +246,10 @@
       container.appendChild(medicationDiv);
     }
 
+    // Make function globally available for inline onclick
     window.addMedicationRow = addMedicationRow;
 
-    // Load draft if exists
+    // Load saved draft from localStorage
     function loadDraft() {
       const draft = localStorage.getItem(`diagnosisDraft_${appointmentId}`);
       if (draft) {
@@ -260,11 +267,11 @@
       }
     }
 
-    // Submit diagnosis to diagnosis table
+    // Submit diagnosis – save to Firestore using custom ID (appointmentId)
     document.getElementById("diagnosisForm").addEventListener("submit", async (e) => {
       e.preventDefault();
-      
 
+      // Collect prescribed medications from dynamically added rows
       const prescribedMedications = [];
       document.querySelectorAll('.med-item').forEach(item => {
         const selectEl = item.querySelector('.med-select');
@@ -284,47 +291,50 @@
         });
       });
 
-      // Get doctor details for diagnosis record (26/4/2026 by Sonia)
+      // Get current doctor's details from Firestore
       const doctor = auth.currentUser;
-let doctorData = { name: "Unknown Doctor", specialization: "", signatureUrl: "", licenseNumber: "" };
-if (doctor) {
-    const doctorDoc = await getDoc(doc(db, "users", doctor.uid));
-    if (doctorDoc.exists()) {
-        const docData = doctorDoc.data();
-        doctorData = {
+      let doctorData = { name: "Unknown Doctor", specialization: "", signatureUrl: "", licenseNumber: "" };
+      if (doctor) {
+        const doctorDoc = await getDoc(doc(db, "users", doctor.uid));
+        if (doctorDoc.exists()) {
+          const docData = doctorDoc.data();
+          doctorData = {
             name: docData.name || "Doctor",
             specialization: docData.specialization || "General Practitioner",
             signatureUrl: docData.signatureUrl || "",
             licenseNumber: docData.licenseNumber || ""
-        };
-    }
-}
+          };
+        }
+      }
 
+      // Prepare diagnosis data object
+      const mcCheckbox = document.getElementById("mcCheckbox");
+      const mcDaysInput = document.getElementById("mcDays");
       const diagnosisData = {
-        appointmentId: appointmentId,
+        appointmentId: appointmentId,          // Link to appointment
+        userId: globalUserId,                  // Patient ID
+        doctorId: doctor?.uid || "",
         doctorName: doctorData.name,
         doctorSpecialization: doctorData.specialization,
         doctorSignatureUrl: doctorData.signatureUrl,
         doctorLicenseNumber: doctorData.licenseNumber,
-        userId: globalUserId,
-        doctorId: doctor?.uid || "",
         diagnosisNotes: document.getElementById("diagnosis").value,
         medications: prescribedMedications,
-        mcIssued: document.getElementById("mcCheckbox").checked,
-        mcDays: document.getElementById("mcCheckbox").checked ? parseInt(document.getElementById("mcDays").value, 10) : 0,
+        mcIssued: mcCheckbox.checked,
+        mcDays: mcCheckbox.checked ? parseInt(mcDaysInput.value, 10) : 0,
         createdAt: new Date().toISOString(),
         status: "active"
       };
 
       try {
-        // Save to diagnosis collection
-        await addDoc(collection(db, "diagnosis"), diagnosisData);
-        
-        // Update appointment status to completed
-        if (appointmentId) {
-          const appointmentRef = doc(db, "appointments", appointmentId);
-          await updateDoc(appointmentRef, { status: "completed" });
-        }
+        // IMPORTANT: Use appointmentId as the document ID in the "diagnosis" collection.
+        // This ensures one-to-one mapping and human‑readable IDs (e.g., "Appoint_001").
+        const diagnosisRef = doc(db, "diagnosis", appointmentId);
+        await setDoc(diagnosisRef, diagnosisData);
+
+        // Update appointment status to "completed"
+        const appointmentRef = doc(db, "appointments", appointmentId);
+        await updateDoc(appointmentRef, { status: "completed" });
 
         showToast("✅ Diagnosis submitted successfully!");
         localStorage.removeItem(`diagnosisDraft_${appointmentId}`);
@@ -335,7 +345,7 @@ if (doctor) {
       }
     });
 
-    // Save draft
+    // Save current form data as draft in localStorage
     document.getElementById("draftBtn").addEventListener("click", () => {
       const medications = [];
       document.querySelectorAll('.med-item').forEach(item => {
@@ -356,18 +366,19 @@ if (doctor) {
       showToast("Draft saved locally!", "warning");
     });
 
-    // Event listeners
+    // Event listeners for UI buttons
     document.getElementById("addMedicationBtn").addEventListener("click", () => addMedicationRow());
     document.getElementById("backBtn").addEventListener("click", () => window.location.href = "doctor_dashboard.html");
     document.getElementById("cancelBtn").addEventListener("click", () => window.location.href = "doctor_dashboard.html");
 
+    // Toggle MC section visibility
     const mcCheckbox = document.getElementById("mcCheckbox");
     const mcSection = document.getElementById("mcSection");
     mcCheckbox.addEventListener("change", () => {
       mcSection.classList.toggle("hidden", !mcCheckbox.checked);
     });
 
-    // Initialize
+    // Initialize page: load medications, patient details, and any saved draft
     auth.onAuthStateChanged(async (user) => {
       if (!user) { window.location.href = 'login.html'; return; }
       await loadMedicationsForDropdown();
