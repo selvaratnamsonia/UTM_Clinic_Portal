@@ -1,7 +1,6 @@
 // js/mc-generator.js
 
 export async function generateMCPDF(mcData) {
-    // Reference the globally exposed html2pdf instance safely loaded from our local script tag
     const pdfEngine = window.html2pdf;
     
     if (!pdfEngine) {
@@ -10,7 +9,6 @@ export async function generateMCPDF(mcData) {
         return;
     }
     
-    // Create an isolated container for layout processing
     const tempDiv = document.createElement('div');
     tempDiv.style.padding = '40px';
     tempDiv.style.backgroundColor = 'white';
@@ -18,11 +16,11 @@ export async function generateMCPDF(mcData) {
     tempDiv.style.maxWidth = '800px';
     tempDiv.style.margin = '0 auto';
 
-    // --- ROBUST DATA FALLBACKS ---
-    // If the database uses different keys, this catches them to prevent "undefined"
-    const safeMatric = mcData.matricNumber || mcData.matricNo || mcData.studentId || mcData.patientId || 'N/A';
+    // --- DATA MAPPING ---
+    // Added mcData.matricId here to catch standard user DB formats
+    const safeMatric = mcData.matricId || mcData.matricNumber || mcData.matricNo || mcData.studentId || mcData.patientId || 'N/A';
     const safeMCDays = parseInt(mcData.mcDays || mcData.mcDuration || 1);
-    const safeFaculty = mcData.faculty || '—';
+    const safeFaculty = mcData.faculty || 'General';
     const safeDate = mcData.diagnosisDate ? new Date(mcData.diagnosisDate) : new Date();
     
     const today = new Date().toLocaleDateString('en-MY', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -31,7 +29,6 @@ export async function generateMCPDF(mcData) {
     
     const startDate = new Date(safeDate);
     const endDate = new Date(startDate);
-    // Calculate end date based on days (subtract 1 because day 1 is the start date)
     endDate.setDate(endDate.getDate() + (safeMCDays - 1));
     const formatDate = (date) => date.toLocaleDateString('en-MY', { day: '2-digit', month: '2-digit', year: 'numeric' });
     
@@ -80,7 +77,6 @@ export async function generateMCPDF(mcData) {
     
     const safeFileName = `MC_${(mcData.patientName || 'Patient').replace(/[^a-zA-Z0-9]/g, '_')}_${today.replace(/\//g, '')}.pdf`;
 
-    // Strict non-modular config payload layout targeting options
     const opt = { 
         margin: [0.4, 0.4, 0.4, 0.4], 
         filename: safeFileName, 
@@ -94,7 +90,6 @@ export async function generateMCPDF(mcData) {
     };
     
     try {
-        // Execute the direct layout transformation engine call
         await pdfEngine().set(opt).from(tempDiv).save();
     } catch (error) {
         console.error("PDF generation layout processing issue:", error);

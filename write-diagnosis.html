@@ -1,4 +1,7 @@
+<<<<<<< Updated upstream
 <!-- Sonia Selvaratnam 10/6/2026 - Added custom ID using appointmentId -->
+=======
+>>>>>>> Stashed changes
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,11 +11,40 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
-    .bg-primary { background-color: #802c44; }
-    .hover\:bg-primary-dark:hover { background-color: #6a2438; }
+    :root {
+      --primary: #802c44;
+      --primary-hover: #6a2438;
+    }
+    .logo-box { 
+      width: 38px; 
+      height: 38px; 
+      background: var(--primary); 
+      border-radius: 10px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+    }
+    .logo-img { width: 80%; height: 80%; object-fit: contain; }
+    .nav-links { display: flex; flex-direction: column; gap: 6px; padding: 0 16px; }
+    .nav-link {
+      padding: 12px 16px; 
+      color: #4b5563; 
+      border-radius: 12px; 
+      font-weight: 500;
+      transition: all 0.2s ease; 
+      display: flex; 
+      align-items: center; 
+      gap: 12px; 
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .nav-link:hover { background: #f3f4f6; color: var(--primary); }
+    .nav-link.active { background: var(--primary); color: white; }
+    
+    /* Updated Toast Styles: Pinned to Top Right */
     .toast {
       position: fixed;
-      bottom: 30px;
+      top: 30px; /* Changed from bottom to top */
       right: 30px;
       background: #10b981;
       color: white;
@@ -21,7 +53,11 @@
       font-size: 14px;
       font-weight: 500;
       z-index: 1000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       animation: slideIn 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     .toast.error { background: #ef4444; }
     .toast.warning { background: #f59e0b; }
@@ -31,84 +67,141 @@
     }
   </style>
 </head>
-<body class="bg-gray-100 font-sans">
+<body class="bg-gray-100 font-sans flex">
 
-  <div class="max-w-4xl mx-auto py-10 px-4">
-    <button id="backBtn" class="flex items-center gap-2 text-[#802c44] hover:underline mb-6">
-      <i class="fas fa-arrow-left w-4 h-4"></i> Back to Dashboard
-    </button>
-
-    <div class="mb-8">
-      <h1 class="text-3xl font-bold mb-2">Write Diagnosis</h1>
-      <p class="text-gray-500" id="appointmentIdDisplay">Loading Appointment...</p>
-    </div>
-
-    <!-- Patient Information Card -->
-    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm mb-6">
-      <h2 class="text-xl font-semibold mb-4">Patient Information</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div><p class="text-sm text-gray-500 mb-1">Patient Name</p><p class="font-medium" id="patientNameDisplay">Loading...</p></div>
-        <div><p class="text-sm text-gray-500 mb-1">Matric Number</p><p class="font-medium" id="matricNumberDisplay">Loading...</p></div>
-        <div><p class="text-sm text-gray-500 mb-1">Appointment Date</p><p class="font-medium" id="appointmentDateDisplay">Loading...</p></div>
-        <div><p class="text-sm text-gray-500 mb-1">Reason for Visit</p><p class="font-medium" id="reasonDisplay">Loading...</p></div>
+  <aside class="w-64 bg-white text-gray-700 h-screen sticky top-0 flex flex-col border-r border-gray-200 shadow-sm z-20">
+    <div class="p-5 flex items-center gap-3 border-b border-gray-100">
+      <div class="logo-box">
+        <img src="images/Clinic-logo.png" alt="UTM Clinic Logo" class="logo-img">
+      </div>
+      <div>
+        <h1 class="font-bold tracking-wide text-gray-900 leading-tight text-sm">UTM Clinic Portal</h1>
+        <span class="text-[10px] text-gray-400 uppercase tracking-widest font-bold block mt-0.5">Doctor Dashboard</span>
       </div>
     </div>
 
-    <form id="diagnosisForm" class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-      <h2 class="text-xl font-semibold mb-6">Diagnosis & Prescription</h2>
+    <nav class="nav-links mt-6">
+      <a href="doctor_dashboard.html" class="nav-link">
+        <i class="fas fa-columns"></i>
+        <span>Dashboard</span>
+      </a>
+      <a href="claim-appointment.html" class="nav-link active">
+        <i class="fas fa-calendar-alt"></i>
+        <span>Claim Appointments</span>
+      </a>
+      <a href="past-patient.html" class="nav-link">
+        <i class="fas fa-history"></i>
+        <span>Past Patients</span>
+      </a>
+    </nav>
 
-      <div class="space-y-6">
-        <!-- Diagnosis -->
+    <div class="p-4 border-t border-gray-100 mt-auto">
+      <button id="sidebarLogoutBtn" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl text-xs font-semibold uppercase tracking-wider transition shadow-sm border border-red-100">
+        <i class="fas fa-sign-out-alt"></i> Sign Out
+      </button>
+    </div>
+  </aside>
+
+  <main class="flex-1 min-h-screen overflow-y-auto">
+    <div class="max-w-7xl mx-auto py-10 px-6">
+
+      <div class="mb-8 flex items-center justify-between">
         <div>
-          <label for="diagnosis" class="block mb-2 font-medium">Diagnosis</label>
-          <textarea id="diagnosis" rows="6" placeholder="Enter detailed diagnosis and observations..." required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#802c44]"></textarea>
-          <p class="text-xs text-gray-500 mt-1">Include symptoms, examination findings, and diagnosis</p>
+          <h1 class="text-3xl font-bold mb-2">Write Diagnosis</h1>
+          <p class="text-gray-500" id="appointmentIdDisplay">Loading Appointment...</p>
         </div>
-
-        <!-- Prescription Medications -->
-        <div>
-          <div class="flex items-center justify-between mb-4">
-            <label class="font-medium">Prescription</label>
-            <button type="button" id="addMedicationBtn" class="flex items-center gap-2 px-4 py-2 bg-[#802c44] text-white rounded-lg hover:bg-[#6d2438] text-sm transition">
-              <i class="fas fa-plus w-4 h-4"></i> Add Medication
-            </button>
-          </div>
-
-          <div id="emptyMedication" class="p-8 bg-gray-50 rounded-lg text-center text-gray-500 border border-dashed border-gray-300">
-            No medications added yet. Click "Add Medication" to prescribe.
-          </div>
-          <div id="medicationContainer" class="space-y-4"></div>
-        </div>
-
-        <!-- Medical Certificate -->
-        <div class="border-t pt-6">
-          <label class="flex items-center gap-3 mb-4">
-            <input type="checkbox" id="mcCheckbox" class="w-5 h-5 rounded" />
-            <span class="font-medium">Medical Certificate (MC) Required</span>
-          </label>
-          <div id="mcSection" class="hidden ml-8">
-            <label for="mcDays" class="block mb-2 font-medium">Number of Rest Days</label>
-            <input type="number" id="mcDays" min="1" max="14" placeholder="Enter number of days" class="w-full md:w-64 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#802c44]" />
-            <p class="text-xs text-gray-500 mt-1">Maximum 14 days. For longer periods, specify in notes.</p>
-          </div>
-        </div>
-
-        <!-- Action Buttons -->
-        <div class="flex flex-wrap gap-4 pt-6">
-          <button type="submit" class="flex-1 flex items-center justify-center gap-2 bg-[#802c44] text-white px-6 py-3 rounded-lg hover:bg-[#6d2438] transition">
-            <i class="fas fa-save w-5 h-5"></i> Submit Diagnosis
-          </button>
-          <button type="button" id="draftBtn" class="px-6 py-3 rounded-lg border border-gray-300 hover:bg-gray-100 transition">Save as Draft</button>
-          <button type="button" id="cancelBtn" class="px-6 py-3 rounded-lg border border-gray-300 hover:bg-gray-100 transition">Cancel</button>
-        </div>
+        <button id="backBtn" class="px-4 py-2 text-sm font-medium border border-gray-300 rounded-lg bg-white text-gray-700 hover:bg-gray-50 transition">
+          <i class="fas fa-arrow-left mr-2"></i>Back
+        </button>
       </div>
-    </form>
-  </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        
+        <div class="lg:col-span-2">
+          <form id="diagnosisForm" class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+            <h2 class="text-xl font-semibold mb-6">Diagnosis & Prescription</h2>
+
+            <div class="space-y-6">
+              <div>
+                <label for="diagnosis" class="block mb-2 font-medium">Diagnosis</label>
+                <textarea id="diagnosis" rows="8" placeholder="Enter detailed diagnosis and observations..." required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#802c44]"></textarea>
+                <p class="text-xs text-gray-500 mt-1">Include symptoms, examination findings, and diagnosis</p>
+              </div>
+
+              <div>
+                <div class="flex items-center justify-between mb-4">
+                  <label class="font-medium">Prescription</label>
+                  <button type="button" id="addMedicationBtn" class="flex items-center gap-2 px-4 py-2 bg-[#802c44] text-white rounded-lg hover:bg-[#6d2438] text-sm transition">
+                    <i class="fas fa-plus w-4 h-4"></i> Add Medication
+                  </button>
+                </div>
+
+                <div id="emptyMedication" class="p-8 bg-gray-50 rounded-lg text-center text-gray-500 border border-dashed border-gray-300">
+                  No medications added yet. Click "Add Medication" to prescribe.
+                </div>
+                <div id="medicationContainer" class="space-y-4"></div>
+              </div>
+
+              <div class="border-t pt-6">
+                <label class="flex items-center gap-3 mb-4">
+                  <input type="checkbox" id="mcCheckbox" class="w-5 h-5 rounded" />
+                  <span class="font-medium">Medical Certificate (MC) Required</span>
+                </label>
+                <div id="mcSection" class="hidden ml-8">
+                  <label for="mcDays" class="block mb-2 font-medium">Number of Rest Days</label>
+                  <input type="number" id="mcDays" min="1" max="14" placeholder="Enter number of days" class="w-full md:w-64 px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#802c44]" />
+                  <p class="text-xs text-gray-500 mt-1">Maximum 14 days. For longer periods, specify in notes.</p>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap gap-4 pt-6">
+                <button type="submit" class="flex-1 flex items-center justify-center gap-2 bg-[#802c44] text-white px-6 py-3 rounded-lg hover:bg-[#6d2438] transition">
+                  <i class="fas fa-save w-5 h-5"></i> Submit Diagnosis
+                </button>
+                <button type="button" id="draftBtn" class="px-6 py-3 rounded-lg border border-gray-300 hover:bg-gray-100 transition">Save as Draft</button>
+                <button type="button" id="cancelBtn" class="px-6 py-3 rounded-lg border border-gray-300 hover:bg-gray-100 transition">Cancel</button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <div class="lg:col-span-1 lg:sticky lg:top-24">
+          <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+            <h2 class="text-xl font-semibold mb-4 border-b pb-2">Patient Information</h2>
+            <div class="space-y-4">
+              <div>
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Patient Name</p>
+                <p class="font-medium text-gray-900 text-base" id="patientNameDisplay">Loading...</p>
+              </div>
+              <div>
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Matric Number</p>
+                <p class="font-medium text-gray-900 text-base" id="matricNumberDisplay">Loading...</p>
+              </div>
+              <div>
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Appointment Date</p>
+                <p class="font-medium text-gray-900 text-base" id="appointmentDateDisplay">Loading...</p>
+              </div>
+              <div>
+                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-0.5">Reason for Visit</p>
+                <p class="font-medium text-gray-700 bg-gray-50 p-3 rounded-lg border border-gray-100 text-sm mt-1" id="reasonDisplay">Loading...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
 
   <script type="module">
     // Import Firebase functions
     import { auth, db } from './js/firebase-config.js';
+<<<<<<< Updated upstream
     import { doc, getDoc, collection, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+=======
+    import { signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
+    import { doc, getDoc, collection, addDoc, updateDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+>>>>>>> Stashed changes
 
     // Get appointment ID from URL parameter (e.g., ?id=Appoint_001)
     const urlParams = new URLSearchParams(window.location.search);
@@ -166,7 +259,12 @@
         if (globalUserId) {
           const userRef = doc(db, "users", globalUserId);
           const userSnap = await getDoc(userRef);
-          document.getElementById('matricNumberDisplay').textContent = userSnap.exists() ? (userSnap.data().matricNumber || "N/A") : "User profile missing";
+          if (userSnap.exists()) {
+            const userData = userSnap.data();
+            document.getElementById('matricNumberDisplay').textContent = userData.matricNumber || userData.matric || "N/A";
+          } else {
+            document.getElementById('matricNumberDisplay').textContent = "User profile missing";
+          }
         }
       } catch (error) {
         console.error("Error loading patient details:", error);
@@ -211,7 +309,10 @@
         </div>
       `;
 
+<<<<<<< Updated upstream
       // Add stock warning listener (show low stock warning)
+=======
+>>>>>>> Stashed changes
       const selectEl = medicationDiv.querySelector('.med-select');
       const warningDiv = medicationDiv.querySelector('.stock-warning');
       selectEl.addEventListener('change', () => {
@@ -246,8 +347,12 @@
       container.appendChild(medicationDiv);
     }
 
+<<<<<<< Updated upstream
     // Make function globally available for inline onclick
     window.addMedicationRow = addMedicationRow;
+=======
+    document.getElementById("addMedicationBtn").addEventListener("click", () => addMedicationRow());
+>>>>>>> Stashed changes
 
     // Load saved draft from localStorage
     function loadDraft() {
@@ -270,8 +375,12 @@
     // Submit diagnosis – save to Firestore using custom ID (appointmentId)
     document.getElementById("diagnosisForm").addEventListener("submit", async (e) => {
       e.preventDefault();
+<<<<<<< Updated upstream
 
       // Collect prescribed medications from dynamically added rows
+=======
+      
+>>>>>>> Stashed changes
       const prescribedMedications = [];
       document.querySelectorAll('.med-item').forEach(item => {
         const selectEl = item.querySelector('.med-select');
@@ -291,7 +400,10 @@
         });
       });
 
+<<<<<<< Updated upstream
       // Get current doctor's details from Firestore
+=======
+>>>>>>> Stashed changes
       const doctor = auth.currentUser;
       let doctorData = { name: "Unknown Doctor", specialization: "", signatureUrl: "", licenseNumber: "" };
       if (doctor) {
@@ -299,10 +411,17 @@
         if (doctorDoc.exists()) {
           const docData = doctorDoc.data();
           doctorData = {
+<<<<<<< Updated upstream
             name: docData.name || "Doctor",
             specialization: docData.specialization || "General Practitioner",
             signatureUrl: docData.signatureUrl || "",
             licenseNumber: docData.licenseNumber || ""
+=======
+              name: docData.name || "Doctor",
+              specialization: docData.specialization || "General Practitioner",
+              signatureUrl: docData.signatureUrl || "",
+              licenseNumber: docData.licenseNumber || ""
+>>>>>>> Stashed changes
           };
         }
       }
@@ -327,6 +446,7 @@
       };
 
       try {
+<<<<<<< Updated upstream
         // IMPORTANT: Use appointmentId as the document ID in the "diagnosis" collection.
         // This ensures one-to-one mapping and human‑readable IDs (e.g., "Appoint_001").
         const diagnosisRef = doc(db, "diagnosis", appointmentId);
@@ -335,8 +455,16 @@
         // Update appointment status to "completed"
         const appointmentRef = doc(db, "appointments", appointmentId);
         await updateDoc(appointmentRef, { status: "completed" });
+=======
+        await addDoc(collection(db, "diagnosis"), diagnosisData);
+        
+        if (appointmentId) {
+          const appointmentRef = doc(db, "appointments", appointmentId);
+          await updateDoc(appointmentRef, { status: "completed" });
+        }
+>>>>>>> Stashed changes
 
-        showToast("✅ Diagnosis submitted successfully!");
+        showToast(" Diagnosis submitted successfully!");
         localStorage.removeItem(`diagnosisDraft_${appointmentId}`);
         setTimeout(() => { window.location.href = "doctor_dashboard.html"; }, 1500);
       } catch (error) {
@@ -366,8 +494,23 @@
       showToast("Draft saved locally!", "warning");
     });
 
+<<<<<<< Updated upstream
     // Event listeners for UI buttons
     document.getElementById("addMedicationBtn").addEventListener("click", () => addMedicationRow());
+=======
+    // Sidebar Sign Out Trigger 
+    document.getElementById("sidebarLogoutBtn").addEventListener("click", async () => {
+      try {
+        await signOut(auth);
+        showToast("Signed out successfully");
+        setTimeout(() => window.location.href = "login.html", 1000);
+      } catch (error) {
+        showToast("Error signing out", "error");
+      }
+    });
+
+    // Event listeners
+>>>>>>> Stashed changes
     document.getElementById("backBtn").addEventListener("click", () => window.location.href = "doctor_dashboard.html");
     document.getElementById("cancelBtn").addEventListener("click", () => window.location.href = "doctor_dashboard.html");
 
@@ -378,7 +521,11 @@
       mcSection.classList.toggle("hidden", !mcCheckbox.checked);
     });
 
+<<<<<<< Updated upstream
     // Initialize page: load medications, patient details, and any saved draft
+=======
+    // Initialize Page Flow Setup
+>>>>>>> Stashed changes
     auth.onAuthStateChanged(async (user) => {
       if (!user) { window.location.href = 'login.html'; return; }
       await loadMedicationsForDropdown();

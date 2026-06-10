@@ -245,6 +245,108 @@
             padding: 40px;
             color: var(--text-muted);
         }
+
+        /* --- Premium Custom Modal Styles --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 9999;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .custom-modal {
+            background: var(--white);
+            border-radius: 24px;
+            padding: 32px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transform: scale(0.95) translateY(10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-align: center;
+        }
+
+        .modal-overlay.active .custom-modal {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--primary-light);
+            color: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin: 0 auto 20px auto;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 12px;
+        }
+
+        .modal-message {
+            font-size: 15px;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 28px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px 0;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .modal-btn-cancel {
+            background: #f1f5f9;
+            color: var(--text-dark);
+        }
+
+        .modal-btn-cancel:hover {
+            background: #e2e8f0;
+        }
+
+        .modal-btn-confirm {
+            background: var(--primary);
+            color: white;
+        }
+
+        .modal-btn-confirm:hover {
+            background: #6a2438;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(128, 44, 68, 0.25);
+        }
     </style>
 </head>
 <body>
@@ -266,6 +368,20 @@
     </div>
 </div>
 
+<div class="modal-overlay" id="customConfirmOverlay">
+    <div class="custom-modal">
+        <div class="modal-icon">
+            <i class="fas fa-pills"></i>
+        </div>
+        <h3 class="modal-title">Confirm Dispense</h3>
+        <p class="modal-message" id="customConfirmMessage">Are you sure you want to dispense this medication to the patient?</p>
+        <div class="modal-actions">
+            <button class="modal-btn modal-btn-cancel" id="cancelDispenseBtn">Cancel</button>
+            <button class="modal-btn modal-btn-confirm" id="confirmDispenseBtn">Yes, Dispense</button>
+        </div>
+    </div>
+</div>
+
 <script type="module">
     import { auth, db } from './js/firebase-config.js';
     import { doc, getDoc, collection, query, where, getDocs, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
@@ -273,6 +389,24 @@
     const urlParams = new URLSearchParams(window.location.search);
     const appointmentId = urlParams.get('appointmentId');
     let dynamicDiagnosisDocId = null;
+
+    // --- Custom Modal Logic State ---
+    let pendingDispenseAction = null;
+
+    function closeConfirmModal() {
+        document.getElementById('customConfirmOverlay').classList.remove('active');
+        pendingDispenseAction = null;
+    }
+
+    document.getElementById('cancelDispenseBtn').addEventListener('click', closeConfirmModal);
+    
+    document.getElementById('confirmDispenseBtn').addEventListener('click', async () => {
+        if (pendingDispenseAction) {
+            const action = pendingDispenseAction;
+            closeConfirmModal();
+            await action(); 
+        }
+    });
 
     function showToast(message, isError = false) {
         const toast = document.createElement('div');
@@ -527,7 +661,7 @@
                     status: "diagnosed"
                 });
 
-                showToast(`✅ Added ${name} successfully to patient bill!`);
+                showToast(`Added ${name} successfully to patient bill!`);
                 
                 loadDiagnosis();
             } catch (err) {
@@ -542,12 +676,19 @@
     async function attachDispenseListeners() {
         const dispenseBtns = document.querySelectorAll('.dispense-btn');
         for (const btn of dispenseBtns) {
+            // Clone and replace to prevent duplicate listeners if called multiple times
             const newBtn = btn.cloneNode(true);
             btn.parentNode.replaceChild(newBtn, btn);
             
-            newBtn.addEventListener('click', async () => {
+            newBtn.addEventListener('click', () => {
                 const medicineName = newBtn.getAttribute('data-medicine');
-                if (confirm(`Dispense "${medicineName}" to patient?`)) {
+                
+                // 1. Update the text dynamically
+                document.getElementById('customConfirmMessage').innerHTML = 
+                    `Are you sure you want to dispense <strong>${escapeHtml(medicineName)}</strong> to the patient?`;
+                
+                // 2. Store the action to be executed if the user clicks "Yes, Dispense"
+                pendingDispenseAction = async () => {
                     try {
                         const medicationsRef = collection(db, "medications");
                         const medQuery = query(medicationsRef, where("name", "==", medicineName));
@@ -573,7 +714,10 @@
                         console.error("Error dispensing medication:", error);
                         showToast(`❌ Error dispensing: ${error.message}`, true);
                     }
-                }
+                };
+
+                // 3. Show the custom modal
+                document.getElementById('customConfirmOverlay').classList.add('active');
             });
         }
     }

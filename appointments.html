@@ -706,7 +706,7 @@
             const userSnap = await getDoc(userDocRef);
             const userData = userSnap.exists() ? userSnap.data() : {};
 
-            // 3. --- NEW LOGIC: Fetch the Diagnosis Record to get correct MC Days ---
+            // 3. Fetch the Diagnosis Record to get correct MC Days
             let actualMCDays = aptData.mcDays || 1; 
             const diagnosisRef = collection(db, "diagnosis");
             const q = query(diagnosisRef, where("appointmentId", "==", appointmentId));
@@ -722,12 +722,13 @@
             }
 
             // 4. Restructure dataset elements dynamically
+            // FIX: Added userData.matricId and userData.fullName fallbacks here!
             const mcData = {
-                patientName: userData.name || aptData.patientName || "UTM Patient",
-                matricNumber: userData.matricNumber || aptData.matricNo || aptData.studentId || "NOT RECORDED",
+                patientName: userData.fullName || userData.name || aptData.patientName || "UTM Patient",
+                matricNumber: userData.matricId || userData.matricNumber || aptData.matricId || aptData.matricNo || aptData.studentId || "NOT RECORDED",
                 faculty: userData.faculty || aptData.faculty || "General",
                 diagnosisDate: aptData.date, 
-                mcDays: actualMCDays, // Dynamically injected from the diagnosis query above
+                mcDays: actualMCDays,
                 doctorName: aptData.doctorName || "Duty Doctor",
                 doctorSpecialization: aptData.doctorSpecialization || "Pegawai Perubatan",
                 doctorLicenseNumber: aptData.doctorLicenseNumber || "MMC Registered",
