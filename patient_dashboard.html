@@ -374,7 +374,7 @@
     } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
     // =========================================================================
-    // HELPER UTILITIES (Placed on top to avoid execution order issues)
+    // HELPER UTILITIES
     // =========================================================================
     function parseAppointmentDateTime(dateStr, timeStr) {
         if (!dateStr) return new Date(0);
@@ -439,15 +439,11 @@
     // =========================
     async function loadDashboardData(userId) {
         const now = new Date();
-        
-        // Normalize structural baseline for comparison to exactly start of today
         const startOfToday = new Date();
         startOfToday.setHours(0, 0, 0, 0);
 
         try {
-            // =========================
             // FETCH ALL APPOINTMENTS FOR THIS USER
-            // =========================
             const baseQuery = query(
                 collection(db, "appointments"),
                 where("userId", "==", userId)
@@ -473,14 +469,15 @@
                 return statusValid && aptDateTime >= now;
             });
             
-            // Sort ascendingly (soonest upcoming appointment on top)
             upcomingAppointments.sort((a, b) => parseAppointmentDateTime(a.date, a.time) - parseAppointmentDateTime(b.date, b.time));
             document.getElementById("upcomingCount").innerText = upcomingAppointments.length;
 
             // =========================
-            // 2. STATS: TOTAL CONSULTATIONS DONE BY DOCTOR
+            // 2. STATS: TOTAL CONSULTATIONS (DIAGNOSED BY DOCTOR)
             // =========================
-            const completedAppointments = allAppointments.filter(apt => apt.status === "completed");
+            const completedAppointments = allAppointments.filter(apt => 
+                apt.status && apt.status.toLowerCase() === "diagnosed"
+            );
             document.getElementById("totalVisits").innerText = completedAppointments.length;
 
             // =========================
@@ -493,11 +490,8 @@
             mcSnap.forEach((doc) => {
                 const mcData = doc.data();
                 if (mcData.endDate) {
-                    // Safe parsing of both ISO ("2026-06-16") and human formats ("16 Jun 2026")
                     const certificateExpiry = new Date(mcData.endDate);
-                    
                     if (!isNaN(certificateExpiry) && certificateExpiry >= startOfToday) {
-                        // Increments counter if explicitly marked active, or if implicitly active by valid duration
                         if (mcData.status === "active" || mcData.status === undefined) {
                             activeMcCount++;
                         }
@@ -549,13 +543,14 @@
                 
                 recentContainer.innerHTML = recentActivities.map(activity => {
                     let activityText = "";
-                    switch (activity.status) {
+                    switch (activity.status ? activity.status.toLowerCase() : "") {
                         case "pending":
                             activityText = "Appointment submitted and waiting for approval";
                             break;
                         case "confirmed":
                             activityText = "Appointment confirmed by clinic";
                             break;
+                        case "diagnosed":
                         case "completed":
                             activityText = "Consultation completed";
                             break;

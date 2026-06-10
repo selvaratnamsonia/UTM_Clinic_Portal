@@ -5,9 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Appointment History - UTM Clinic</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/premium-dialog.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
     <style>
         :root {
@@ -266,7 +269,7 @@
         .badge.pending { background: #fef3c7; color: #b45309; }
         .badge.completed { background: #e0f2fe; color: #0369a1; }
         .badge.cancelled { background: #fee2e2; color: #dc2626; }
-        .badge.pending-payment-verification { background: #fee2e2; color: #d97706; background-color: #fef3c7; }
+        .badge.pending-payment-verification { background: #fef3c7; color: #d97706; }
 
         /* --- Action Controls --- */
         .btn-icon {
@@ -485,9 +488,6 @@
     import { auth, db } from './js/firebase-config.js';
     import { signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
     import { collection, query, where, getDocs, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
-    
-    // Import your MC generator function
-    import { generateMCPDF } from "./js/mc-generator.js";
 
     let allAppointments = []; 
     let currentTab = 'upcoming'; 
@@ -576,6 +576,7 @@
             const canCancel = (currentStatus === 'pending' || currentStatus === 'confirmed') && !isOverdue;
             const isCancelled = currentStatus === 'cancelled';
             const isCompleted = currentStatus === 'completed';
+            const isDiagnosed = currentStatus === 'diagnosed';
             const isPendingVerification = currentStatus === 'pending-payment-verification';
 
             let actionHtml = '';
@@ -595,7 +596,7 @@
                         </button>
                         <span class="no-action" style="font-weight: 600; color: var(--payment-amber);">Verifying Payment...</span>
                     </div>`;
-            } else if (isCompleted) {
+            } else if (isCompleted || isDiagnosed) {
                 actionHtml = `
                     <div class="action-container">
                         <button class="btn-mc-action download-mc-btn" title="Download Medical Certificate" data-id="${item.id}">
@@ -609,10 +610,11 @@
                 actionHtml = '<span class="no-action">No action</span>';
             }
 
-            // User interface adjustments for status code labels
             let displayStatus = currentStatus;
             if (currentStatus === 'pending-payment-verification') {
                 displayStatus = 'Pending Verification';
+            } else if (currentStatus === 'diagnosed') {
+                displayStatus = 'Diagnosed';
             }
 
             html += `
@@ -631,7 +633,6 @@
     }
     
     function bindTableActionListeners() {
-        // Cancel Action Button Interception
         document.querySelectorAll('.cancel-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 e.stopPropagation();
@@ -640,20 +641,17 @@
             });
         });
 
-        // Automatic PDF Compilation & Save Interception
         document.querySelectorAll('.download-mc-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
                 e.stopPropagation();
                 const appointmentId = btn.getAttribute('data-id');
                 
-                // Show intuitive UI loading state indicator
                 const originalHtml = btn.innerHTML;
                 btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Downloading...`;
                 btn.disabled = true;
 
                 await handleMcAutoDownload(appointmentId);
 
-                // Restore component design values back to initial state
                 btn.innerHTML = originalHtml;
                 btn.disabled = false;
             });
@@ -690,10 +688,9 @@
         }
     }
 
-    // Pipeline orchestrator fetching database elements to populate your generator interface
+    // PDF Compilation & Layout Rendering Pipeline
     async function handleMcAutoDownload(appointmentId) {
         try {
-            // 1. Fetch targeted appointment metrics
             const appointmentDocRef = doc(db, "appointments", appointmentId);
             const aptSnap = await getDoc(appointmentDocRef);
 
@@ -703,12 +700,11 @@
             }
             const aptData = aptSnap.data();
 
-            // 2. Query structural information out of profile scope mapping parameters
             const userDocRef = doc(db, "users", aptData.userId);
             const userSnap = await getDoc(userDocRef);
             const userData = userSnap.exists() ? userSnap.data() : {};
 
-            // 3. Reorganize schema keys onto matching layouts inside mc-generator parameters
+            // Restructure dataset elements
             const mcData = {
                 patientName: userData.name || aptData.patientName || "UTM Patient",
                 matricNumber: userData.matricNumber || "NOT RECORDED",
@@ -721,12 +717,100 @@
                 doctorSignatureUrl: aptData.doctorSignatureUrl || "" 
             };
 
-            // 4. Pass constructed schema maps out directly into the asynchronous processing stream
-            await generateMCPDF(mcData);
+            // Inject an invisible layout box directly into DOM scope to map styles accurately
+            const mcContainer = document.createElement('div');
+            mcContainer.style.position = 'absolute';
+            mcContainer.style.left = '-9999px';
+            mcContainer.style.top = '0';
+            mcContainer.style.width = '794px'; 
+            mcContainer.style.padding = '50px 60px';
+            mcContainer.style.backgroundColor = 'white';
+            mcContainer.style.color = '#1e293b';
+            mcContainer.style.fontFamily = "'Plus Jakarta Sans', Arial, sans-serif";
+
+            // Premium visual design template layout injection
+            mcContainer.innerHTML = `
+                <div style="border: 4px double #802c44; padding: 40px; min-height: 1000px; position: relative;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #802c44; padding-bottom: 20px; margin-bottom: 40px;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <img src="images/Clinic-logo.png" style="width: 55px; height: 55px; object-fit: contain;">
+                            <div>
+                                <h1 style="color: #802c44; font-size: 26px; font-weight: 700; margin: 0; letter-spacing: -0.5px;">UTM HEALTH CENTRE</h1>
+                                <p style="font-size: 12px; color: #64748b; margin: 2px 0 0 0;">Universiti Teknologi Malaysia, 81310 Skudai, Johor</p>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <h2 style="font-size: 16px; font-weight: 700; color: #1e293b; margin: 0; text-transform: uppercase;">Medical Certificate</h2>
+                            <p style="font-size: 12px; color: #64748b; margin: 4px 0 0 0;">Ref: MC-${appointmentId.substring(0,8).toUpperCase()}</p>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 40px;">
+                        <h3 style="font-size: 14px; text-transform: uppercase; color: #802c44; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; margin-bottom: 16px; font-weight: 700;">Patient Particulars</h3>
+                        <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                            <tr>
+                                <td style="padding: 6px 0; width: 30%; color: #64748b; border: none;">Patient Name:</td>
+                                <td style="padding: 6px 0; font-weight: 600; color: #1e293b; border: none;">${mcData.patientName}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 6px 0; color: #64748b; border: none;">Matric / Staff ID:</td>
+                                <td style="padding: 6px 0; font-weight: 600; color: #1e293b; border: none;">${mcData.matricNumber}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 6px 0; color: #64748b; border: none;">Faculty / Dept:</td>
+                                <td style="padding: 6px 0; font-weight: 600; color: #1e293b; border: none;">${mcData.faculty}</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div style="margin-bottom: 60px; font-size: 15px; line-height: 1.8; color: #334155;">
+                        <h3 style="font-size: 14px; text-transform: uppercase; color: #802c44; border-bottom: 1px solid #e2e8f0; padding-bottom: 6px; margin-bottom: 16px; font-weight: 700;">Medical Leave Certification</h3>
+                        <p>This is to officially certify that the patient listed above has been examined at the UTM Health Centre on <strong>${mcData.diagnosisDate}</strong>.</p>
+                        <p style="margin-top: 12px;">Based on clinical evaluation, the patient is unfit for official duty/attendance and is hereby granted medical leave for a duration of 
+                        <span style="background-color: #f4e8ec; color: #802c44; padding: 2px 8px; border-radius: 4px; font-weight: 700;">${mcData.mcDays} Day(s)</span>.</p>
+                    </div>
+
+                    <div style="position: absolute; bottom: 40px; left: 40px; right: 40px; display: flex; justify-content: space-between; align-items: flex-end;">
+                        <div>
+                            <p style="font-size: 11px; color: #94a3b8; margin: 0;">Generated electronically via UTM Clinic Portal.</p>
+                            <p style="font-size: 11px; color: #94a3b8; margin: 2px 0 0 0;">Verification Date: ${new Date().toLocaleDateString('en-MY')}</p>
+                        </div>
+                        <div style="text-align: right; min-width: 220px;">
+                            ${mcData.doctorSignatureUrl ? `<img src="${mcData.doctorSignatureUrl}" style="max-width: 140px; max-height: 60px; margin-bottom: 5px;">` : `<div style="height: 50px;"></div>`}
+                            <div style="border-top: 1px solid #cbd5e1; padding-top: 6px;">
+                                <p style="font-size: 14px; font-weight: 700; color: #1e293b; margin: 0;">Dr. ${mcData.doctorName}</p>
+                                <p style="font-size: 12px; color: #64748b; margin: 2px 0 0 0;">${mcData.doctorSpecialization}</p>
+                                <p style="font-size: 11px; color: #94a3b8; margin: 1px 0 0 0;">Reg No: ${mcData.doctorLicenseNumber}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(mcContainer);
+
+            // Execute html2canvas rendering target mapping
+            const { jsPDF } = window.jspdf;
+            const canvas = await html2canvas(mcContainer, {
+                scale: 2,
+                useCORS: true,
+                logging: false
+            });
+
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            pdf.save(`UTM_MC_${mcData.patientName.replace(/\s+/g, '_')}.pdf`);
+
+            // Garbage cleanup drop
+            document.body.removeChild(mcContainer);
 
         } catch (error) {
             console.error("Critical stream termination on MC engine processing:", error);
-            alert("An issue occurred structuralizing the PDF file. Please try downloading again.");
+            alert("An issue occurred structuring the PDF certificate file. Please try downloading again.");
         }
     }
 
@@ -745,22 +829,20 @@
             const aptDateTime = parseAppointmentDateTime(item.date, item.time);
             
             if (currentTab === 'upcoming') {
-                // If it requires payment confirmation, it is no longer an upcoming visit
-                return (aptDateTime >= now) && (status !== 'cancelled' && status !== 'completed' && status !== 'pending-payment-verification');
+                // "diagnosed" status shifts the appointment straight out of the upcoming panel logic
+                return (aptDateTime >= now) && (status !== 'cancelled' && status !== 'completed' && status !== 'pending-payment-verification' && status !== 'diagnosed');
             } else {
-                // Keep completed items or items waiting for payment confirmation in the Past history tab
-                return (aptDateTime < now) || (status === 'cancelled' || status === 'completed' || status === 'pending-payment-verification');
+                // If it is past time OR explicitly marked cancelled, completed, pending verification, or diagnosed, it lands in Past panel
+                return (aptDateTime < now) || (status === 'cancelled' || status === 'completed' || status === 'pending-payment-verification' || status === 'diagnosed');
             }
         });
         
-        // Sort timeline lists
         if (currentTab === 'upcoming') {
             timelineFiltered.sort((a, b) => parseAppointmentDateTime(a.date, a.time) - parseAppointmentDateTime(b.date, b.time));
         } else {
             timelineFiltered.sort((a, b) => parseAppointmentDateTime(b.date, b.time) - parseAppointmentDateTime(a.date, a.time));
         }
         
-        // Apply search and status filters
         const finalFiltered = timelineFiltered.filter(item => {
             const doctorName = (item.doctorName || '').toLowerCase();
             const reason = (item.reason || '').toLowerCase();
