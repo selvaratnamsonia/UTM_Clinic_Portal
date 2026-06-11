@@ -389,9 +389,9 @@
                     <select id="fpxBankSelect" class="select-input">
                         <option value="">-- Choose preferred bank portal --</option>
                         <option value="maybank2u.html">Maybank2u</option>
-                        <option value="cimbclicks.html">CIMB Clicks</option>
-                        <option value="publicbank.html">Public Bank Online</option>
-                        <option value="rhbnow.html">RHB Now</option>
+                        <option value="CIMB.html">CIMB Clicks</option>
+                        <option value="public.html">Public Bank Online</option>
+                        <option value="RHB.html">RHB Now</option>
                     </select>
                 </div>
             </div>
@@ -434,6 +434,7 @@
     let currentAppointmentId = "";
     let selectedMethod = "";
     let appointmentSnapshotData = null; 
+    let isInitialized = false; // Lifecycle protection flag
 
     function checkUrlParameters() {
         const urlParams = new URLSearchParams(window.location.search);
@@ -552,7 +553,7 @@
 
     async function executeTngRedirection() {
         if (!currentAppointmentId) {
-            alert("Missing assignment routing token configuration.");
+            await showConfirm("Missing Token", "Missing assignment routing token configuration.", "fa-exclamation-triangle");
             return;
         }
         const numericPrice = getCleanNumericalAmount();
@@ -601,7 +602,7 @@
         if (selectedMethod === 'fpx-panel') {
             const chosenBankPage = document.getElementById('fpxBankSelect').value;
             if (!chosenBankPage) {
-                alert("Please select your preferred retail banking partner portal first.");
+                await showConfirm("Bank Not Selected", "Please select your preferred retail banking partner portal first.", "fa-university");
                 return;
             }
 
@@ -609,7 +610,6 @@
             if (!proceed) return;
 
             const numericPrice = getCleanNumericalAmount();
-            // Dynamically loads the corresponding filenames (maybank2u.html, cimb.html, public.html, rhb.html)
             window.location.href = `${chosenBankPage}?aptId=${encodeURIComponent(currentAppointmentId)}&amount=${encodeURIComponent(numericPrice)}`;
             return; 
         }
@@ -619,7 +619,7 @@
         if (selectedMethod === 'banking-panel') {
             details.receiptUrlOrRef = document.getElementById('receiptUrlField').value.trim();
             if (!details.receiptUrlOrRef) {
-                alert("Please enter your transaction index reference code.");
+                await showConfirm("Reference Code Missing", "Please enter your transaction index reference code.", "fa-pen-clip");
                 return;
             }
         }
@@ -707,12 +707,18 @@
         });
     }
 
+    // Fixed Unified Authentication Stream Listener
     auth.onAuthStateChanged((user) => {
         if (!user && window.location.hostname !== 'localhost') {
             window.location.href = 'login.html';
             return;
         }
-        checkUrlParameters();
+        
+        // Block consecutive multiple executions inside the auth channel hook
+        if (!isInitialized) {
+            isInitialized = true;
+            checkUrlParameters();
+        }
     });
 </script>
 </body>

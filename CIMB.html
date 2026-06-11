@@ -4,154 +4,338 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CIMB Clicks | FPX Payment Gateway</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         :root {
-            --cimb-red: #cc0000;
-            --cimb-dark: #741212;
-            --cimb-bg: #2d3134;
-            --border-color: #e2e8f0;
+            --cimb-red: #7c1c1c;
+            --bg-body: #1e1e1e;
+            --card-bg: #ffffff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --radius-lg: 16px;
+            --radius-md: 8px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { background: #f1f3f5; color: #333; display: flex; flex-direction: column; min-height: 100vh; }
+        body { background: var(--bg-body); color: var(--text-dark); min-height: 100vh; display: flex; flex-direction: column; }
         
-        header { background: var(--cimb-bg); padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--cimb-red); }
-        .logo-text { color: #fff; font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
-        .logo-text span { color: var(--cimb-red); font-style: italic; }
-        .fpx-logo { background: #fff; padding: 4px 8px; border-radius: 4px; font-weight: 800; font-style: italic; color: #004b93; font-size: 14px; }
+        .navbar { background: #111; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--cimb-red); }
+        .logo { font-size: 20px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+        .logo span { color: #ff3333; }
+        .fpx-indicator { background: #009688; color: #fff; padding: 4px 10px; border-radius: 4px; font-size: 11px; font-weight: 700; letter-spacing: 1px; }
 
-        .container { flex: 1; display: flex; justify-content: center; align-items: center; padding: 40px 20px; }
-        .bank-card { background: #fff; width: 100%; max-width: 480px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); overflow: hidden; border-top: 3px solid var(--cimb-red); }
-        .card-header { background: #fafafa; padding: 20px 25px; border-bottom: 1px solid var(--border-color); }
-        .card-header h2 { font-size: 16px; font-weight: 700; color: #111; }
+        .container { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
+        .bank-card { background: var(--card-bg); width: 100%; max-width: 500px; border-radius: var(--radius-lg); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); padding: 35px; border-top: 5px solid var(--cimb-red); }
+        h2 { font-size: 19px; font-weight: 700; text-align: center; margin-bottom: 25px; color: #334155; letter-spacing: 0.5px; }
+
+        .invoice-box { background: #fff5f5; border: 1px solid #feb2b2; padding: 18px; border-radius: var(--radius-md); margin-bottom: 24px; font-size: 14px; }
+        .invoice-row { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .invoice-row:last-child { margin-bottom: 0; padding-top: 10px; border-top: 1px dashed #fca5a5; font-weight: 700; }
         
-        .invoice-summary { background: #fff5f5; border: 1px solid #feb2b2; margin: 20px 25px; padding: 15px; border-radius: 6px; }
-        .summary-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; }
-        .summary-row:last-child { margin-bottom: 0; padding-top: 8px; border-top: 1px dashed #feb2b2; }
+        .form-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+        .form-group label { font-size: 13px; font-weight: 600; color: var(--text-muted); }
+        .input-wrapper { position: relative; display: flex; }
+        .input-field { width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 14px; outline: none; background: #f8fafc; color: var(--text-dark); font-weight: 500; transition: var(--transition); }
+        .input-field:focus { border-color: var(--cimb-red); background: #fff; box-shadow: 0 0 0 3px rgba(124, 28, 28, 0.1); }
+        .input-field[readonly] { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+        
+        .btn-tac { background: #334155; color: #fff; border: none; padding: 0 18px; border-radius: 0 var(--radius-md) var(--radius-md) 0; font-size: 12px; font-weight: 600; cursor: pointer; margin-left: -1px; transition: var(--transition); }
+        .btn-tac:hover { background: #1e293b; }
 
-        .card-body { padding: 0 25px 25px; }
-        .form-group { margin-bottom: 18px; display: flex; flex-direction: column; gap: 6px; }
-        .form-group label { font-size: 13px; font-weight: 600; color: #555; }
-        .input-field { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; outline: none; transition: 0.2s; }
-        .input-field:focus { border-color: var(--cimb-red); box-shadow: 0 0 0 3px rgba(204, 0, 0, 0.1); }
+        .btn-submit { width: 100%; background: var(--cimb-red); color: #fff; border: none; padding: 14px; border-radius: var(--radius-md); font-size: 15px; font-weight: 700; cursor: pointer; transition: var(--transition); display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 12px rgba(124, 28, 28, 0.2); }
+        .btn-submit:hover { background: #611414; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(124, 28, 28, 0.3); }
 
-        .tac-box { display: flex; gap: 10px; }
-        .btn-tac { background: #4a5568; color: #fff; border: none; padding: 0 15px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
-        .btn-tac:hover { background: #2d3748; }
+        .cancel-link { display: block; text-align: center; margin-top: 20px; font-size: 13px; color: var(--text-muted); text-decoration: none; font-weight: 500; transition: var(--transition); }
+        .cancel-link:hover { color: var(--cimb-red); text-decoration: underline; }
+        
+        footer { background: #111; color: #475569; text-align: center; padding: 15px; font-size: 11px; border-top: 1px solid #222; }
 
-        .btn-submit { width: 100%; background: var(--cimb-red); color: #fff; border: none; padding: 14px; border-radius: 6px; font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.2s; margin-top: 10px; }
-        .btn-submit:hover { background: #b30000; }
-        .btn-cancel { width: 100%; background: transparent; color: #888; border: none; padding: 10px; font-size: 13px; cursor: pointer; text-decoration: underline; margin-top: 10px; }
-
-        footer { background: #2d3134; color: #aaa; text-align: center; padding: 15px; font-size: 11px; }
+        /* --- Premium Custom Dialog Box Overlay Styling --- */
+        .premium-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+            z-index: 9999;
+            padding: 20px;
+        }
+        .premium-modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .premium-modal-card {
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 32px;
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+            transform: scale(0.92) translateY(15px);
+            transition: var(--transition);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .premium-modal-overlay.active .premium-modal-card {
+            transform: scale(1) translateY(0);
+        }
+        .premium-modal-icon {
+            width: 68px;
+            height: 68px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin: 0 auto 20px auto;
+            transition: var(--transition);
+        }
+        /* Dynamic state branding designs */
+        .icon-error { background: #fef2f2; color: #ef4444; }
+        .icon-info { background: #f0fdf4; color: #16a34a; }
+        .icon-warn { background: #fffbeb; color: #d97706; }
+        
+        .premium-modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 12px;
+            line-height: 1.3;
+        }
+        .premium-modal-msg {
+            font-size: 14px;
+            color: #64748b;
+            line-height: 1.6;
+            margin-bottom: 28px;
+        }
+        .premium-modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        .modal-btn {
+            flex: 1;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+            outline: none;
+        }
+        .modal-btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+        }
+        .modal-btn-secondary:hover {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+        .modal-btn-primary {
+            background: var(--cimb-red);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(124, 28, 28, 0.15);
+        }
+        .modal-btn-primary:hover {
+            background: #611414;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(124, 28, 28, 0.25);
+        }
     </style>
 </head>
 <body>
 
-<header>
-    <div class="logo-text">CIMB<span>Clicks</span></div>
-    <div class="fpx-logo">FPX</div>
-</header>
+<nav class="navbar">
+    <div class="logo">CIMB<span>Clicks</span></div>
+    <div class="fpx-indicator">FPX</div>
+</nav>
 
 <div class="container">
     <div class="bank-card">
-        <div class="card-header">
-            <h2>FPX Secure Payment Transfer</h2>
-        </div>
-
-        <div class="invoice-summary">
-            <div class="summary-row"><span>Merchant:</span><strong>UTM Medical Clinic Portal</strong></div>
-            <div class="summary-row"><span>Reference ID:</span><span id="refDisplay">Loading...</span></div>
-            <div class="summary-row"><span>Amount Due:</span><strong style="color: var(--cimb-red); font-size: 16px;" id="amountDisplay">RM 0.00</strong></div>
-        </div>
-
-        <div class="card-body">
-            <div class="form-group">
-                <div class="form-group">
-                    <label>Clicks User ID</label>
-                    <input type="text" class="input-field" value="utm_student2026" readonly>
-                </div>
-                <label>Secure TAC Token</label>
-                <div class="tac-box">
-                    <input type="text" id="tacInput" class="input-field" placeholder="Enter 6-digit TAC">
-                    <button type="button" class="btn-tac" id="getTacBtn">Request TAC via SMS</button>
-                </div>
+        <h2>FPX Secure Payment Transfer</h2>
+        
+        <div class="invoice-box">
+            <div class="invoice-row">
+                <span style="color: var(--text-muted);">Merchant:</span>
+                <strong>UTM Medical Clinic Portal</strong>
             </div>
+            <div class="invoice-row">
+                <span style="color: var(--text-muted);">Reference ID:</span>
+                <span id="referenceIdDisplay">CIMB-APPOINT_</span>
+            </div>
+            <div class="invoice-row">
+                <span style="color: var(--text-muted);">Amount Due:</span>
+                <strong style="color: #c53030;" id="amountDisplay">RM 0.00</strong>
+            </div>
+        </div>
 
-            <button type="button" class="btn-submit" id="confirmBtn">Approve Transaction</button>
-            <button type="button" class="btn-cancel" onclick="window.history.back()">Cancel and Return to Clinic</button>
+        <div class="form-group">
+            <label>Clicks User ID</label>
+            <input type="text" class="input-field" value="utm_student2026" readonly>
+        </div>
+
+        <div class="form-group">
+            <label>Secure TAC Token</label>
+            <div class="input-wrapper">
+                <input type="text" id="tacInputField" class="input-field" style="border-radius: 8px 0 0 8px;" placeholder="Enter 6-digit TAC">
+                <button type="button" class="btn-tac" id="requestTacBtn">Request TAC via SMS</button>
+            </div>
+        </div>
+
+        <button type="button" class="btn-submit" id="confirmPaymentBtn">
+            Proceed Secure Payment
+        </button>
+
+        <a href="appointments.html" class="cancel-link">Cancel and Return to Clinic</a>
+    </div>
+</div>
+
+<div class="premium-modal-overlay" id="premiumDialogOverlay">
+    <div class="premium-modal-card">
+        <div class="premium-modal-icon" id="premiumDialogIconBox">
+            <i id="premiumDialogIcon" class="fas fa-shield-alt"></i>
+        </div>
+        <h3 class="premium-modal-title" id="premiumDialogTitle">Notification</h3>
+        <p class="premium-modal-msg" id="premiumDialogMessage">Dialog content message string details.</p>
+        <div class="premium-modal-actions" id="premiumDialogActions">
+            <button class="modal-btn modal-btn-secondary" id="premiumModalCancelBtn">Cancel</button>
+            <button class="modal-btn modal-btn-primary" id="premiumModalConfirmBtn">OK</button>
         </div>
     </div>
 </div>
 
 <footer>
-    © 2026 CIMB Bank Berhad (13491-P). All Rights Reserved.
+    &copy; 2026 CIMB Bank Berhad (13491-P). All Rights Reserved.
 </footer>
 
 <script type="module">
     import { db } from './js/firebase-config.js';
-    import { doc, getDoc, updateDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+    import { doc, updateDoc, collection, addDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
+    // --- Premium Custom Promisified Modal System Implementation ---
+    function triggerPremiumDialog({ title, message, iconMode = "info", showCancel = false, confirmText = "OK" }) {
+        return new Promise((resolve) => {
+            const overlay = document.getElementById('premiumDialogOverlay');
+            const titleEl = document.getElementById('premiumDialogTitle');
+            const messageEl = document.getElementById('premiumDialogMessage');
+            const iconBox = document.getElementById('premiumDialogIconBox');
+            const iconEl = document.getElementById('premiumDialogIcon');
+            const cancelBtn = document.getElementById('premiumModalCancelBtn');
+            const confirmBtn = document.getElementById('premiumModalConfirmBtn');
+
+            // Set content details
+            titleEl.innerText = title;
+            messageEl.innerHTML = message;
+            confirmBtn.innerText = confirmText;
+
+            // Configure semantic styling states
+            iconBox.className = "premium-modal-icon"; 
+            if (iconMode === "error") {
+                iconBox.classList.add('icon-error');
+                iconEl.className = "fas fa-shield-alt";
+            } else if (iconMode === "warn") {
+                iconBox.classList.add('icon-warn');
+                iconEl.className = "fas fa-university";
+            } else {
+                iconBox.classList.add('icon-info');
+                iconEl.className = "fas fa-check-circle";
+            }
+
+            // Set Cancel Button Visibility Profile Mode
+            cancelBtn.style.display = showCancel ? "inline-block" : "none";
+
+            // Open overlay animations
+            overlay.classList.add('active');
+
+            // Define teardown events handles
+            const handleAction = (statusValue) => {
+                overlay.classList.remove('active');
+                cleanup();
+                resolve(statusValue);
+            };
+
+            const clickConfirm = () => handleAction(true);
+            const clickCancel = () => handleAction(false);
+
+            function cleanup() {
+                confirmBtn.removeEventListener('click', clickConfirm);
+                cancelBtn.removeEventListener('click', clickCancel);
+            }
+
+            confirmBtn.addEventListener('click', clickConfirm);
+            cancelBtn.addEventListener('click', clickCancel);
+        });
+    }
+
+    // Parameters synchronization lookup parsing logic
     const urlParams = new URLSearchParams(window.location.search);
     const aptId = urlParams.get('aptId') || "";
-    const amount = urlParams.get('amount') || "0.00";
+    const rawAmount = urlParams.get('amount') || "0.00";
+    
+    const parsedAmount = parseFloat(rawAmount);
+    document.getElementById('amountDisplay').innerText = `RM ${parsedAmount.toFixed(2)}`;
+    document.getElementById('referenceIdDisplay').innerText = `CIMB-APPOINT_${aptId.substring(0,6).toUpperCase()}`;
 
-    document.getElementById('amountDisplay').innerText = `RM ${parseFloat(amount).toFixed(2)}`;
-    document.getElementById('refDisplay').innerText = aptId ? `CIMB-${aptId.substring(0,8).toUpperCase()}` : "N/A";
+    let nativeGeneratedTac = "";
 
-    document.getElementById('getTacBtn').addEventListener('click', () => {
-        document.getElementById('tacInput').value = "554319";
-        alert("Simulated SMS Notification: Your CIMB Clicks TAC confirmation token is 554319");
+    document.getElementById('requestTacBtn').addEventListener('click', () => {
+        nativeGeneratedTac = Math.floor(100000 + Math.random() * 900000).toString();
+        document.getElementById('tacInputField').value = nativeGeneratedTac;
     });
 
-    document.getElementById('confirmBtn').addEventListener('click', async () => {
-        if(!document.getElementById('tacInput').value) {
-            alert("Please request and fill out your verification token code first.");
+    document.getElementById('confirmPaymentBtn').addEventListener('click', async () => {
+        const enteredTac = document.getElementById('tacInputField').value.trim();
+        if(!enteredTac || enteredTac !== nativeGeneratedTac) {
+            await triggerPremiumDialog({
+                title: "Authentication Error",
+                message: "Invalid secure TAC token verification payload code.",
+                iconMode: "error",
+                showCancel: false,
+                confirmText: "Try Again"
+            });
             return;
         }
 
-        const confirmBtn = document.getElementById('confirmBtn');
-        confirmBtn.disabled = true;
-        confirmBtn.innerText = "Connecting to Core Services Pipeline...";
+        const confirmTx = await triggerPremiumDialog({
+            title: "Authorize Transfer",
+            message: "Authorize immediate debit from your CIMB checking account?",
+            iconMode: "warn",
+            showCancel: true,
+            confirmText: "Yes, Authorize"
+        });
+        if (!confirmTx) return;
 
         try {
             const aptRef = doc(db, "appointments", aptId);
             const aptSnap = await getDoc(aptRef);
-            let aptData = aptSnap.exists() ? aptSnap.data() : {};
+            let patientName = "SIA JUN YU";
+            let matricNo = "A24DW0420";
 
-            const itemizedItems = [];
-            if (aptData.prescriptions && aptData.prescriptions.length > 0) {
-                aptData.prescriptions.forEach(med => {
-                    let cost = med.cost ? parseFloat(med.cost) : 0;
-                    let qty = med.quantity ? parseInt(med.quantity) : 1;
-                    itemizedItems.push({
-                        itemName: `Medication: ${med.name}`,
-                        unitCost: cost,
-                        quantity: qty,
-                        subtotal: cost * qty
-                    });
-                });
-            } else {
-                itemizedItems.push({
-                    itemName: "Standard Outpatient Consultation & Treatment Fee",
-                    unitCost: parseFloat(amount),
-                    quantity: 1,
-                    subtotal: parseFloat(amount)
-                });
+            if (aptSnap.exists()) {
+                const data = aptSnap.data();
+                patientName = data.patientName || patientName;
+                matricNo = data.matricNo || data.matricNumber || matricNo;
             }
 
             await addDoc(collection(db, "payments"), {
                 appointmentId: aptId,
-                studentName: aptData.patientName || "SIA JUN YU",
-                studentId: aptData.matricNo || aptData.matricNumber || "A24DW0420",
-                appointmentDate: aptData.date || "2026-06-10",
-                appointmentTime: aptData.time || "09:00 AM",
-                items: itemizedItems,
-                amount: parseFloat(amount),
-                paymentChannel: "FPX",
-                status: "pending", 
-                transactionReference: `FPX-CIMB-${Math.floor(100000 + Math.random() * 900000)}`,
+                studentName: patientName,
+                studentId: matricNo,
+                amount: parsedAmount,
+                paymentChannel: "FPX_CIMB",
+                status: "pending",
+                transactionReference: `FPX-CIMB-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
                 createdAt: new Date()
             });
 
@@ -160,13 +344,24 @@
                 paymentStatus: "pending"
             });
 
-            alert("CIMB Clicks FPX Authorization logged! Sent to clinic staff for verification review.");
+            await triggerPremiumDialog({
+                title: "CIMB Clicks FPX Authorization Logged!",
+                message: "Your payment reference transfer has been sent to clinic staff for verification review.",
+                iconMode: "info",
+                showCancel: false,
+                confirmText: "Return to Dashboard"
+            });
+            
             window.location.href = "appointments.html";
-        } catch (e) {
+        } catch(e) {
             console.error(e);
-            alert("Transaction Pipeline Disrupted.");
-            confirmBtn.disabled = false;
-            confirmBtn.innerText = "Approve Transaction";
+            await triggerPremiumDialog({
+                title: "System Exception Error",
+                message: "Failed executing firestore database update task synchronization.",
+                iconMode: "error",
+                showCancel: false,
+                confirmText: "Close"
+            });
         }
     });
 </script>
