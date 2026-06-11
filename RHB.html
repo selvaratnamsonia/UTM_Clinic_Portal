@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RHB Now | FPX Payment Gateway</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root {
+            --rhb-blue: #0055a5;
+            --rhb-accent: #cc9900;
+            --border-custom: #cbd5e1;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: #f0f4f8; color: #1e293b; display: flex; flex-direction: column; min-height: 100vh; }
+        
+        header { background: var(--rhb-blue); padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--rhb-accent); }
+        .logo-text { color: #fff; font-size: 22px; font-weight: 700; letter-spacing: -0.2px; }
+        .logo-text span { font-weight: 400; font-size: 16px; margin-left: 4px; color: #93c5fd; }
+        .fpx-logo { background: #fff; padding: 4px 8px; border-radius: 4px; font-weight: 800; font-style: italic; color: #004b93; font-size: 14px; }
+
+        .container { flex: 1; display: flex; justify-content: center; align-items: center; padding: 40px 20px; }
+        .bank-card { background: #fff; width: 100%; max-width: 480px; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0, 85, 165, 0.1); overflow: hidden; }
+        .card-header { background: #fff; padding: 25px 25px 10px; text-align: center; }
+        .card-header h2 { font-size: 18px; font-weight: 700; color: var(--rhb-blue); }
+        
+        .invoice-summary { background: #eff6ff; border: 1px solid #bfdbfe; margin: 20px 25px; padding: 15px; border-radius: 8px; }
+        .summary-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; }
+        .summary-row:last-child { margin-bottom: 0; padding-top: 8px; border-top: 1px dashed #bfdbfe; }
+
+        .card-body { padding: 0 25px 25px; }
+        .form-group { margin-bottom: 18px; display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 13px; font-weight: 600; color: #475569; }
+        .input-field { width: 100%; padding: 12px; border: 1px solid var(--border-custom); border-radius: 8px; font-size: 14px; outline: none; }
+        .input-field:focus { border-color: var(--rhb-blue); box-shadow: 0 0 0 3px rgba(0, 85, 165, 0.1); }
+
+        .tac-box { display: flex; gap: 10px; }
+        .btn-tac { background: var(--rhb-blue); color: #fff; border: none; padding: 0 15px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+        .btn-tac:hover { opacity: 0.9; }
+
+        .btn-submit { width: 100%; background: var(--rhb-blue); color: #fff; border: none; padding: 14px; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .btn-submit:hover { background: #004485; }
+        .btn-cancel { width: 100%; background: transparent; color: #64748b; border: none; padding: 10px; font-size: 13px; cursor: pointer; text-decoration: underline; margin-top: 10px; }
+
+        footer { background: #1e293b; color: #64748b; text-align: center; padding: 15px; font-size: 11px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo-text">RHB<span>Now</span></div>
+    <div class="fpx-logo">FPX</div>
+</header>
+
+<div class="container">
+    <div class="bank-card">
+        <div class="card-header">
+            <h2>Secure Interactive FPX Session</h2>
+        </div>
+
+        <div class="invoice-summary">
+            <div class="summary-row"><span>Billing Merchant:</span><strong>UTM Medical Clinic Portal</strong></div>
+            <div class="summary-row"><span>Filing Reference:</span><span id="refDisplay">Loading...</span></div>
+            <div class="summary-row"><span>Settlement Amount:</span><strong style="color: var(--rhb-blue); font-size: 16px;" id="amountDisplay">RM 0.00</strong></div>
+        </div>
+
+        <div class="card-body">
+            <div class="form-group">
+                <div class="form-group">
+                    <label>RHB Internet Banking Username</label>
+                    <input type="text" class="input-field" value="utm_student2026" readonly>
+                </div>
+                <label>Secure OTP Token</label>
+                <div class="tac-box">
+                    <input type="text" id="tacInput" class="input-field" placeholder="Enter 6-digit OTP">
+                    <button type="button" class="btn-tac" id="getTacBtn">Generate Token</button>
+                </div>
+            </div>
+
+            <button type="button" class="btn-submit" id="confirmBtn">Confirm Transaction Release</button>
+            <button type="button" class="btn-cancel" onclick="window.history.back()">Terminate Session</button>
+        </div>
+    </div>
+</div>
+
+<footer>
+    RHB Bank Berhad 196501000373 (6171-M). All rights reserved. Secure SSL Node.
+</footer>
+
+<script type="module">
+    import { db } from './js/firebase-config.js';
+    import { doc, getDoc, updateDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const aptId = urlParams.get('aptId') || "";
+    const amount = urlParams.get('amount') || "0.00";
+
+    document.getElementById('amountDisplay').innerText = `RM ${parseFloat(amount).toFixed(2)}`;
+    document.getElementById('refDisplay').innerText = aptId ? `RHB-${aptId.substring(0,8).toUpperCase()}` : "N/A";
+
+    document.getElementById('getTacBtn').addEventListener('click', () => {
+        document.getElementById('tacInput').value = "302811";
+        alert("Simulated Push Notice: Your RHB One-Time OTP access code is 302811");
+    });
+
+    document.getElementById('confirmBtn').addEventListener('click', async () => {
+        if(!document.getElementById('tacInput').value) {
+            alert("Authorization key must be populated to release standard clearing blocks.");
+            return;
+        }
+
+        const confirmBtn = document.getElementById('confirmBtn');
+        confirmBtn.disabled = true;
+        confirmBtn.innerText = "Authorizing Funds Settlement Exchange...";
+
+        try {
+            const aptRef = doc(db, "appointments", aptId);
+            const aptSnap = await getDoc(aptRef);
+            let aptData = aptSnap.exists() ? aptSnap.data() : {};
+
+            const itemizedItems = [];
+            if (aptData.prescriptions && aptData.prescriptions.length > 0) {
+                aptData.prescriptions.forEach(med => {
+                    let cost = med.cost ? parseFloat(med.cost) : 0;
+                    let qty = med.quantity ? parseInt(med.quantity) : 1;
+                    itemizedItems.push({
+                        itemName: `Medication: ${med.name}`,
+                        unitCost: cost,
+                        quantity: qty,
+                        subtotal: cost * qty
+                    });
+                });
+            } else {
+                itemizedItems.push({
+                    itemName: "Standard Outpatient Consultation & Treatment Fee",
+                    unitCost: parseFloat(amount),
+                    quantity: 1,
+                    subtotal: parseFloat(amount)
+                });
+            }
+
+            await addDoc(collection(db, "payments"), {
+                appointmentId: aptId,
+                studentName: aptData.patientName || "SIA JUN YU",
+                studentId: aptData.matricNo || aptData.matricNumber || "A24DW0420",
+                appointmentDate: aptData.date || "2026-06-10",
+                appointmentTime: aptData.time || "09:00 AM",
+                items: itemizedItems,
+                amount: parseFloat(amount),
+                paymentChannel: "FPX",
+                status: "pending", 
+                transactionReference: `FPX-RHB-${Math.floor(100000 + Math.random() * 900000)}`,
+                createdAt: new Date()
+            });
+
+            await updateDoc(aptRef, {
+                status: "pending-payment-verification",
+                paymentStatus: "pending"
+            });
+
+            alert("RHB Now FPX Authorization logged! Sent to clinic staff for verification review.");
+            window.location.href = "appointments.html";
+        } catch (e) {
+            console.error(e);
+            alert("Transaction Pipeline Disrupted.");
+            confirmBtn.disabled = false;
+            confirmBtn.innerText = "Confirm Transaction Release";
+        }
+    });
+</script>
+</body>
+</html>

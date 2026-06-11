@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CIMB Clicks | FPX Payment Gateway</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        :root {
+            --cimb-red: #cc0000;
+            --cimb-dark: #741212;
+            --cimb-bg: #2d3134;
+            --border-color: #e2e8f0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background: #f1f3f5; color: #333; display: flex; flex-direction: column; min-height: 100vh; }
+        
+        header { background: var(--cimb-bg); padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--cimb-red); }
+        .logo-text { color: #fff; font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+        .logo-text span { color: var(--cimb-red); font-style: italic; }
+        .fpx-logo { background: #fff; padding: 4px 8px; border-radius: 4px; font-weight: 800; font-style: italic; color: #004b93; font-size: 14px; }
+
+        .container { flex: 1; display: flex; justify-content: center; align-items: center; padding: 40px 20px; }
+        .bank-card { background: #fff; width: 100%; max-width: 480px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); overflow: hidden; border-top: 3px solid var(--cimb-red); }
+        .card-header { background: #fafafa; padding: 20px 25px; border-bottom: 1px solid var(--border-color); }
+        .card-header h2 { font-size: 16px; font-weight: 700; color: #111; }
+        
+        .invoice-summary { background: #fff5f5; border: 1px solid #feb2b2; margin: 20px 25px; padding: 15px; border-radius: 6px; }
+        .summary-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; }
+        .summary-row:last-child { margin-bottom: 0; padding-top: 8px; border-top: 1px dashed #feb2b2; }
+
+        .card-body { padding: 0 25px 25px; }
+        .form-group { margin-bottom: 18px; display: flex; flex-direction: column; gap: 6px; }
+        .form-group label { font-size: 13px; font-weight: 600; color: #555; }
+        .input-field { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; outline: none; transition: 0.2s; }
+        .input-field:focus { border-color: var(--cimb-red); box-shadow: 0 0 0 3px rgba(204, 0, 0, 0.1); }
+
+        .tac-box { display: flex; gap: 10px; }
+        .btn-tac { background: #4a5568; color: #fff; border: none; padding: 0 15px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+        .btn-tac:hover { background: #2d3748; }
+
+        .btn-submit { width: 100%; background: var(--cimb-red); color: #fff; border: none; padding: 14px; border-radius: 6px; font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.2s; margin-top: 10px; }
+        .btn-submit:hover { background: #b30000; }
+        .btn-cancel { width: 100%; background: transparent; color: #888; border: none; padding: 10px; font-size: 13px; cursor: pointer; text-decoration: underline; margin-top: 10px; }
+
+        footer { background: #2d3134; color: #aaa; text-align: center; padding: 15px; font-size: 11px; }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo-text">CIMB<span>Clicks</span></div>
+    <div class="fpx-logo">FPX</div>
+</header>
+
+<div class="container">
+    <div class="bank-card">
+        <div class="card-header">
+            <h2>FPX Secure Payment Transfer</h2>
+        </div>
+
+        <div class="invoice-summary">
+            <div class="summary-row"><span>Merchant:</span><strong>UTM Medical Clinic Portal</strong></div>
+            <div class="summary-row"><span>Reference ID:</span><span id="refDisplay">Loading...</span></div>
+            <div class="summary-row"><span>Amount Due:</span><strong style="color: var(--cimb-red); font-size: 16px;" id="amountDisplay">RM 0.00</strong></div>
+        </div>
+
+        <div class="card-body">
+            <div class="form-group">
+                <div class="form-group">
+                    <label>Clicks User ID</label>
+                    <input type="text" class="input-field" value="utm_student2026" readonly>
+                </div>
+                <label>Secure TAC Token</label>
+                <div class="tac-box">
+                    <input type="text" id="tacInput" class="input-field" placeholder="Enter 6-digit TAC">
+                    <button type="button" class="btn-tac" id="getTacBtn">Request TAC via SMS</button>
+                </div>
+            </div>
+
+            <button type="button" class="btn-submit" id="confirmBtn">Approve Transaction</button>
+            <button type="button" class="btn-cancel" onclick="window.history.back()">Cancel and Return to Clinic</button>
+        </div>
+    </div>
+</div>
+
+<footer>
+    © 2026 CIMB Bank Berhad (13491-P). All Rights Reserved.
+</footer>
+
+<script type="module">
+    import { db } from './js/firebase-config.js';
+    import { doc, getDoc, updateDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const aptId = urlParams.get('aptId') || "";
+    const amount = urlParams.get('amount') || "0.00";
+
+    document.getElementById('amountDisplay').innerText = `RM ${parseFloat(amount).toFixed(2)}`;
+    document.getElementById('refDisplay').innerText = aptId ? `CIMB-${aptId.substring(0,8).toUpperCase()}` : "N/A";
+
+    document.getElementById('getTacBtn').addEventListener('click', () => {
+        document.getElementById('tacInput').value = "554319";
+        alert("Simulated SMS Notification: Your CIMB Clicks TAC confirmation token is 554319");
+    });
+
+    document.getElementById('confirmBtn').addEventListener('click', async () => {
+        if(!document.getElementById('tacInput').value) {
+            alert("Please request and fill out your verification token code first.");
+            return;
+        }
+
+        const confirmBtn = document.getElementById('confirmBtn');
+        confirmBtn.disabled = true;
+        confirmBtn.innerText = "Connecting to Core Services Pipeline...";
+
+        try {
+            const aptRef = doc(db, "appointments", aptId);
+            const aptSnap = await getDoc(aptRef);
+            let aptData = aptSnap.exists() ? aptSnap.data() : {};
+
+            const itemizedItems = [];
+            if (aptData.prescriptions && aptData.prescriptions.length > 0) {
+                aptData.prescriptions.forEach(med => {
+                    let cost = med.cost ? parseFloat(med.cost) : 0;
+                    let qty = med.quantity ? parseInt(med.quantity) : 1;
+                    itemizedItems.push({
+                        itemName: `Medication: ${med.name}`,
+                        unitCost: cost,
+                        quantity: qty,
+                        subtotal: cost * qty
+                    });
+                });
+            } else {
+                itemizedItems.push({
+                    itemName: "Standard Outpatient Consultation & Treatment Fee",
+                    unitCost: parseFloat(amount),
+                    quantity: 1,
+                    subtotal: parseFloat(amount)
+                });
+            }
+
+            await addDoc(collection(db, "payments"), {
+                appointmentId: aptId,
+                studentName: aptData.patientName || "SIA JUN YU",
+                studentId: aptData.matricNo || aptData.matricNumber || "A24DW0420",
+                appointmentDate: aptData.date || "2026-06-10",
+                appointmentTime: aptData.time || "09:00 AM",
+                items: itemizedItems,
+                amount: parseFloat(amount),
+                paymentChannel: "FPX",
+                status: "pending", 
+                transactionReference: `FPX-CIMB-${Math.floor(100000 + Math.random() * 900000)}`,
+                createdAt: new Date()
+            });
+
+            await updateDoc(aptRef, {
+                status: "pending-payment-verification",
+                paymentStatus: "pending"
+            });
+
+            alert("CIMB Clicks FPX Authorization logged! Sent to clinic staff for verification review.");
+            window.location.href = "appointments.html";
+        } catch (e) {
+            console.error(e);
+            alert("Transaction Pipeline Disrupted.");
+            confirmBtn.disabled = false;
+            confirmBtn.innerText = "Approve Transaction";
+        }
+    });
+</script>
+</body>
+</html>

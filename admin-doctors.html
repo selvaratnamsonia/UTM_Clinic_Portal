@@ -45,7 +45,17 @@
         }
     </style>
 </head>
-<body class="flex min-h-screen font-sans">
+<body class="flex min-h-screen font-sans relative">
+
+    <div id="successToast" class="hidden fixed top-6 right-6 z-[100] flex items-center gap-3 bg-emerald-50 border border-emerald-200 text-emerald-800 px-5 py-4 rounded-[12px] shadow-lg animate-[slideIn_0.3s_ease-out]">
+        <div class="w-8 h-8 bg-emerald-500 text-white rounded-full flex items-center justify-center flex-shrink-0">
+            <i class="fas fa-check text-sm"></i>
+        </div>
+        <div>
+            <h4 class="font-bold text-sm text-slate-900">Saved Successfully</h4>
+            <p class="text-xs text-slate-600 mt-0.5" id="toastMessage">Doctor registry credentials updated.</p>
+        </div>
+    </div>
 
     <aside class="w-[80px] md:w-[280px] bg-white border-r border-borderCustom py-8 flex flex-col sticky top-0 h-screen transition-all duration-300">
         <div class="flex items-center gap-3 px-4 md:px-6 pb-10 justify-center md:justify-start">
@@ -70,7 +80,7 @@
             </a>
             <a href="admin-reports.html" class="flex items-center gap-3 px-4 py-3 text-text-muted hover:bg-primary-light hover:text-primary rounded-[12px] font-medium transition-all duration-300 justify-center md:justify-start">
                 <i class="fas fa-chart-line text-lg"></i>
-                <span class="sidebar-text">Sales Reports</span>
+                <span class="sidebar-text">Items Charged</span>
             </a>
         </nav>
 
@@ -182,7 +192,7 @@
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
                             <i class="fas fa-phone-alt text-sm"></i>
                         </span>
-                        <input type="tel" id="docPhone" placeholder="+60 1X-XXXX XXX" required class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all text-sm placeholder-slate-400 text-slate-800 font-medium">
+                        <input type="tel" id="docPhone" placeholder="01XXXXXXXXX" maxlength="11" required class="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all text-sm placeholder-slate-400 text-slate-800 font-medium">
                     </div>
                 </div>
 
@@ -207,19 +217,6 @@
                     <button type="submit" id="saveButton" class="px-5 py-2.5 text-sm font-semibold bg-primary text-white rounded-xl hover:bg-primary-hover shadow-md shadow-primary/10 transition-colors">Save Profile</button>
                 </div>
             </form>
-        </div>
-    </div>
-
-    <div id="statusAlertModal" class="hidden fixed inset-0 z-[100] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-2xl shadow-2xl border border-slate-100 p-6 text-center transform transition-all duration-200 scale-95">
-            <div class="w-14 h-14 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-check-circle text-3xl"></i>
-            </div>
-            <h3 class="text-lg font-bold text-slate-800 mb-1">Success Encountered</h3>
-            <p id="statusAlertMessage" class="text-sm text-slate-500 mb-6 leading-relaxed">Profile processing operations completed.</p>
-            <button onclick="closeStatusAlert()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-xl text-sm transition-colors shadow-sm">
-                Acknowledge
-            </button>
         </div>
     </div>
 
@@ -265,7 +262,7 @@
         const tableBody = document.getElementById("doctorsTableBody");
         const countBadge = document.getElementById("doctorCount");
 
-        // Helper: Dynamically compile beautiful name initials fallback icons
+        // Helper: Dynamically compile name initials fallback icons
         function getNameInitials(name) {
             const clean = name.replace(/^Dr\.\s+/i, '').trim();
             const tokens = clean.split(/\s+/);
@@ -275,7 +272,7 @@
             return tokens[0] ? tokens[0].substring(0, 2).toUpperCase() : "DR";
         }
 
-        // Premium Modal-based Confirmation Box wrapper logic
+        // Modal-based Confirmation Box wrapper logic
         function confirmDeletionWithPremiumModal() {
             return new Promise((resolve) => {
                 const modal = document.getElementById("deleteConfirmModal");
@@ -324,7 +321,7 @@
                 
                 const initials = getNameInitials(doctor.name);
                 const email = doctor.email || `${doctor.name.toLowerCase().replace(/[^a-z0-9]/g, "")}@utm.my`;
-                const phone = doctor.phone || "+60 11-1234 5678";
+                const phone = doctor.phone || "-";
                 const status = doctor.status || "Active";
                 const badgeColor = status === "Active" ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700";
 
@@ -364,11 +361,11 @@
                 btn.addEventListener("click", async (e) => {
                     const docId = btn.getAttribute("data-id");
                     
-                    // Triggering premium confirmation modal
                     const dynamicAgreementConfirmed = await confirmDeletionWithPremiumModal();
                     if (dynamicAgreementConfirmed) {
                         try {
                             await deleteDoc(doc(db, "doctors", docId));
+                            showToast("Doctor profile permanently deleted.");
                         } catch (error) {
                             alert("Operation structural exception: " + error.message);
                         }
@@ -414,7 +411,7 @@
             renderDoctorsTable(filtered);
         });
 
-        // Unified Handle Registration / Mutation Update Form Pipeline Submissions
+        // Unified Handle Registration Updates Form Pipeline Submissions
         document.getElementById("doctorForm").addEventListener("submit", async (e) => {
             e.preventDefault();
 
@@ -425,9 +422,11 @@
             const status = document.getElementById("docStatus").value;
 
             let finalDocId = currentEditId;
+            let isEditMode = !!currentEditId;
+            const formattedName = name.startsWith("Dr.") ? name : `Dr. ${name}`;
 
             const doctorDataPayload = {
-                name: name.startsWith("Dr.") ? name : `Dr. ${name}`,
+                name: formattedName,
                 email: email,
                 specialization: specialization,
                 phone: phone,
@@ -455,8 +454,8 @@
 
                 window.toggleModal(false); 
                 
-                // Show Custom Premium Modal Announcement Alert
-                window.showStatusAlert(`Successfully processed profile updates under Reference ID:<br><span class="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-xs text-primary font-bold mt-1 inline-block">${finalDocId}</span>`);
+                // Show Customized success toast notification popup
+                showToast(isEditMode ? `Updated credentials for ${formattedName}.` : `Profile safely created for ${formattedName}.`);
             } catch (error) {
                 console.error("Firestore Registry write error: ", error);
                 alert("Could not update or append profile configuration structures matching inputs: " + error.message);
@@ -487,8 +486,22 @@
             window.toggleModal(true);
         }
 
+        // Toast Trigger Function
+        function showToast(message) {
+            const toast = document.getElementById("successToast");
+            document.getElementById("toastMessage").innerText = message;
+            
+            toast.classList.remove("hidden");
+            
+            // Automatically hide after 4 seconds
+            setTimeout(() => {
+                toast.classList.add("hidden");
+            }, 4000);
+        }
+
         window.openAddModal = openAddModal;
         window.openEditModal = openEditModal;
+        window.showToast = showToast;
     </script>
 
     <script>
@@ -501,20 +514,32 @@
                 document.getElementById('doctorForm').reset();
             }
         }
-
-        // Custom Premium Alert Utilities
-        function showStatusAlert(message) {
-            document.getElementById("statusAlertMessage").innerHTML = message;
-            document.getElementById("statusAlertModal").classList.remove("hidden");
-        }
-
-        function closeStatusAlert() {
-            document.getElementById("statusAlertModal").classList.add("hidden");
-        }
+        
+        // Strict Numeric Formatting and String-Length Slicing Implementation
+        document.getElementById("docPhone").addEventListener("input", function (e) {
+            let cleanValue = this.value.replace(/\D/g, "");
+            
+            if (cleanValue.length > 11) {
+                cleanValue = cleanValue.slice(0, 11);
+            }
+            
+            this.value = cleanValue;
+        });
         
         window.toggleModal = toggleModal;
-        window.showStatusAlert = showStatusAlert;
-        window.closeStatusAlert = closeStatusAlert;
     </script>
+
+    <style>
+        @keyframes slideIn {
+            from {
+                transform: translateY(-1rem);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
 </body>
 </html>

@@ -130,12 +130,26 @@
         .main {
             flex: 1;
             padding: 40px 60px;
-            max-width: 1400px;
+            max-width: 1600px; /* Expanded slightly to account for the guide card width */
+            width: 100%;
         }
 
         header { margin-bottom: 35px; }
         h1 { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
         .subtitle { color: var(--text-muted); }
+
+        /* --- New Layout Container Split Wrapper --- */
+        .page-content-wrapper {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+            width: 100%;
+        }
+
+        .left-table-column {
+            flex: 1;
+            min-width: 0; /* Prevents flex items from busting out of parent limits */
+        }
 
         /* --- Navigation Sub-Tabs --- */
         .history-tabs {
@@ -391,7 +405,79 @@
             font-style: italic;
         }
 
+        /* --- New Custom Sidebar Status Guide Panel --- */
+        .status-guide-card {
+            width: 320px;
+            background: var(--white);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 24px;
+            position: sticky;
+            top: 40px; /* Sticks neatly when scrolling down long tables */
+        }
+
+        .guide-title-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            color: var(--text-dark);
+        }
+
+        .guide-title-wrapper i {
+            color: var(--primary);
+            font-size: 18px;
+        }
+
+        .guide-title-wrapper h3 {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .guide-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-bottom: 20px;
+        }
+
+        .guide-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .guide-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .guide-badge-row {
+            display: flex;
+            align-items: center;
+        }
+
+        .guide-text {
+            font-size: 12px;
+            color: var(--text-muted);
+            line-height: 1.4;
+            padding-left: 2px;
+        }
+
         /* --- Layout Responsiveness --- */
+        @media (max-width: 1200px) {
+            .page-content-wrapper {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .status-guide-card {
+                width: 100%;
+                position: static;
+            }
+        }
+
         @media (max-width: 1024px) {
             .sidebar { width: 80px; }
             .logo-text, .nav-link span { display: none; }
@@ -440,44 +526,94 @@
         <p class="subtitle">Track and manage your visits to the UTM Health Centre.</p>
     </header>
 
-    <div class="history-tabs">
-        <button class="tab-btn active-tab" id="tabUpcoming">📅 Upcoming Appointments</button>
-        <button class="tab-btn" id="tabPast">📜 Past Appointments</button>
-    </div>
-
-    <div class="table-card">
-        <div class="table-controls">
-            <div class="search-wrapper">
-                <i class="fas fa-search"></i>
-                <input type="text" id="tableSearch" placeholder="Search by doctor or reason...">
+    <div class="page-content-wrapper">
+        
+        <div class="left-table-column">
+            <div class="history-tabs">
+                <button class="tab-btn active-tab" id="tabUpcoming"> Upcoming Appointments</button>
+                <button class="tab-btn" id="tabPast"> Past Appointments</button>
             </div>
-            
-            <select class="filter-select" id="statusFilter">
-                <option value="all">All Statuses</option>
-                <option value="pending">Pending</option>
-                <option value="confirmed">Confirmed</option>
-                <option value="pending-payment-verification">Pending Payment Verification</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
-            </select>
+
+            <div class="table-card">
+                <div class="table-controls">
+                    <div class="search-wrapper">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="tableSearch" placeholder="Search by doctor or reason...">
+                    </div>
+                    
+                    <select class="filter-select" id="statusFilter">
+                        <option value="all">All Statuses</option>
+                        <option value="pending">Pending</option>
+                        <option value="confirmed">Confirmed</option>
+                        <option value="pending-payment-verification">Pending Payment Verification</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                </div>
+
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Doctor</th>
+                            <th>Date & Time</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                            <th style="text-align: center; width: 220px;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="appointmentsTableBody">
+                        <tr>
+                            <td colspan="5" class="empty-row-msg">Loading your clinic history data...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Doctor</th>
-                    <th>Date & Time</th>
-                    <th>Reason</th>
-                    <th>Status</th>
-                    <th style="text-align: center; width: 220px;">Action</th>
-                </tr>
-            </thead>
-            <tbody id="appointmentsTableBody">
-                <tr>
-                    <td colspan="5" class="empty-row-msg">Loading your clinic history data...</td>
-                </tr>
-            </tbody>
-        </table>
+        <div class="status-guide-card">
+            <div class="guide-title-wrapper">
+                <h3>Status Guide</h3>
+            </div>
+            <p class="guide-desc">Review details regarding lifecycle progress states for scheduled track visits.</p>
+            
+            <div class="guide-list">
+                <div class="guide-item">
+                    <div class="guide-badge-row">
+                        <span class="badge pending">Pending</span>
+                    </div>
+                    <p class="guide-text">Your request has been submitted and awaiting for Confirmation</p>
+                </div>
+
+                <div class="guide-item">
+                    <div class="guide-badge-row">
+                        <span class="badge confirmed">Confirmed</span>
+                    </div>
+                    <p class="guide-text">Your slot is checked and assigned to an available Doctor</p>
+                </div>
+
+                <div class="guide-item">
+                    <div class="guide-badge-row">
+                        <span class="badge pending-payment-verification">Pending Payment Verification</span>
+                    </div>
+                    <p class="guide-text">Consultation is done, and financial slip uploads are processing under verification rules.</p>
+                </div>
+
+                <div class="guide-item">
+                    <div class="guide-badge-row">
+                        <span class="badge completed">Completed</span>
+                    </div>
+                    <p class="guide-text">The medical treatment pipeline is fulfilled.Payment is cleared</p>
+                </div>
+
+                <div class="guide-item">
+                    <div class="guide-badge-row">
+                        <span class="badge cancelled">Cancelled</span>
+                    </div>
+                    <p class="guide-text">The booking session has been dropped either via manual client cancellation or direct rejection by management.</p>
+                </div>
+            </div>
+        </div>
+
     </div>
 </main>
 
@@ -587,7 +723,7 @@
             const isCompleted = currentStatus === 'completed';
             const isDiagnosed = currentStatus === 'diagnosed';
             const isPendingVerification = currentStatus === 'pending-payment-verification';
-            const isVerified = currentStatus === 'verified' || currentStatus === 'approved'; 
+            const isVerified = currentStatus === 'verified' || currentStatus === 'approved' || currentStatus === 'paid'; 
 
             // --- REFRESH / CHECK IF ITEMS WERE ADDED / FEE IS APPLICABLE ---
             const rawFee = item.totalBillAmount !== undefined ? item.totalBillAmount : 
@@ -658,6 +794,8 @@
                 displayStatus = 'Diagnosed';
             } else if (isVerified) {
                 displayStatus = 'Verified';
+            } else if (currentStatus === 'completed') {
+                displayStatus = 'Completed';
             }
 
             html += `
@@ -770,12 +908,15 @@
             const userSnap = await getDoc(userDocRef);
             const userData = userSnap.exists() ? userSnap.data() : {};
 
-            // 4. Restructure dataset elements dynamically
+            // 4. Restructure dataset elements dynamically (Optimized key extraction priority sequence)
+            const extractedMatric = userData.matric || userData.matricNo || userData.matricId || userData.matricNumber || aptData.matricNo || aptData.matricId || aptData.studentId;
+            const cleanMatric = (extractedMatric && extractedMatric !== "NOT RECORDED") ? extractedMatric : "N/A";
+
             const mcData = {
                 patientName: userData.fullName || userData.name || aptData.patientName || "UTM Patient",
-                matricNumber: userData.matricId || userData.matricNumber || aptData.matricId || aptData.matricNo || aptData.studentId || "NOT RECORDED",
+                matricNumber: cleanMatric,
                 faculty: userData.faculty || aptData.faculty || "General",
-                identityCard: userData.icNumber || userData.ic || "NOT RECORDED",
+                identityCard: userData.icNumber || userData.ic || "N/A",
                 diagnosisDate: aptData.date, 
                 mcDays: actualMCDays,
                 doctorName: aptData.doctorName || "Duty Doctor",
@@ -883,7 +1024,7 @@
         const statusFilter = document.getElementById('statusFilter');
         
         const keyword = searchInput ? searchInput.value.toLowerCase().trim() : '';
-        const filterValue = statusFilter ? statusFilter.value : 'all';
+        const filterValue = statusFilter ? statusFilter.value.toLowerCase() : 'all';
         
         const now = new Date();
 
@@ -893,7 +1034,7 @@
             const isPastDate = aptDateTime < now;
 
             // Explicit array matching historical statuses
-            const processedStatuses = ['cancelled', 'completed', 'pending-payment-verification', 'diagnosed', 'verified', 'approved'];
+            const processedStatuses = ['cancelled', 'completed', 'pending-payment-verification', 'diagnosed', 'verified', 'approved', 'paid'];
             const isProcessed = processedStatuses.includes(status);
 
             if (currentTab === 'upcoming') {
@@ -919,8 +1060,13 @@
             const itemStatus = item.status ? item.status.toLowerCase() : 'pending';
             let matchesStatus = (filterValue === 'all') || (itemStatus === filterValue);
             
-            if (filterValue === 'verified') {
-                matchesStatus = (itemStatus === 'verified' || itemStatus === 'approved');
+            // --- UPDATED WORKFLOW OPTIMIZATION LAYER ---
+            // If the user selects the "Completed" filter dropdown option, include both basic completed states 
+            // and downstream payment verification/settlement statuses (verified, approved, paid).
+            if (filterValue === 'completed') {
+                matchesStatus = (itemStatus === 'completed' || itemStatus === 'verified' || itemStatus === 'approved' || itemStatus === 'paid');
+            } else if (filterValue === 'verified') {
+                matchesStatus = (itemStatus === 'verified' || itemStatus === 'approved' || itemStatus === 'paid');
             }
             
             return matchesKeyword && matchesStatus;

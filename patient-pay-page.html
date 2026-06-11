@@ -579,9 +579,9 @@
             const submitBtn = document.getElementById('processPaymentBtn');
             
             if (selectedMethod === 'tng-panel') {
-                submitBtn.style.display = 'none'; // Completely hide the button for TnG
+                submitBtn.style.display = 'none'; 
             } else {
-                submitBtn.style.display = 'flex'; // Restore default layout display for other channels
+                submitBtn.style.display = 'flex'; 
                 submitBtn.removeAttribute('disabled');
                 submitBtn.style.opacity = "1";
                 submitBtn.style.cursor = "pointer";
@@ -609,7 +609,7 @@
             if (!proceed) return;
 
             const numericPrice = getCleanNumericalAmount();
-            // Redirects to the designated HTML page for the selected bank (maybank2u.html, cimbclicks.html, etc.)
+            // Dynamically loads the corresponding filenames (maybank2u.html, cimb.html, public.html, rhb.html)
             window.location.href = `${chosenBankPage}?aptId=${encodeURIComponent(currentAppointmentId)}&amount=${encodeURIComponent(numericPrice)}`;
             return; 
         }
