@@ -487,7 +487,7 @@
 
     import { auth, db } from './js/firebase-config.js';
     import { signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-    import { collection, query, where, onSnapshot, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+    import { collection, query, where, onSnapshot, doc, updateDoc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
     let allAppointments = []; 
     let currentTab = 'upcoming'; 
@@ -589,6 +589,17 @@
             const isPendingVerification = currentStatus === 'pending-payment-verification';
             const isVerified = currentStatus === 'verified' || currentStatus === 'approved'; 
 
+            // --- REFRESH / CHECK IF ITEMS WERE ADDED / FEE IS APPLICABLE ---
+            const rawFee = item.totalBillAmount !== undefined ? item.totalBillAmount : 
+                           (item.totalAmount !== undefined ? item.totalAmount : 
+                           (item.feeCharged !== undefined ? item.feeCharged : 0));
+                           
+            const cleanFeeString = String(rawFee).replace(/RM\s*/gi, '').trim();
+            const numericalFee = parseFloat(cleanFeeString);
+            
+            // If there's an active billing balance configured on the session
+            const hasItemsToPay = !isNaN(numericalFee) && numericalFee > 0;
+
             let actionHtml = '';
             if (isOverdue) {
                 actionHtml = '<span class="no-action overdue">Overdue</span>';
@@ -611,11 +622,18 @@
                     <div class="action-container">
                         <button class="btn-mc-action download-mc-btn" title="Download Medical Certificate" data-id="${item.id}">
                             <i class="fas fa-file-download"></i> Download MC
-                        </button>
+                        </button>`;
+                
+                if (hasItemsToPay) {
+                    actionHtml += `
                         <button class="btn-pay-action" title="Pay Fee" onclick="window.location.href='patient-pay-page.html?aptId=${item.id}'">
-                            <i class="fas fa-credit-card"></i> Pay Fee
-                        </button>
-                    </div>`;
+                            <i class="fas fa-credit-card"></i> Pay Fee 
+                        </button>`;
+                } else {
+                    actionHtml += `<span class="no-action" style="font-weight: 500; color: #64748b;">No Outstanding Fees</span>`;
+                }
+
+                actionHtml += `</div>`;
             } else if (isVerified) { 
                 actionHtml = `
                     <div class="action-container">
@@ -628,8 +646,13 @@
                 actionHtml = '<span class="no-action">No action</span>';
             }
 
+            // Humanized Status Layout Configuration
             let displayStatus = currentStatus;
-            if (currentStatus === 'pending-payment-verification') {
+            if (currentStatus === 'pending') {
+                displayStatus = 'Pending';
+            } else if (currentStatus === 'confirmed') {
+                displayStatus = 'Confirmed';
+            } else if (currentStatus === 'pending-payment-verification') {
                 displayStatus = 'Pending Verification';
             } else if (currentStatus === 'diagnosed') {
                 displayStatus = 'Diagnosed';
@@ -700,7 +723,6 @@
             const appointmentDocRef = doc(db, "appointments", appointmentId);
             await updateDoc(appointmentDocRef, { status: "cancelled" });
             await showConfirm("Success", "Your appointment has been successfully cancelled.", "fa-check-circle");
-            // Note: Real-time listener handles UI update automatically here
         } catch (error) {
             console.error("Cancellation error:", error);
             await showConfirm("Failed", "Failed to cancel appointment: " + error.message, "fa-times-circle");
@@ -733,7 +755,6 @@
             if (!diagnosisSnap.empty) {
                 const diagnosisData = diagnosisSnap.docs[0].data();
                 
-                // UX Security Check: Guard against downloading an MC if doctor didn't explicitly issue one
                 if (!diagnosisData.mcIssued) {
                     await showConfirm("No MC Authorized", "The examining physician did not issue a Medical Certificate for this consultation entry.", "fa-ban");
                     return;
@@ -754,6 +775,7 @@
                 patientName: userData.fullName || userData.name || aptData.patientName || "UTM Patient",
                 matricNumber: userData.matricId || userData.matricNumber || aptData.matricId || aptData.matricNo || aptData.studentId || "NOT RECORDED",
                 faculty: userData.faculty || aptData.faculty || "General",
+                identityCard: userData.icNumber || userData.ic || "NOT RECORDED",
                 diagnosisDate: aptData.date, 
                 mcDays: actualMCDays,
                 doctorName: aptData.doctorName || "Duty Doctor",
@@ -832,7 +854,6 @@
 
             document.body.appendChild(mcContainer);
 
-            // Execute html2canvas rendering target mapping
             const { jsPDF } = window.jspdf;
             const canvas = await html2canvas(mcContainer, {
                 scale: 2,
@@ -869,11 +890,18 @@
         let timelineFiltered = allAppointments.filter(item => {
             const status = item.status ? item.status.toLowerCase() : 'pending';
             const aptDateTime = parseAppointmentDateTime(item.date, item.time);
-            
+            const isPastDate = aptDateTime < now;
+
+            // Explicit array matching historical statuses
+            const processedStatuses = ['cancelled', 'completed', 'pending-payment-verification', 'diagnosed', 'verified', 'approved'];
+            const isProcessed = processedStatuses.includes(status);
+
             if (currentTab === 'upcoming') {
-                return (aptDateTime >= now) && (status !== 'cancelled' && status !== 'completed' && status !== 'pending-payment-verification' && status !== 'diagnosed' && status !== 'verified' && status !== 'approved');
+                // Must be a future date AND still active (pending or confirmed)
+                return !isPastDate && !isProcessed;
             } else {
-                return (aptDateTime < now) || (status === 'cancelled' || status === 'completed' || status === 'pending-payment-verification' || status === 'diagnosed' || status === 'verified' || status === 'approved');
+                // Past/History Tab: Show if appointment date has passed OR status is structurally finalized
+                return isPastDate || isProcessed;
             }
         });
         

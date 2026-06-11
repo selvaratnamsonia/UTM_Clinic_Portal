@@ -92,36 +92,26 @@
             <p class="text-text-muted text-base">Clinic management and overview</p>
         </header>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-            <div class="bg-white p-6 rounded-custom border border-borderCustom shadow-custom flex items-center gap-5">
-                <div class="w-14 h-14 rounded-[14px] flex items-center justify-center text-2xl bg-[#eff6ff] text-[#3b82f6]">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <a href="admin-doctors.html" class="bg-white p-6 rounded-custom border border-borderCustom shadow-custom flex items-center gap-5 cursor-pointer hover:border-primary/30 hover:shadow-md transition-all duration-200 group">
+                <div class="w-14 h-14 rounded-[14px] flex items-center justify-center text-2xl bg-[#eff6ff] text-[#3b82f6] group-hover:scale-105 transition-transform duration-200">
                     <i class="fas fa-user-md"></i>
                 </div>
                 <div class="stat-info">
                     <h3 id="total-doctors" class="text-2xl font-bold text-text-dark">...</h3>
                     <p class="text-sm text-text-muted whitespace-nowrap">Total Doctors</p>
                 </div>
-            </div>
+            </a>
 
-            <div class="bg-white p-6 rounded-custom border border-borderCustom shadow-custom flex items-center gap-5">
-                <div class="w-14 h-14 rounded-[14px] flex items-center justify-center text-2xl bg-[#faf5ff] text-[#a855f7]">
+            <a href="admin-staff.html" class="bg-white p-6 rounded-custom border border-borderCustom shadow-custom flex items-center gap-5 cursor-pointer hover:border-primary/30 hover:shadow-md transition-all duration-200 group">
+                <div class="w-14 h-14 rounded-[14px] flex items-center justify-center text-2xl bg-[#faf5ff] text-[#a855f7] group-hover:scale-105 transition-transform duration-200">
                     <i class="fas fa-users-cog"></i>
                 </div>
                 <div class="stat-info">
-                    <h3 id="total-staff" class="text-2xl font-bold text-text-dark">5</h3>
+                    <h3 id="total-staff" class="text-2xl font-bold text-text-dark">...</h3>
                     <p class="text-sm text-text-muted whitespace-nowrap">Total Staff</p>
                 </div>
-            </div>
-
-            <div class="bg-white p-6 rounded-custom border border-borderCustom shadow-custom flex items-center gap-5">
-                <div class="w-14 h-14 rounded-[14px] flex items-center justify-center text-2xl bg-blue-50 text-blue-600">
-                    <i class="fas fa-hospital-user"></i>
-                </div>
-                <div class="stat-info">
-                    <h3 id="total-patients" class="text-2xl font-bold text-text-dark">...</h3>
-                    <p class="text-sm text-text-muted whitespace-nowrap">Total Patients</p>
-                </div>
-            </div>
+            </a>
 
             <div class="bg-white p-6 rounded-custom border border-borderCustom shadow-custom flex items-center gap-5">
                 <div class="w-14 h-14 rounded-[14px] flex items-center justify-center text-2xl bg-[#f0fdf4] text-[#22c55e]">
@@ -137,9 +127,9 @@
                 <div class="w-14 h-14 rounded-[14px] flex items-center justify-center text-2xl bg-[#fdf2f2] text-primary">
                     <i class="fas fa-wallet"></i>
                 </div>
-                <div class="stat-info">
-                    <h3 id="monthly-sales" class="text-2xl font-bold text-text-dark">RM ...</h3>
-                    <p class="text-sm text-text-muted whitespace-nowrap">Monthly Sales</p>
+                <div class="metric-info">
+                    <h3 id="totalItemChargedDisplay" class="text-2xl font-bold text-text-dark">RM 0.00</h3>
+                    <p class="text-sm text-text-muted whitespace-nowrap">Total Fees Charged</p>
                 </div>
             </div>
         </div>
@@ -166,14 +156,14 @@
             </a>
 
             <a href="admin-reports.html" class="group relative overflow-hidden bg-gradient-to-br from-[#802c44] to-[#5a1e2f] text-white p-8 rounded-custom shadow-md hover:shadow-xl transition-all duration-300 flex flex-col items-center justify-center text-center gap-4">
-    <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-inner">
-        <i class="fas fa-chart-bar text-2xl"></i>
-    </div>
-    <div>
-        <h3 class="text-xl font-bold mb-1">Items Charged</h3>
-        <p class="text-sm opacity-85">Revenue metrics from wellness items</p>
-    </div>
-</a>
+                <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-inner">
+                    <i class="fas fa-chart-bar text-2xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-1">Items Charged</h3>
+                    <p class="text-sm opacity-85">Revenue metrics from wellness items</p>
+                </div>
+            </a>
         </div>
 
         <div class="text-[20px] font-bold mb-5 flex items-center gap-2.5 text-text-dark">
@@ -189,8 +179,7 @@
         </div>
     </main>
 
-<script type="module">
-        // Import core configurations and instances directly from your path
+    <script type="module">
         import { db, auth } from "./js/firebase-config.js";
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
         import { collection, query, orderBy, limit, onSnapshot, where } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
@@ -202,7 +191,7 @@
             }
         });
 
-        // Handle Logout
+        // Handle Logout Action
         const logoutLink = document.getElementById('logoutLink');
         if (logoutLink) {
             logoutLink.addEventListener('click', async (e) => {
@@ -212,23 +201,29 @@
             });
         }
 
-        // --- Live Stats Sync ---
+        // --- Live Sync Query Selectors ---
         const totalDoctorsEl = document.getElementById("total-doctors");
-        const totalPatientsEl = document.getElementById("total-patients");
+        const totalStaffEl = document.getElementById("total-staff");
         const todayAppointmentsEl = document.getElementById("today-appointments");
-        const monthlySalesEl = document.getElementById("monthly-sales");
+        const totalItemChargedEl = document.getElementById("totalItemChargedDisplay");
 
-        // 1. Total Doctors
+        // 1. Total Doctors Counter Stream
         onSnapshot(collection(db, "doctors"), (snapshot) => {
-            totalDoctorsEl.innerText = snapshot.size;
+            if (totalDoctorsEl) totalDoctorsEl.innerText = snapshot.size;
         }, (err) => console.error("Doctors counter error:", err));
 
-        // 2. Total Patients (Count documents in users collection)
-        onSnapshot(collection(db, "users"), (snapshot) => {
-            totalPatientsEl.innerText = snapshot.size;
-        }, (err) => console.error("Users counter error:", err));
+        // 2. Total Staff Counter Stream
+        const staffQuery = query(collection(db, "users"), where("role", "==", "staff"));
+        onSnapshot(staffQuery, (snapshot) => {
+            if (totalStaffEl) totalStaffEl.innerText = snapshot.size;
+        }, (err) => {
+            console.error("Staff collection issue, querying fallback:", err);
+            onSnapshot(collection(db, "staff"), (backupSnap) => {
+                if (totalStaffEl) totalStaffEl.innerText = backupSnap.size;
+            });
+        });
 
-        // 3. Today's Appointments (Filters dynamically using current local ISO date format format: "YYYY-MM-DD")
+        // 3. Today's Appointments Counter Stream
         const getTodayDateString = () => {
             const today = new Date();
             const yyyy = today.getFullYear();
@@ -239,50 +234,66 @@
 
         const todayQuery = query(collection(db, "appointments"), where("date", "==", getTodayDateString()));
         onSnapshot(todayQuery, (snapshot) => {
-            todayAppointmentsEl.innerText = snapshot.size;
+            if (todayAppointmentsEl) todayAppointmentsEl.innerText = snapshot.size;
         }, (err) => console.error("Today's appts counter error:", err));
 
-        // 4. Monthly Sales (Aggregates sum total of amount properties inside payments document)
-        onSnapshot(collection(db, "payments"), (snapshot) => {
-            let totalRevenue = 0;
-            const currentMonthStr = new Date().toISOString().substring(0, 7); // Format: "YYYY-MM"
+
+        // 4. FIXED: Item Charged Total Aggregator
+        // Listens directly to billing records to calculate total ledger item revenue
+        onSnapshot(collection(db, "billing_ledger"), (snapshot) => {
+            let runningRevenueSum = 0;
 
             snapshot.forEach((doc) => {
                 const data = doc.data();
-                let isCurrentMonth = false;
+                
+                // Fallback parsing strategy checking totalAmount, absolute payment, or alternative fee metrics
+                const numericalTarget = data.totalAmount !== undefined ? data.totalAmount : 
+                                        (data.feeCharged !== undefined ? data.feeCharged : data.amount);
 
-                // Handle string date format field validation safely
-                if (data.appointmentDate && data.appointmentDate.startsWith(currentMonthStr)) {
-                    isCurrentMonth = true;
-                } 
-                // Fallback check against Timestamp objects or standard dates if written differently
-                else if (data.createdAt) {
-                    const dateObj = data.createdAt.seconds ? new Date(data.createdAt.seconds * 1000) : new Date(data.createdAt);
-                    if (dateObj.toISOString().substring(0, 7) === currentMonthStr) {
-                        isCurrentMonth = true;
+                if (numericalTarget !== undefined && numericalTarget !== null) {
+                    // Extract numerical digits and clear text prefixes like "RM" safely
+                    const cleanString = String(numericalTarget).replace(/RM\s*/gi, '').trim();
+                    const floatVal = parseFloat(cleanString);
+                    
+                    if (!isNaN(floatVal)) {
+                        runningRevenueSum += floatVal;
                     }
                 }
-
-                if (isCurrentMonth && data.status !== "failed") {
-                    totalRevenue += Number(data.amount || 0);
-                }
             });
-            monthlySalesEl.innerText = `RM ${totalRevenue}`;
-        }, (err) => console.error("Sales aggregator error:", err));
+
+            // Update UI card element with calculated balance data safely
+            if (totalItemChargedEl) {
+                totalItemChargedEl.innerText = `RM ${runningRevenueSum.toFixed(2)}`;
+            }
+        }, (err) => {
+            console.error("Billing Ledger sync failed, falling back to aggregate appointment node profiles:", err);
+            
+            // Backup Fallback Strategy: If billing_ledger collection doesn't exist, read from appointments node directly
+            onSnapshot(collection(db, "appointments"), (backupSnapshot) => {
+                let backupSum = 0;
+                backupSnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const value = data.feeCharged || data.totalAmount || 0;
+                    const parsed = parseFloat(String(value).replace(/RM\s*/gi, '').trim());
+                    if (!isNaN(parsed)) backupSum += parsed;
+                });
+                if (totalItemChargedEl) totalItemChargedEl.innerText = `RM ${backupSum.toFixed(2)}`;
+            });
+        });
 
 
-        // --- Live Fetch Realtime Appointments Setup ---
+        // --- Live Activity Stream Logger Setup ---
         const container = document.getElementById("activityContainer");
 
-        // Queries your appointments sorting by your actual field: "createdAt" (descending order)
         const appointmentsQuery = query(
             collection(db, "appointments"),
             orderBy("createdAt", "desc"), 
             limit(5)
         );
 
-        // Real-time snapshot listener updating UI layout elements dynamically
         onSnapshot(appointmentsQuery, (snapshot) => {
+            if (!container) return;
+            
             if (snapshot.empty) {
                 container.innerHTML = `
                     <div class="text-center py-6 text-text-muted text-sm">
@@ -292,18 +303,25 @@
                 return;
             }
 
-            container.innerHTML = ""; // Clear loader/previous templates
+            container.innerHTML = "";
 
             snapshot.forEach((doc) => {
                 const data = doc.data();
                 const patientName = data.patientName || "Unknown Patient";
                 const doctorName = data.doctorName || "Unassigned Doctor";
                 
-                // Parse your ISO 8601 String value ("2026-05-21T11:28:31.192Z") safely
                 let dateString = "Just Now";
                 if (data.createdAt) {
                     try {
-                        const dateObject = new Date(data.createdAt);
+                        let dateObject;
+                        if (typeof data.createdAt.toDate === 'function') {
+                            dateObject = data.createdAt.toDate();
+                        } else if (data.createdAt.seconds) {
+                            dateObject = new Date(data.createdAt.seconds * 1000);
+                        } else {
+                            dateObject = new Date(data.createdAt);
+                        }
+
                         dateString = dateObject.toLocaleDateString('en-SG', {
                             year: 'numeric', 
                             month: '2-digit', 
@@ -313,11 +331,10 @@
                             hour12: true
                         });
                     } catch (err) {
-                        dateString = data.createdAt; // Fallback text stability
+                        dateString = data.createdAt;
                     }
                 }
 
-                // Append design system layout item row component
                 const element = document.createElement("div");
                 element.className = "flex gap-4 p-4 bg-bgBody rounded-[12px] border border-transparent hover:border-primary/20 transition-all duration-200";
                 element.innerHTML = `
@@ -336,11 +353,14 @@
                 container.appendChild(element);
             });
         }, (error) => {
-            console.error("Firestore read exception: ", error);
-            container.innerHTML = `
-                <div class="text-center py-4 text-red-600 text-sm">
-                    <i class="fas fa-exclamation-triangle mr-2"></i> Failed to synchronize activity records logs.
-                </div>`;
+            console.error("Firestore real-time logger broke:", error);
+            if (container) {
+                container.innerHTML = `
+                    <div class="text-center py-4 text-red-600 text-sm">
+                        <i class="fas fa-exclamation-triangle mr-2"></i> Failed to synchronize activity records logs.
+                    </div>`;
+            }
         });
     </script>
+</body>
 </html>

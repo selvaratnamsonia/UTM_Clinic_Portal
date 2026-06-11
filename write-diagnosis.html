@@ -1,7 +1,3 @@
-<<<<<<< Updated upstream
-<!-- Sonia Selvaratnam 10/6/2026 - Added custom ID using appointmentId -->
-=======
->>>>>>> Stashed changes
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -193,345 +189,338 @@
     </div>
   </main>
 
-  <script type="module">
-    // Import Firebase functions
-    import { auth, db } from './js/firebase-config.js';
-<<<<<<< Updated upstream
-    import { doc, getDoc, collection, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
-=======
-    import { signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-    import { doc, getDoc, collection, addDoc, updateDoc, getDocs } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
->>>>>>> Stashed changes
+<script type="module">
+        import { auth, db } from './js/firebase-config.js';
+        import { doc, getDoc, collection, getDocs, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+        import { signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
 
-    // Get appointment ID from URL parameter (e.g., ?id=Appoint_001)
-    const urlParams = new URLSearchParams(window.location.search);
-    const appointmentId = urlParams.get('id');
-    let globalUserId = "";
-    let medicationsList = [];
+        // URL Context Parameter Identification Retrieval
+        const urlParams = new URLSearchParams(window.location.search);
+        const appointmentId = urlParams.get('id');
+        let globalUserId = "";
+        let medicationsList = [];
 
-    // Helper: display toast notifications
-    function showToast(message, type = 'success') {
-      const toast = document.createElement('div');
-      toast.className = `toast ${type === 'error' ? 'error' : (type === 'warning' ? 'warning' : '')}`;
-      toast.innerHTML = `<i class="fas ${type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle'}"></i> ${message}`;
-      document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 3000);
-    }
-
-    // Load all available medications from Firestore (for dropdown)
-    async function loadMedicationsForDropdown() {
-      try {
-        const querySnapshot = await getDocs(collection(db, "medications"));
-        medicationsList = [];
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          medicationsList.push({ id: doc.id, ...data });
-        });
-      } catch (error) {
-        console.error("Error loading medications:", error);
-        medicationsList = [];
-      }
-    }
-
-    // Load patient details from the appointment and user collections
-    async function loadPatientDetails() {
-      if (!appointmentId) {
-        showToast("No appointment ID provided", "error");
-        return;
-      }
-
-      try {
-        const appointmentRef = doc(db, "appointments", appointmentId);
-        const appointmentSnap = await getDoc(appointmentRef);
-        if (!appointmentSnap.exists()) {
-          showToast("Appointment not found", "error");
-          return;
+        // Globalized Toast Feedback Utility Component
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type === 'error' ? 'error' : (type === 'warning' ? 'warning' : '')}`;
+            toast.innerHTML = `<i class="fas ${type === 'error' ? 'fa-exclamation-circle' : (type === 'warning' ? 'fa-exclamation-triangle' : 'fa-check-circle')}"></i> <span>${message}</span>`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3500);
         }
 
-        const appointmentData = appointmentSnap.data();
-        globalUserId = appointmentData.userId;
-        // Display appointment reference (show first 8 chars)
-        document.getElementById('appointmentIdDisplay').textContent = `Appointment #${appointmentId.substring(0, 8)}`;
-        document.getElementById('patientNameDisplay').textContent = appointmentData.patientName || "Unknown Patient";
-        document.getElementById('appointmentDateDisplay').textContent = `${appointmentData.date} at ${appointmentData.time || 'TBD'}`;
-        document.getElementById('reasonDisplay').textContent = appointmentData.reason || "General Consultation";
-
-        if (globalUserId) {
-          const userRef = doc(db, "users", globalUserId);
-          const userSnap = await getDoc(userRef);
-          if (userSnap.exists()) {
-            const userData = userSnap.data();
-            document.getElementById('matricNumberDisplay').textContent = userData.matricNumber || userData.matric || "N/A";
-          } else {
-            document.getElementById('matricNumberDisplay').textContent = "User profile missing";
-          }
-        }
-      } catch (error) {
-        console.error("Error loading patient details:", error);
-        showToast("Error loading patient data", "error");
-      }
-    }
-
-    // Dynamically create a medication row in the prescription section
-    function addMedicationRow(medicationData = null) {
-      const container = document.getElementById("medicationContainer");
-      const emptyDiv = document.getElementById("emptyMedication");
-      emptyDiv.style.display = "none";
-
-      const medicationDiv = document.createElement("div");
-      medicationDiv.className = "p-4 bg-gray-50 rounded-lg relative border border-gray-200 med-item";
-
-      medicationDiv.innerHTML = `
-        <button type="button" class="absolute top-2 right-2 p-1 text-red-600 hover:bg-red-100 rounded" onclick="this.closest('.med-item').remove(); if(document.querySelectorAll('.med-item').length === 0) document.getElementById('emptyMedication').style.display = 'block'">
-          <i class="fas fa-times w-4 h-4"></i>
-        </button>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm mb-1 font-medium">Medication</label>
-            <select required class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#802c44] text-sm med-select">
-              <option value="">Select medication</option>
-              ${medicationsList.map(med => `<option value="${med.name}" data-med='${JSON.stringify(med)}'>${med.name} - ${med.dosage} (${med.form}) ${med.stock <= 50 ? '⚠️ Low stock' : ''}</option>`).join('')}
-            </select>
-            <div class="stock-warning text-xs mt-1"></div>
-          </div>
-          <div>
-            <label class="block text-sm mb-1 font-medium">Frequency</label>
-            <input type="text" placeholder="e.g., Twice daily" required class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#802c44] text-sm med-freq" />
-          </div>
-          <div>
-            <label class="block text-sm mb-1 font-medium">Duration</label>
-            <input type="text" placeholder="e.g., 7 days" required class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#802c44] text-sm med-duration" />
-          </div>
-          <div>
-            <label class="block text-sm mb-1 font-medium">Additional Notes</label>
-            <input type="text" placeholder="Optional directions" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#802c44] text-sm med-notes" />
-          </div>
-        </div>
-      `;
-
-<<<<<<< Updated upstream
-      // Add stock warning listener (show low stock warning)
-=======
->>>>>>> Stashed changes
-      const selectEl = medicationDiv.querySelector('.med-select');
-      const warningDiv = medicationDiv.querySelector('.stock-warning');
-      selectEl.addEventListener('change', () => {
-        const selectedOption = selectEl.options[selectEl.selectedIndex];
-        if (selectedOption && selectedOption.value) {
-          try {
-            const medData = JSON.parse(selectedOption.getAttribute('data-med') || '{}');
-            if (medData.stock !== undefined && medData.stock <= 50) {
-              warningDiv.innerHTML = `<span class="text-yellow-600">⚠️ Low stock: ${medData.stock} units remaining. Consider restocking soon.</span>`;
-            } else {
-              warningDiv.innerHTML = '';
+        // Dropdown Synchronized Database Fetch Core Pipeline
+        async function loadMedicationsForDropdown() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "medications"));
+                medicationsList = [];
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    medicationsList.push({ id: doc.id, ...data });
+                });
+            } catch (error) {
+                console.error("Error loading medications batch dataset:", error);
+                showToast("Failed to initialize system medications registry lookup mapping.", "error");
             }
-          } catch(e) { warningDiv.innerHTML = ''; }
         }
-      });
-      
-      // If medicationData is provided (e.g., when loading a draft), pre-fill values
-      if (medicationData) {
-        const selectEl = medicationDiv.querySelector('.med-select');
-        for (let i = 0; i < selectEl.options.length; i++) {
-          if (selectEl.options[i].value === medicationData.medication) {
-            selectEl.selectedIndex = i;
-            selectEl.dispatchEvent(new Event('change'));
-            break;
-          }
+
+        // Active Session Profiles Fetch Lifecycle Validation Component
+        async function loadPatientDetails() {
+            if (!appointmentId) {
+                showToast("Invalid execution reference context sequence: No targeted appointment ID provided", "error");
+                return;
+            }
+
+            try {
+                const appointmentRef = doc(db, "appointments", appointmentId);
+                const appointmentSnap = await getDoc(appointmentRef);
+                
+                if (!appointmentSnap.exists()) {
+                    showToast("No structured reference index record found matches parameter code tokens.", "error");
+                    return;
+                }
+
+                const appointmentData = appointmentSnap.data();
+                globalUserId = appointmentData.userId;
+
+                // Bind attributes dataset to layout UI components IDs elements structures
+                document.getElementById('appointmentIdDisplay').textContent = `ID: ${appointmentId.substring(0, 8).toUpperCase()}`;
+                document.getElementById('patientNameDisplay').textContent = appointmentData.patientName || "Unknown Patient Registry Link";
+                document.getElementById('appointmentDateDisplay').textContent = `${appointmentData.date || 'Today'} | ${appointmentData.time || 'N/A'}`;
+                document.getElementById('reasonDisplay').textContent = appointmentData.reason || "General Routine Examination / Clinical Checkup Routing";
+
+                if (globalUserId) {
+                    const userRef = doc(db, "users", globalUserId);
+                    const userSnap = await getDoc(userRef);
+                    if (userSnap.exists()) {
+                        const userData = userSnap.data();
+                        document.getElementById('matricNumberDisplay').textContent = userData.matricNumber || userData.matric || userData.staffId || "N/A";
+                    } else {
+                        document.getElementById('matricNumberDisplay').textContent = "External Reference ID Profile";
+                    }
+                }
+            } catch (error) {
+                console.error("Error reading matching session nodes collection streams:", error);
+                showToast("Network pipeline latency error reading database record identities mappings.", "error");
+            }
         }
-        medicationDiv.querySelector('.med-freq').value = medicationData.frequency || '';
-        medicationDiv.querySelector('.med-duration').value = medicationData.duration || '';
-        medicationDiv.querySelector('.med-notes').value = medicationData.notes || '';
-      }
 
-      container.appendChild(medicationDiv);
-    }
+        // Dynamic Component Factory Structure Generator Block 
+        function addMedicationRow(medicationData = null) {
+            const container = document.getElementById("medicationContainer");
+            const emptyDiv = document.getElementById("emptyMedication");
+            emptyDiv.style.display = "none";
 
-<<<<<<< Updated upstream
-    // Make function globally available for inline onclick
-    window.addMedicationRow = addMedicationRow;
-=======
-    document.getElementById("addMedicationBtn").addEventListener("click", () => addMedicationRow());
->>>>>>> Stashed changes
+            const medicationDiv = document.createElement("div");
+            medicationDiv.className = "p-4 bg-gray-50 rounded-xl relative border border-gray-200 med-item group hover:border-primary/20 transition-all duration-200";
 
-    // Load saved draft from localStorage
-    function loadDraft() {
-      const draft = localStorage.getItem(`diagnosisDraft_${appointmentId}`);
-      if (draft) {
-        const data = JSON.parse(draft);
-        document.getElementById("diagnosis").value = data.diagnosis || '';
-        document.getElementById("mcCheckbox").checked = data.mcIssued || false;
-        if (data.mcIssued) {
-          document.getElementById("mcSection").classList.remove("hidden");
-          document.getElementById("mcDays").value = data.mcDays || '';
+            medicationDiv.innerHTML = `
+                <button type="button" class="absolute top-3 right-3 text-gray-400 hover:text-red-600 p-1.5 hover:bg-red-50 rounded-lg transition-colors remove-med-btn">
+                    <i class="fas fa-trash-alt text-xs"></i>
+                </button>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pr-6">
+                    <div>
+                        <label class="block text-xs font-semibold text-text-dark mb-1">Medication Selection</label>
+                        <select required class="w-full px-3 py-2 rounded-lg bg-white border border-gray-300 focus:outline-none focus:ring-1 focus:ring-primary text-xs med-select">
+                            <option value="">-- Choose Formulation Inventory --</option>
+                            ${medicationsList.map(med => `
+                                <option value="${med.name}" data-med='${JSON.stringify(med)}'>
+                                    ${med.name} - ${med.dosage || ''} (${med.form || 'Unit'}) ${med.stock <= 50 ? '⚠️ Low Stock' : ''}
+                                </option>
+                            `).join('')}
+                        </select>
+                        <div class="stock-warning text-[11px] mt-1 font-medium"></div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-text-dark mb-1">Dosing Interval Frequency</label>
+                        <input type="text" placeholder="e.g., Twice Daily (BD)" required class="w-full px-3 py-2 rounded-lg bg-white border border-gray-300 focus:outline-none focus:ring-1 focus:ring-primary text-xs med-freq" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-text-dark mb-1">Administration Duration</label>
+                        <input type="text" placeholder="e.g., 5 Days" required class="w-full px-3 py-2 rounded-lg bg-white border border-gray-300 focus:outline-none focus:ring-1 focus:ring-primary text-xs med-duration" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-text-dark mb-1">Additional Instructions</label>
+                        <input type="text" placeholder="Optional directions (e.g., After Food)" class="w-full px-3 py-2 rounded-lg bg-white border border-gray-300 focus:outline-none focus:ring-1 focus:ring-primary text-xs med-notes" />
+                    </div>
+                </div>
+            `;
+
+            // Setup localized row state changes events evaluation
+            const selectEl = medicationDiv.querySelector('.med-select');
+            const warningDiv = medicationDiv.querySelector('.stock-warning');
+            
+            selectEl.addEventListener('change', () => {
+                const selectedOption = selectEl.options[selectEl.selectedIndex];
+                if (selectedOption && selectedOption.value) {
+                    try {
+                        const medData = JSON.parse(selectedOption.getAttribute('data-med') || '{}');
+                        if (medData.stock !== undefined && medData.stock <= 50) {
+                            warningDiv.innerHTML = `<span class="text-amber-600"><i class="fas fa-exclamation-triangle mr-1"></i> Low stock capacity alert: ${medData.stock} left.</span>`;
+                        } else {
+                            warningDiv.innerHTML = '';
+                        }
+                    } catch(e) { warningDiv.innerHTML = ''; }
+                } else {
+                    warningDiv.innerHTML = '';
+                }
+            });
+
+            // Bind trash/removal row interface handlers hooks listeners
+            medicationDiv.querySelector('.remove-med-btn').addEventListener('click', () => {
+                medicationDiv.remove();
+                if (document.querySelectorAll('.med-item').length === 0) {
+                    emptyDiv.style.display = 'block';
+                }
+            });
+            
+            // Draft deserialization parameter injection check block binding mapping
+            if (medicationData) {
+                selectEl.value = medicationData.medication || '';
+                // Fire synthetic change context cycle execution loop to track conditional warnings properties
+                selectEl.dispatchEvent(new Event('change'));
+                medicationDiv.querySelector('.med-freq').value = medicationData.frequency || '';
+                medicationDiv.querySelector('.med-duration').value = medicationData.duration || '';
+                medicationDiv.querySelector('.med-notes').value = medicationData.notes || '';
+            }
+
+            container.appendChild(medicationDiv);
         }
-        if (data.medications && data.medications.length) {
-          data.medications.forEach(med => addMedicationRow(med));
-        }
-        showToast("Draft loaded", "warning");
-      }
-    }
 
-    // Submit diagnosis – save to Firestore using custom ID (appointmentId)
-    document.getElementById("diagnosisForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-<<<<<<< Updated upstream
-
-      // Collect prescribed medications from dynamically added rows
-=======
-      
->>>>>>> Stashed changes
-      const prescribedMedications = [];
-      document.querySelectorAll('.med-item').forEach(item => {
-        const selectEl = item.querySelector('.med-select');
-        const selectedOption = selectEl.options[selectEl.selectedIndex];
-        let selectedMed = null;
-        if (selectedOption && selectedOption.value) {
-          try {
-            selectedMed = JSON.parse(selectedOption.getAttribute('data-med') || '{}');
-          } catch(e) {}
+        // Local Storage Cache Draft State Restructuring Pipeline Logic
+        function loadDraft() {
+            if (!appointmentId) return;
+            const draft = localStorage.getItem(`diagnosisDraft_${appointmentId}`);
+            if (draft) {
+                try {
+                    const data = JSON.parse(draft);
+                    document.getElementById("diagnosis").value = data.diagnosis || '';
+                    document.getElementById("mcCheckbox").checked = data.mcIssued || false;
+                    
+                    if (data.mcIssued) {
+                        document.getElementById("mcSection").classList.remove("hidden");
+                        document.getElementById("mcDays").value = data.mcDays || '';
+                    }
+                    if (data.medications && data.medications.length) {
+                        data.medications.forEach(med => addMedicationRow(med));
+                    }
+                    showToast("Active local form working configuration draft loaded.", "warning");
+                } catch(err) {
+                    console.error("Failed to parse local sandbox schema: ", err);
+                }
+            }
         }
-        prescribedMedications.push({
-          medication: selectEl.value,
-          medicationDetails: selectedMed,
-          frequency: item.querySelector('.med-freq').value,
-          duration: item.querySelector('.med-duration').value,
-          notes: item.querySelector('.med-notes').value
+
+        // Form Submit Final Validation Database Commit Handler Execution Block Hook
+        document.getElementById("diagnosisForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            
+            const prescribedMedications = [];
+            document.querySelectorAll('.med-item').forEach(item => {
+                const selectEl = item.querySelector('.med-select');
+                const selectedOption = selectEl.options[selectEl.selectedIndex];
+                let selectedMed = null;
+                
+                if (selectedOption && selectedOption.value) {
+                    try {
+                        selectedMed = JSON.parse(selectedOption.getAttribute('data-med') || '{}');
+                    } catch(err) {}
+                }
+                prescribedMedications.push({
+                    medication: selectEl.value,
+                    medicationDetails: selectedMed,
+                    frequency: item.querySelector('.med-freq').value,
+                    duration: item.querySelector('.med-duration').value,
+                    notes: item.querySelector('.med-notes').value
+                });
+            });
+
+            const doctor = auth.currentUser;
+            let doctorData = { name: "Unknown Doctor", specialization: "", signatureUrl: "", licenseNumber: "" };
+            
+            if (doctor) {
+                try {
+                    const doctorDoc = await getDoc(doc(db, "users", doctor.uid));
+                    if (doctorDoc.exists()) {
+                        const docData = doctorDoc.data();
+                        doctorData = {
+                            name: docData.name || "Doctor Profile Record",
+                            specialization: docData.specialization || "General Clinical Practitioner",
+                            signatureUrl: docData.signatureUrl || "",
+                            licenseNumber: docData.licenseNumber || ""
+                        };
+                    }
+                } catch(err) {
+                    console.error("Failed to resolve medical execution authorization profiles meta:", err);
+                }
+            }
+
+            const mcCheckbox = document.getElementById("mcCheckbox");
+            const mcDaysInput = document.getElementById("mcDays");
+            
+            const diagnosisData = {
+                appointmentId: appointmentId,          
+                userId: globalUserId,                  
+                doctorId: doctor?.uid || "",
+                doctorName: doctorData.name,
+                doctorSpecialization: doctorData.specialization,
+                doctorSignatureUrl: doctorData.signatureUrl,
+                doctorLicenseNumber: doctorData.licenseNumber,
+                diagnosisNotes: document.getElementById("diagnosis").value,
+                medications: prescribedMedications,
+                mcIssued: mcCheckbox.checked,
+                mcDays: mcCheckbox.checked ? parseInt(mcDaysInput.value, 10) || 0 : 0,
+                createdAt: new Date().toISOString(),
+                status: "active"
+            };
+
+            try {
+                // Assert structural transactional execution indexing - Use unified custom appointment IDs mapping key constraints explicitly
+                const diagnosisRef = doc(db, "diagnosis", appointmentId);
+                await setDoc(diagnosisRef, diagnosisData);
+
+                // Update structural execution tracking statuses across reference elements
+                const appointmentRef = doc(db, "appointments", appointmentId);
+                await updateDoc(appointmentRef, { status: "completed" });
+
+                showToast("✅ Case diagnostic records matching parameters written to ledger securely.");
+                localStorage.removeItem(`diagnosisDraft_${appointmentId}`);
+                
+                setTimeout(() => { 
+                    window.location.href = "doctor_dashboard.html"; 
+                }, 1500);
+            } catch (error) {
+                console.error("Firestore indexing failure write state exception running transaction execution:", error);
+                showToast("Server pipeline rejection: " + error.message, "error");
+            }
         });
-      });
 
-<<<<<<< Updated upstream
-      // Get current doctor's details from Firestore
-=======
->>>>>>> Stashed changes
-      const doctor = auth.currentUser;
-      let doctorData = { name: "Unknown Doctor", specialization: "", signatureUrl: "", licenseNumber: "" };
-      if (doctor) {
-        const doctorDoc = await getDoc(doc(db, "users", doctor.uid));
-        if (doctorDoc.exists()) {
-          const docData = doctorDoc.data();
-          doctorData = {
-<<<<<<< Updated upstream
-            name: docData.name || "Doctor",
-            specialization: docData.specialization || "General Practitioner",
-            signatureUrl: docData.signatureUrl || "",
-            licenseNumber: docData.licenseNumber || ""
-=======
-              name: docData.name || "Doctor",
-              specialization: docData.specialization || "General Practitioner",
-              signatureUrl: docData.signatureUrl || "",
-              licenseNumber: docData.licenseNumber || ""
->>>>>>> Stashed changes
-          };
-        }
-      }
-
-      // Prepare diagnosis data object
-      const mcCheckbox = document.getElementById("mcCheckbox");
-      const mcDaysInput = document.getElementById("mcDays");
-      const diagnosisData = {
-        appointmentId: appointmentId,          // Link to appointment
-        userId: globalUserId,                  // Patient ID
-        doctorId: doctor?.uid || "",
-        doctorName: doctorData.name,
-        doctorSpecialization: doctorData.specialization,
-        doctorSignatureUrl: doctorData.signatureUrl,
-        doctorLicenseNumber: doctorData.licenseNumber,
-        diagnosisNotes: document.getElementById("diagnosis").value,
-        medications: prescribedMedications,
-        mcIssued: mcCheckbox.checked,
-        mcDays: mcCheckbox.checked ? parseInt(mcDaysInput.value, 10) : 0,
-        createdAt: new Date().toISOString(),
-        status: "active"
-      };
-
-      try {
-<<<<<<< Updated upstream
-        // IMPORTANT: Use appointmentId as the document ID in the "diagnosis" collection.
-        // This ensures one-to-one mapping and human‑readable IDs (e.g., "Appoint_001").
-        const diagnosisRef = doc(db, "diagnosis", appointmentId);
-        await setDoc(diagnosisRef, diagnosisData);
-
-        // Update appointment status to "completed"
-        const appointmentRef = doc(db, "appointments", appointmentId);
-        await updateDoc(appointmentRef, { status: "completed" });
-=======
-        await addDoc(collection(db, "diagnosis"), diagnosisData);
-        
-        if (appointmentId) {
-          const appointmentRef = doc(db, "appointments", appointmentId);
-          await updateDoc(appointmentRef, { status: "completed" });
-        }
->>>>>>> Stashed changes
-
-        showToast(" Diagnosis submitted successfully!");
-        localStorage.removeItem(`diagnosisDraft_${appointmentId}`);
-        setTimeout(() => { window.location.href = "doctor_dashboard.html"; }, 1500);
-      } catch (error) {
-        console.error("Error:", error);
-        showToast("Failed to submit diagnosis: " + error.message, "error");
-      }
-    });
-
-    // Save current form data as draft in localStorage
-    document.getElementById("draftBtn").addEventListener("click", () => {
-      const medications = [];
-      document.querySelectorAll('.med-item').forEach(item => {
-        medications.push({
-          medication: item.querySelector('.med-select').value,
-          frequency: item.querySelector('.med-freq').value,
-          duration: item.querySelector('.med-duration').value,
-          notes: item.querySelector('.med-notes').value
+        // Local Sandbox Caching Mutation Interface Binder Trigger Setup
+        document.getElementById("draftBtn").addEventListener("click", () => {
+            if (!appointmentId) {
+                showToast("Cannot write empty context parameter drafts instances.", "error");
+                return;
+            }
+            const medications = [];
+            document.querySelectorAll('.med-item').forEach(item => {
+                medications.push({
+                    medication: item.querySelector('.med-select').value,
+                    frequency: item.querySelector('.med-freq').value,
+                    duration: item.querySelector('.med-duration').value,
+                    notes: item.querySelector('.med-notes').value
+                });
+            });
+            const draftData = {
+                diagnosis: document.getElementById("diagnosis").value,
+                mcIssued: document.getElementById("mcCheckbox").checked,
+                mcDays: document.getElementById("mcDays").value,
+                medications: medications
+            };
+            localStorage.setItem(`diagnosisDraft_${appointmentId}`, JSON.stringify(draftData));
+            showToast("Workspace components snapshot recorded to local machine context caches parameters.", "warning");
         });
-      });
-      const draftData = {
-        diagnosis: document.getElementById("diagnosis").value,
-        mcIssued: document.getElementById("mcCheckbox").checked,
-        mcDays: document.getElementById("mcDays").value,
-        medications: medications
-      };
-      localStorage.setItem(`diagnosisDraft_${appointmentId}`, JSON.stringify(draftData));
-      showToast("Draft saved locally!", "warning");
-    });
 
-<<<<<<< Updated upstream
-    // Event listeners for UI buttons
-    document.getElementById("addMedicationBtn").addEventListener("click", () => addMedicationRow());
-=======
-    // Sidebar Sign Out Trigger 
-    document.getElementById("sidebarLogoutBtn").addEventListener("click", async () => {
-      try {
-        await signOut(auth);
-        showToast("Signed out successfully");
-        setTimeout(() => window.location.href = "login.html", 1000);
-      } catch (error) {
-        showToast("Error signing out", "error");
-      }
-    });
+        // Form Interactive Triggers Core Event Linkages Pipeline Bindings
+        document.getElementById("addMedicationBtn").addEventListener("click", () => addMedicationRow());
+        document.getElementById("backBtn").addEventListener("click", () => window.location.href = "doctor_dashboard.html");
+        document.getElementById("cancelBtn").addEventListener("click", () => window.location.href = "doctor_dashboard.html");
 
-    // Event listeners
->>>>>>> Stashed changes
-    document.getElementById("backBtn").addEventListener("click", () => window.location.href = "doctor_dashboard.html");
-    document.getElementById("cancelBtn").addEventListener("click", () => window.location.href = "doctor_dashboard.html");
+        // Auth Application Level Sign Out Action Block Callback
+        document.getElementById("sidebarLogoutBtn").addEventListener("click", async () => {
+            if (confirm("Are you sure you want to end active clinician authorization session logs?")) {
+                try {
+                    await signOut(auth);
+                    showToast("Authentication state terminated successfully.");
+                    setTimeout(() => window.location.href = "login.html", 1000);
+                } catch (error) {
+                    showToast("Error executing system logout protocol authorization sequence.", "error");
+                }
+            }
+        });
 
-    // Toggle MC section visibility
-    const mcCheckbox = document.getElementById("mcCheckbox");
-    const mcSection = document.getElementById("mcSection");
-    mcCheckbox.addEventListener("change", () => {
-      mcSection.classList.toggle("hidden", !mcCheckbox.checked);
-    });
+        // Toggle MC dynamic view interface configuration panel
+        const mcCheckbox = document.getElementById("mcCheckbox");
+        const mcSection = document.getElementById("mcSection");
+        mcCheckbox.addEventListener("change", () => {
+            mcSection.classList.toggle("hidden", !mcCheckbox.checked);
+            if(mcCheckbox.checked) {
+                document.getElementById("mcDays").setAttribute("required", "true");
+            } else {
+                document.getElementById("mcDays").removeAttribute("required");
+                document.getElementById("mcDays").value = "";
+            }
+        });
 
-<<<<<<< Updated upstream
-    // Initialize page: load medications, patient details, and any saved draft
-=======
-    // Initialize Page Flow Setup
->>>>>>> Stashed changes
-    auth.onAuthStateChanged(async (user) => {
-      if (!user) { window.location.href = 'login.html'; return; }
-      await loadMedicationsForDropdown();
-      await loadPatientDetails();
-      loadDraft();
-    });
-  </script>
+        // Operational Authentication Observer Bootstrapping Init Sequence Mount Hooks
+        auth.onAuthStateChanged(async (user) => {
+            if (!user) { 
+                window.location.href = 'login.html'; 
+                return; 
+            }
+            await loadMedicationsForDropdown();
+            await loadPatientDetails();
+            loadDraft();
+        });
+    </script>
 </body>
 </html>

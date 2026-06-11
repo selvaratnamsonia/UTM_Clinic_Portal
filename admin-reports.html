@@ -65,18 +65,18 @@
             --info: #0ea5e9;
         }
 
-        /* --- Main Layout Frame overrides --- */
+        /* --- Main Layout Frame overrides (Width cap removed) --- */
         .main-content {
             flex: 1;
             padding: 40px 60px;
-            max-width: 1400px;
+            width: 100%;
         }
 
         @media(max-width: 1024px) {
             .main-content { padding: 30px; }
         }
 
-        /* --- Control Filter Row (User Story #104) --- */
+        /* --- Control Filter Row --- */
         .filter-card {
             background: var(--white);
             padding: 20px;
@@ -147,7 +147,7 @@
         }
         .btn-export:hover { background: #f1f5f9; }
 
-        /* --- Summary Cards Matrix (User Story #106) --- */
+        /* --- Summary Cards Matrix --- */
         .metrics-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -190,15 +190,15 @@
             font-size: 20px;
         }
 
-        /* --- Layout Charts Section --- */
+        /* --- Balanced Layout Charts Section --- */
         .charts-grid {
             display: grid;
-            grid-template-columns: 2fr 1fr;
+            grid-template-columns: 3fr 2fr;
             gap: 30px;
             margin-bottom: 30px;
         }
 
-        @media (max-width: 1024px) {
+        @media (max-width: 1200px) {
             .charts-grid { grid-template-columns: 1fr; }
         }
 
@@ -221,11 +221,11 @@
 
         .chart-container {
             position: relative;
-            height: 300px;
+            height: 320px;
             width: 100%;
         }
 
-        /* --- Data Ledger List Table (User Story #107) --- */
+        /* --- Data Ledger List Table --- */
         .table-card {
             background: var(--white);
             border-radius: var(--radius-lg);
@@ -276,7 +276,7 @@
 </head>
 <body class="flex min-h-screen font-sans">
 
-    <aside class="w-[80px] md:w-[280px] bg-white border-r border-borderCustom py-8 flex flex-col sticky top-0 h-screen transition-all duration-300">
+    <aside class="w-[80px] md:w-[280px] bg-white border-r border-borderCustom py-8 flex flex-col sticky top-0 h-screen transition-all duration-300 flex-shrink-0">
         <div class="flex items-center gap-3 px-4 md:px-6 pb-10 justify-center md:justify-start">
             <div class="w-[42px] h-[42px] bg-primary rounded-[12px] flex items-center justify-center flex-shrink-0">
                 <img src="images/Clinic-logo.png" alt="Logo" class="w-[80%] h-[80%] object-contain">
@@ -426,17 +426,12 @@
                 setupDatePickersDefault();
                 initializeChartComponents();
 
-                // Point directly to the payments collection where transactions are settled successfully
                 const paymentsCollectionRef = collection(db, "payments");
-                
-                // Fetch all payment history streams to allow client-side date range filtering
                 const snapshot = await getDocs(paymentsCollectionRef);
                 
                 rawPaymentsDataset = [];
                 snapshot.forEach(docSnapshot => {
                     const data = docSnapshot.data();
-                    // Normalize statuses to catch successful collections (e.g., "PAID", "COMPLETED", "SUCCESS")
-                    // Exclude "REJECTED" or "FAILED" options based on database records
                     const statusCheck = (data.paymentStatus || data.status || "").toUpperCase();
                     if (statusCheck !== "REJECTED" && statusCheck !== "FAILED" && statusCheck !== "") {
                         rawPaymentsDataset.push({
@@ -468,7 +463,6 @@
             const endDate = endFilterStr ? new Date(endFilterStr) : null;
             if (endDate) endDate.setHours(23, 59, 59, 999);
 
-            // Filter out items matching chronological boundaries based on appointmentDate
             const filteredList = rawPaymentsDataset.filter(payment => {
                 if (!payment.appointmentDate) return false;
                 const paymentDate = new Date(payment.appointmentDate);
@@ -486,14 +480,11 @@
                 return;
             }
 
-            // Loop and render inside table node dynamically
             filteredList.forEach(payment => {
-                // Parse dynamic financial metrics safely from database fields
                 const remittanceValue = parseFloat(payment.amount) || 0.00;
                 totalPaidAmount += remittanceValue;
                 paidCount++;
 
-                // Map reason text safely if present in sub-items array or direct field values
                 let reasonForVisit = payment.reason || "General Health Consultation";
                 if (payment.items && payment.items[0] && payment.items[0].itemName) {
                     reasonForVisit = payment.items[0].itemName;
@@ -516,7 +507,6 @@
                 `;
             });
 
-            // Write updates out safely to dashboard components interfaces
             document.getElementById('totalPaidAmountDisplay').innerText = `RM ${totalPaidAmount.toFixed(2)}`;
             document.getElementById('paidAppointmentsCountDisplay').innerText = paidCount;
 
@@ -584,7 +574,6 @@
             document.body.removeChild(dynamicDownloadNode);
         }
 
-        // Bind Action Listeners
         document.getElementById('applyFilterBtn').addEventListener('click', processAndRenderMetrics);
         document.getElementById('exportCsvBtn').addEventListener('click', triggerDataLedgerCsvDownload);
 
