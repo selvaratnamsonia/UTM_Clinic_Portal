@@ -1,4 +1,5 @@
-<!-- Register Page by Sonia Selvaratnam 14/5/2026-->
+<!-- Register Page by Sonia Selvaratnam 14/5/2026 -->
+<!-- Updated: Replaced browser alerts with custom modal popups -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,13 +13,61 @@
         .text-primary { color: #802c44; }
         .hover\:bg-primary\/90:hover { background-color: #612134; }
         .focus\:ring-primary:focus { --tw-ring-color: #802c44; }
+
+        /* Custom modal overlay – same style as existing verification modal */
+        .custom-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 60;
+        }
+        .custom-modal {
+            background: white;
+            border-radius: 12px;
+            max-width: 400px;
+            width: 90%;
+            padding: 24px;
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+        }
+        .custom-modal i {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        .custom-modal h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .custom-modal p {
+            color: #4b5563;
+            margin-bottom: 24px;
+        }
+        .custom-modal button {
+            background: #802c44;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .custom-modal button:hover {
+            background: #612134;
+        }
     </style>
 </head>
 <body class="bg-gray-50 font-sans">
     <div class="min-h-screen flex items-center justify-center p-8">
         <div class="w-full max-w-2xl bg-white rounded-xl shadow-lg p-8">
             <div class="text-center mb-8">
-                <img src="assets/utm-logo.png" alt="UTM Clinic" class="h-20 w-auto mx-auto mb-4">
+                <img src="images/utm-logo.png" alt="UTM Clinic" class="h-20 w-auto mx-auto mb-4">
                 <h1 class="text-3xl font-bold mb-2">Create Account</h1>
                 <p class="text-gray-500">Register to book appointments at UTM Clinic</p>
             </div>
@@ -78,14 +127,24 @@
         </div>
     </div>
 
-    <!-- Modal for verification info -->
-    <div id="verificationModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
-        <div class="bg-white rounded-lg max-w-md w-full p-6 text-center">
-            <i class="fas fa-envelope text-5xl text-primary mb-4"></i>
+    <!-- Modal for verification info (success after registration) -->
+    <div id="verificationModal" class="custom-modal-overlay hidden">
+        <div class="custom-modal">
+            <i class="fas fa-envelope text-5xl text-primary"></i>
             <h2 class="text-2xl font-bold mb-2">Verify Your Email</h2>
             <p class="text-gray-600 mb-4">A verification email has been sent to <span id="modalEmail" class="font-semibold"></span></p>
             <p class="text-gray-500 text-sm mb-6">Please check your inbox and click the verification link before logging in.</p>
             <button id="modalOkBtn" class="bg-primary text-white px-6 py-2 rounded-lg">OK, Got it</button>
+        </div>
+    </div>
+
+    <!-- Generic message modal for errors and info (replaces alert) -->
+    <div id="genericModal" class="custom-modal-overlay hidden">
+        <div class="custom-modal">
+            <i id="genericModalIcon" class="fas fa-info-circle text-5xl text-blue-500"></i>
+            <h3 id="genericModalTitle" class="text-xl font-bold">Notification</h3>
+            <p id="genericModalMessage">Message goes here</p>
+            <button id="genericModalBtn" class="bg-primary text-white px-6 py-2 rounded-lg">OK</button>
         </div>
     </div>
 
@@ -97,6 +156,31 @@
         const form = document.getElementById('registerForm');
         const modal = document.getElementById('verificationModal');
         const modalEmail = document.getElementById('modalEmail');
+        const genericModal = document.getElementById('genericModal');
+        const genericModalTitle = document.getElementById('genericModalTitle');
+        const genericModalMessage = document.getElementById('genericModalMessage');
+        const genericModalIcon = document.getElementById('genericModalIcon');
+        const genericModalBtn = document.getElementById('genericModalBtn');
+
+        // Helper: show a custom modal instead of alert
+        function showModal(title, message, icon = 'info', iconColor = '#3b82f6') {
+            genericModalTitle.textContent = title;
+            genericModalMessage.textContent = message;
+            if (icon === 'error') {
+                genericModalIcon.className = 'fas fa-exclamation-circle text-5xl text-red-500';
+            } else if (icon === 'warning') {
+                genericModalIcon.className = 'fas fa-exclamation-triangle text-5xl text-yellow-500';
+            } else {
+                genericModalIcon.className = 'fas fa-info-circle text-5xl text-blue-500';
+            }
+            genericModal.classList.remove('hidden');
+            // Auto-hide after 4 seconds? But we keep until user clicks OK.
+        }
+
+        // Close generic modal when OK clicked
+        genericModalBtn.addEventListener('click', () => {
+            genericModal.classList.add('hidden');
+        });
 
         function validatePhoneNumber(phone) {
             const phoneRegex = /^(01[0-9]-?[0-9]{7,8}$)|(01[0-9][0-9]{7,8}$)/;
@@ -126,22 +210,22 @@
 
             // Validation
             if (password !== confirmPassword) {
-                alert("Passwords do not match");
+                showModal("Passwords Mismatch", "Passwords do not match. Please re-enter.", "error");
                 return;
             }
 
             if (password.length < 8) {
-                alert("Password must be at least 8 characters");
+                showModal("Password Too Short", "Password must be at least 8 characters.", "error");
                 return;
             }
 
             if (!validatePhoneNumber(phone)) {
-                alert("Please enter a valid Malaysian phone number (e.g., 012-3456789 or 0123456789)");
+                showModal("Invalid Phone Number", "Please enter a valid Malaysian phone number (e.g., 012-3456789 or 0123456789)", "error");
                 return;
             }
 
             if (!validateAddress(address)) {
-                alert("Please enter a valid address (full address or UTM College format like 'K9, UTM')");
+                showModal("Invalid Address", "Please enter a valid address (full address or UTM College format like 'K9, UTM')", "error");
                 return;
             }
 
@@ -174,9 +258,9 @@
                 
             } catch (error) {
                 if (error.code === 'auth/email-already-in-use') {
-                    alert("This email is already registered. Please use a different email or login.");
+                    showModal("Email Already Registered", "This email is already registered. Please use a different email or login.", "error");
                 } else {
-                    alert("Registration failed: " + error.message);
+                    showModal("Registration Failed", error.message, "error");
                 }
             }
         });
@@ -188,4 +272,3 @@
     </script>
 </body>
 </html>
-<!-- Resend Verification Email by Sonia Selvaratnam 14/5/2026 -->
