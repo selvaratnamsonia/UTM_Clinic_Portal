@@ -3,47 +3,144 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RHB Now | FPX Payment Gateway</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>RHB Now | Premium FPX Gateway</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         :root {
-            --rhb-blue: #0055a5;
-            --rhb-accent: #cc9900;
-            --border-custom: #cbd5e1;
+            --rhb-blue: #0054a6;
+            --rhb-blue-hover: #003e7e;
+            --rhb-accent: #e5a700;
+            --rhb-accent-hover: #cc9500;
+            --surface-bg: #f4f7fb;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-light: #e2e8f0;
+            --radius-lg: 16px;
+            --radius-md: 8px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { background: #f0f4f8; color: #1e293b; display: flex; flex-direction: column; min-height: 100vh; }
+        body { background: var(--surface-bg); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; font-size: 14px; antialiased; }
         
-        header { background: var(--rhb-blue); padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--rhb-accent); }
-        .logo-text { color: #fff; font-size: 22px; font-weight: 700; letter-spacing: -0.2px; }
-        .logo-text span { font-weight: 400; font-size: 16px; margin-left: 4px; color: #93c5fd; }
-        .fpx-logo { background: #fff; padding: 4px 8px; border-radius: 4px; font-weight: 800; font-style: italic; color: #004b93; font-size: 14px; }
+        /* Header */
+        header { background: var(--rhb-blue); padding: 18px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--rhb-accent); box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        .logo-text { color: #fff; font-size: 24px; font-weight: 800; letter-spacing: -0.2px; }
+        .logo-text span { font-weight: 400; font-size: 18px; margin-left: 4px; color: #93c5fd; }
+        .fpx-logo { background: #fff; padding: 6px 12px; border-radius: 6px; font-weight: 800; font-style: italic; color: var(--rhb-blue); font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
 
+        /* Main Container */
         .container { flex: 1; display: flex; justify-content: center; align-items: center; padding: 40px 20px; }
-        .bank-card { background: #fff; width: 100%; max-width: 480px; border-radius: 12px; box-shadow: 0 10px 25px -5px rgba(0, 85, 165, 0.1); overflow: hidden; }
-        .card-header { background: #fff; padding: 25px 25px 10px; text-align: center; }
-        .card-header h2 { font-size: 18px; font-weight: 700; color: var(--rhb-blue); }
+        .bank-card { background: var(--card-bg); width: 100%; max-width: 460px; border-radius: var(--radius-lg); border: 1px solid rgba(0,0,0,0.03); box-shadow: 0 20px 40px -10px rgba(0, 84, 166, 0.1); overflow: hidden; }
         
-        .invoice-summary { background: #eff6ff; border: 1px solid #bfdbfe; margin: 20px 25px; padding: 15px; border-radius: 8px; }
-        .summary-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; }
-        .summary-row:last-child { margin-bottom: 0; padding-top: 8px; border-top: 1px dashed #bfdbfe; }
+        .card-header { background: #fff; padding: 28px 30px 10px; text-align: center; }
+        .card-header h2 { font-size: 18px; font-weight: 700; color: var(--rhb-blue); letter-spacing: 0.5px; }
+        
+        /* Invoice Summary */
+        .invoice-summary { background: #f8fafc; border: 1px solid var(--border-light); margin: 24px 30px; padding: 20px; border-radius: var(--radius-md); }
+        .summary-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 12px; color: var(--text-muted); }
+        .summary-row strong { color: var(--text-main); font-weight: 600; }
+        .summary-row:last-child { margin-bottom: 0; padding-top: 12px; border-top: 1px dashed #cbd5e1; align-items: center; }
 
-        .card-body { padding: 0 25px 25px; }
-        .form-group { margin-bottom: 18px; display: flex; flex-direction: column; gap: 6px; }
-        .form-group label { font-size: 13px; font-weight: 600; color: #475569; }
-        .input-field { width: 100%; padding: 12px; border: 1px solid var(--border-custom); border-radius: 8px; font-size: 14px; outline: none; }
-        .input-field:focus { border-color: var(--rhb-blue); box-shadow: 0 0 0 3px rgba(0, 85, 165, 0.1); }
+        /* Form Area */
+        .card-body { padding: 0 30px 30px; }
+        .form-group { margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px; }
+        .form-group label { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .input-field { width: 100%; padding: 14px 16px; border: 1.5px solid var(--border-light); border-radius: var(--radius-md); font-size: 14px; font-weight: 500; color: var(--text-main); outline: none; transition: var(--transition); background: #f8fafc; }
+        .input-field:focus { border-color: var(--rhb-blue); background: #fff; box-shadow: 0 0 0 4px rgba(0, 84, 166, 0.1); }
+        .input-field[readonly] { color: var(--text-muted); cursor: not-allowed; }
 
-        .tac-box { display: flex; gap: 10px; }
-        .btn-tac { background: var(--rhb-blue); color: #fff; border: none; padding: 0 15px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
-        .btn-tac:hover { opacity: 0.9; }
+        .tac-box { display: flex; gap: 12px; }
+        .btn-tac { background: var(--rhb-blue); color: #fff; border: none; padding: 0 20px; border-radius: var(--radius-md); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: var(--transition); }
+        .btn-tac:hover { background: var(--rhb-blue-hover); transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0, 84, 166, 0.2); }
 
-        .btn-submit { width: 100%; background: var(--rhb-blue); color: #fff; border: none; padding: 14px; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.2s; }
-        .btn-submit:hover { background: #004485; }
-        .btn-cancel { width: 100%; background: transparent; color: #64748b; border: none; padding: 10px; font-size: 13px; cursor: pointer; text-decoration: underline; margin-top: 10px; }
+        /* Actions */
+        .btn-submit { width: 100%; background: var(--rhb-accent); color: #fff; border: none; padding: 16px; border-radius: var(--radius-md); font-size: 15px; font-weight: 700; cursor: pointer; transition: var(--transition); margin-top: 10px; text-shadow: 0 1px 2px rgba(0,0,0,0.1); box-shadow: 0 6px 15px rgba(229, 167, 0, 0.3); }
+        .btn-submit:hover { background: var(--rhb-accent-hover); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(229, 167, 0, 0.4); }
+        .btn-submit:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; transform: none; box-shadow: none; text-shadow: none; }
+        .btn-cancel { width: 100%; background: transparent; color: var(--text-muted); border: none; padding: 12px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 8px; transition: var(--transition); }
+        .btn-cancel:hover { color: var(--rhb-blue); }
 
-        footer { background: #1e293b; color: #64748b; text-align: center; padding: 15px; font-size: 11px; }
+        footer { background: #0f172a; color: #64748b; text-align: center; padding: 20px; font-size: 12px; font-weight: 500; }
+
+        /* --- PREMIUM MODAL OVERLAY --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(6px);
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none;
+            transition: all 0.3s ease;
+            z-index: 99999;
+            padding: 20px;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .rhb-modal {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 400px;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            transform: scale(0.95) translateY(10px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: center;
+            padding: 35px 30px;
+            border-top: 6px solid var(--rhb-blue);
+        }
+        .modal-overlay.active .rhb-modal {
+            transform: scale(1) translateY(0);
+        }
+        
+        .rhb-modal-icon-wrap {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin: 0 auto 20px auto;
+            background: #f1f5f9;
+        }
+        .rhb-modal-icon-wrap.info { background: #eff6ff; color: var(--rhb-blue); }
+        .rhb-modal-icon-wrap.success { background: #dcfce7; color: #16a34a; }
+        .rhb-modal-icon-wrap.warning { background: #fef9c3; color: #ca8a04; }
+        .rhb-modal-icon-wrap.error { background: #fee2e2; color: #ef4444; }
+        
+        .rhb-modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 12px;
+        }
+        .rhb-modal-body {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        .rhb-modal-btn {
+            width: 100%;
+            background: var(--rhb-blue);
+            color: #fff;
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .rhb-modal-btn:hover { background: var(--rhb-blue-hover); box-shadow: 0 6px 15px rgba(0, 84, 166, 0.2); transform: translateY(-1px); }
+        .rhb-modal-btn.btn-accent { background: var(--rhb-accent); color: #fff; }
+        .rhb-modal-btn.btn-accent:hover { background: var(--rhb-accent-hover); box-shadow: 0 6px 15px rgba(229, 167, 0, 0.3); }
     </style>
 </head>
 <body>
@@ -62,15 +159,15 @@
         <div class="invoice-summary">
             <div class="summary-row"><span>Billing Merchant:</span><strong>UTM Medical Clinic Portal</strong></div>
             <div class="summary-row"><span>Filing Reference:</span><span id="refDisplay">Loading...</span></div>
-            <div class="summary-row"><span>Settlement Amount:</span><strong style="color: var(--rhb-blue); font-size: 16px;" id="amountDisplay">RM 0.00</strong></div>
+            <div class="summary-row"><span>Settlement Amount:</span><strong style="color: var(--rhb-blue); font-size: 18px;" id="amountDisplay">RM 0.00</strong></div>
         </div>
 
         <div class="card-body">
             <div class="form-group">
-                <div class="form-group">
-                    <label>RHB Internet Banking Username</label>
-                    <input type="text" class="input-field" value="utm_student2026" readonly>
-                </div>
+                <label>RHB Internet Banking Username</label>
+                <input type="text" class="input-field" value="utm_student2026" readonly>
+            </div>
+            <div class="form-group">
                 <label>Secure OTP Token</label>
                 <div class="tac-box">
                     <input type="text" id="tacInput" class="input-field" placeholder="Enter 6-digit OTP">
@@ -88,6 +185,19 @@
     RHB Bank Berhad 196501000373 (6171-M). All rights reserved. Secure SSL Node.
 </footer>
 
+<div id="rhbPopupModal" class="modal-overlay">
+    <div class="rhb-modal">
+        <div id="modalIconContainer" class="rhb-modal-icon-wrap info">
+            <i class="fas fa-info-circle"></i>
+        </div>
+        <h3 id="modalTitleText" class="rhb-modal-title">System Message</h3>
+        <div id="modalBodyText" class="rhb-modal-body">
+            Notification alert content details.
+        </div>
+        <button id="modalActionBtn" class="rhb-modal-btn">Acknowledge</button>
+    </div>
+</div>
+
 <script type="module">
     import { db } from './js/firebase-config.js';
     import { doc, getDoc, updateDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
@@ -99,20 +209,67 @@
     document.getElementById('amountDisplay').innerText = `RM ${parseFloat(amount).toFixed(2)}`;
     document.getElementById('refDisplay').innerText = aptId ? `RHB-${aptId.substring(0,8).toUpperCase()}` : "N/A";
 
+    // --- REUSABLE PREMIUM RHB MODAL CONTROLLER ---
+    function triggerRhbModal(title, message, classification = 'info', actionCallback = null) {
+        const modal = document.getElementById('rhbPopupModal');
+        const titleEl = document.getElementById('modalTitleText');
+        const bodyEl = document.getElementById('modalBodyText');
+        const iconBox = document.getElementById('modalIconContainer');
+        const actionBtn = document.getElementById('modalActionBtn');
+
+        titleEl.innerText = title;
+        bodyEl.innerHTML = message.replace(/\n/g, '<br>'); 
+        
+        // Reset classes
+        iconBox.className = `rhb-modal-icon-wrap ${classification}`;
+        actionBtn.className = "rhb-modal-btn";
+
+        if (classification === 'success') {
+            iconBox.innerHTML = '<i class="fas fa-check"></i>';
+            actionBtn.classList.add('btn-accent'); 
+        } else if (classification === 'warning') {
+            iconBox.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+            actionBtn.classList.add('btn-accent');
+        } else if (classification === 'error') {
+            iconBox.innerHTML = '<i class="fas fa-times"></i>';
+        } else {
+            iconBox.innerHTML = '<i class="fas fa-shield-alt"></i>';
+        }
+
+        modal.classList.add('active');
+
+        // Prevent duplicating event listeners on multiple clicks
+        const cleanBtn = actionBtn.cloneNode(true);
+        actionBtn.parentNode.replaceChild(cleanBtn, actionBtn);
+
+        cleanBtn.addEventListener('click', () => {
+            modal.classList.remove('active');
+            if (actionCallback) actionCallback();
+        });
+    }
+
     document.getElementById('getTacBtn').addEventListener('click', () => {
         document.getElementById('tacInput').value = "302811";
-        alert("Simulated Push Notice: Your RHB One-Time OTP access code is 302811");
+        triggerRhbModal(
+            "OTP Token Generated", 
+            "Simulated Push Notice:\nYour RHB One-Time OTP access code is 302811", 
+            "info"
+        );
     });
 
     document.getElementById('confirmBtn').addEventListener('click', async () => {
         if(!document.getElementById('tacInput').value) {
-            alert("Authorization key must be populated to release standard clearing blocks.");
+            triggerRhbModal(
+                "Verification Required", 
+                "Authorization key must be populated to release standard clearing blocks.", 
+                "warning"
+            );
             return;
         }
 
         const confirmBtn = document.getElementById('confirmBtn');
         confirmBtn.disabled = true;
-        confirmBtn.innerText = "Authorizing Funds Settlement Exchange...";
+        confirmBtn.innerText = "Authorizing Funds Settlement...";
 
         try {
             const aptRef = doc(db, "appointments", aptId);
@@ -159,11 +316,21 @@
                 paymentStatus: "pending"
             });
 
-            alert("RHB Now FPX Authorization logged! Sent to clinic staff for verification review.");
-            window.location.href = "appointments.html";
+            triggerRhbModal(
+                "Transaction Logged", 
+                "RHB Now FPX Authorization logged successfully! Sent to clinic staff for verification review.", 
+                "success",
+                () => {
+                    window.location.href = "appointments.html";
+                }
+            );
         } catch (e) {
             console.error(e);
-            alert("Transaction Pipeline Disrupted.");
+            triggerRhbModal(
+                "Transaction Disrupted", 
+                "Transaction Pipeline Disrupted. Please attempt the transaction again.", 
+                "error"
+            );
             confirmBtn.disabled = false;
             confirmBtn.innerText = "Confirm Transaction Release";
         }

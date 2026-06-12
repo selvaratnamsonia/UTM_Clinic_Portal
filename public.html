@@ -3,47 +3,141 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PBe Bank | FPX Payment Gateway</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>PBe Bank | Premium FPX Gateway</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         :root {
-            --pbe-teal: #008080;
-            --pbe-maroon: #800000;
-            --border-color: #cbd5e1;
+            --pbe-maroon: #8b181b;
+            --pbe-maroon-hover: #6b1215;
+            --pbe-teal: #007676;
+            --surface-bg: #f3f6f9;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-light: #e2e8f0;
+            --radius-lg: 16px;
+            --radius-md: 8px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { background: #eef2f5; color: #334155; display: flex; flex-direction: column; min-height: 100vh; }
+        body { background: var(--surface-bg); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; font-size: 14px; antialiased; }
         
-        header { background: #fff; padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 3px solid var(--pbe-maroon); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-        .logo-text { color: var(--pbe-maroon); font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
-        .logo-text span { color: var(--pbe-teal); font-weight: 400; }
-        .fpx-logo { background: #f1f5f9; padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-weight: 800; font-style: italic; color: #004b93; font-size: 14px; }
+        /* Header */
+        header { background: var(--card-bg); padding: 16px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--pbe-maroon); box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
+        .logo-text { color: var(--pbe-maroon); font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+        .logo-text span { color: var(--pbe-teal); font-weight: 500; }
+        .fpx-logo { background: #f8fafc; padding: 6px 12px; border: 1px solid var(--border-light); border-radius: 6px; font-weight: 800; font-style: italic; color: #0f172a; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
 
+        /* Main Container */
         .container { flex: 1; display: flex; justify-content: center; align-items: center; padding: 40px 20px; }
-        .bank-card { background: #fff; width: 100%; max-width: 480px; border-radius: 4px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-        .card-header { background: #f8fafc; padding: 18px 25px; border-bottom: 1px solid var(--border-color); }
-        .card-header h2 { font-size: 15px; font-weight: 700; color: #1e293b; text-transform: uppercase; }
+        .bank-card { background: var(--card-bg); width: 100%; max-width: 460px; border-radius: var(--radius-lg); border: 1px solid rgba(0,0,0,0.04); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.08); overflow: hidden; }
         
-        .invoice-summary { background: #f8fafc; border: 1px solid var(--border-color); margin: 20px 25px; padding: 15px; }
-        .summary-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; }
-        .summary-row:last-child { margin-bottom: 0; padding-top: 8px; border-top: 1px dashed var(--border-color); }
+        .card-header { background: #fafbfc; padding: 24px 30px; border-bottom: 1px solid var(--border-light); text-align: center; }
+        .card-header h2 { font-size: 16px; font-weight: 700; color: var(--text-main); letter-spacing: 0.5px; }
+        
+        /* Invoice Summary */
+        .invoice-summary { background: #fdfdfd; border: 1px solid var(--border-light); margin: 24px 30px; padding: 20px; border-radius: var(--radius-md); box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+        .summary-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 12px; color: var(--text-muted); }
+        .summary-row strong { color: var(--text-main); font-weight: 600; }
+        .summary-row:last-child { margin-bottom: 0; padding-top: 12px; border-top: 1px dashed #cbd5e1; align-items: center; }
 
-        .card-body { padding: 0 25px 25px; }
-        .form-group { margin-bottom: 18px; display: flex; flex-direction: column; gap: 6px; }
-        .form-group label { font-size: 12px; font-weight: 700; color: #475569; text-transform: uppercase; }
-        .input-field { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px; outline: none; }
-        .input-field:focus { border-color: var(--pbe-teal); }
+        /* Form Area */
+        .card-body { padding: 0 30px 30px; }
+        .form-group { margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px; }
+        .form-group label { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+        .input-field { width: 100%; padding: 14px 16px; border: 1.5px solid var(--border-light); border-radius: var(--radius-md); font-size: 14px; font-weight: 500; color: var(--text-main); outline: none; transition: var(--transition); background: #f8fafc; }
+        .input-field:focus { border-color: var(--pbe-teal); background: #fff; box-shadow: 0 0 0 4px rgba(0, 118, 118, 0.1); }
+        .input-field[readonly] { color: var(--text-muted); cursor: not-allowed; }
 
-        .tac-box { display: flex; gap: 10px; }
-        .btn-tac { background: #64748b; color: #fff; border: none; padding: 0 15px; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
-        .btn-tac:hover { background: #475569; }
+        .tac-box { display: flex; gap: 12px; }
+        .btn-tac { background: var(--text-main); color: #fff; border: none; padding: 0 20px; border-radius: var(--radius-md); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: var(--transition); }
+        .btn-tac:hover { background: #0f172a; transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
 
-        .btn-submit { width: 100%; background: var(--pbe-maroon); color: #fff; border: none; padding: 14px; border-radius: 4px; font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; text-transform: uppercase; letter-spacing: 0.5px; }
-        .btn-submit:hover { background: #600000; }
-        .btn-cancel { width: 100%; background: transparent; color: #64748b; border: none; padding: 10px; font-size: 13px; cursor: pointer; text-decoration: underline; margin-top: 10px; }
+        /* Actions */
+        .btn-submit { width: 100%; background: var(--pbe-maroon); color: #fff; border: none; padding: 16px; border-radius: var(--radius-md); font-size: 15px; font-weight: 700; cursor: pointer; transition: var(--transition); margin-top: 10px; box-shadow: 0 8px 16px rgba(139, 24, 27, 0.2); }
+        .btn-submit:hover { background: var(--pbe-maroon-hover); transform: translateY(-2px); box-shadow: 0 12px 20px rgba(139, 24, 27, 0.3); }
+        .btn-submit:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-cancel { width: 100%; background: transparent; color: var(--text-muted); border: none; padding: 12px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 8px; transition: var(--transition); }
+        .btn-cancel:hover { color: var(--pbe-maroon); }
 
-        footer { background: #fff; color: #94a3b8; text-align: center; padding: 15px; font-size: 11px; border-top: 1px solid var(--border-color); }
+        footer { background: var(--card-bg); color: #94a3b8; text-align: center; padding: 20px; font-size: 12px; border-top: 1px solid var(--border-light); font-weight: 500; }
+
+        /* --- PREMIUM MODAL OVERLAY --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(8px);
+            display: flex; justify-content: center; align-items: center;
+            opacity: 0; pointer-events: none;
+            transition: all 0.3s ease;
+            z-index: 99999;
+            padding: 20px;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .pbe-modal {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 400px;
+            border-radius: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+            transform: scale(0.9) translateY(15px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: center;
+            padding: 35px 30px;
+        }
+        .modal-overlay.active .pbe-modal {
+            transform: scale(1) translateY(0);
+        }
+        
+        .pbe-modal-icon-wrap {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            margin: 0 auto 20px auto;
+            background: #f1f5f9;
+        }
+        .pbe-modal-icon-wrap.info { background: #e0f2f1; color: var(--pbe-teal); }
+        .pbe-modal-icon-wrap.success { background: #dcfce7; color: #16a34a; }
+        .pbe-modal-icon-wrap.warning { background: #fee2e2; color: #ef4444; }
+        
+        .pbe-modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 12px;
+        }
+        .pbe-modal-body {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        .pbe-modal-btn {
+            width: 100%;
+            background: var(--text-main);
+            color: #fff;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .pbe-modal-btn:hover { background: #000; box-shadow: 0 6px 15px rgba(0,0,0,0.15); transform: translateY(-1px); }
+        .pbe-modal-btn.btn-maroon { background: var(--pbe-maroon); }
+        .pbe-modal-btn.btn-maroon:hover { background: var(--pbe-maroon-hover); box-shadow: 0 6px 15px rgba(139, 24, 27, 0.2); }
     </style>
 </head>
 <body>
@@ -56,21 +150,21 @@
 <div class="container">
     <div class="bank-card">
         <div class="card-header">
-            <h2>PBe FPX Payment Consent Form</h2>
+            <h2>PBe FPX Payment Authorization</h2>
         </div>
 
         <div class="invoice-summary">
             <div class="summary-row"><span>Beneficiary Merchant:</span><strong>UTM Medical Clinic Portal</strong></div>
             <div class="summary-row"><span>Assigned Tracking ID:</span><span id="refDisplay">Loading...</span></div>
-            <div class="summary-row"><span>Gross Total:</span><strong style="color: var(--pbe-maroon); font-size: 16px;" id="amountDisplay">RM 0.00</strong></div>
+            <div class="summary-row"><span>Gross Total:</span><strong style="color: var(--pbe-maroon); font-size: 18px;" id="amountDisplay">RM 0.00</strong></div>
         </div>
 
         <div class="card-body">
             <div class="form-group">
-                <div class="form-group">
-                    <label>PBe User ID</label>
-                    <input type="text" class="input-field" value="utm_student2026" readonly>
-                </div>
+                <label>PBe User ID</label>
+                <input type="text" class="input-field" value="utm_student2026" readonly>
+            </div>
+            <div class="form-group">
                 <label>PAC Authorization Code</label>
                 <div class="tac-box">
                     <input type="text" id="tacInput" class="input-field" placeholder="Enter 6-digit PAC">
@@ -88,6 +182,19 @@
     Public Bank Berhad (6463-H). All Rights Reserved. Dedicated for FPX clearing engine.
 </footer>
 
+<div id="pbePopupModal" class="modal-overlay">
+    <div class="pbe-modal">
+        <div id="modalIconContainer" class="pbe-modal-icon-wrap info">
+            <i class="fas fa-info-circle"></i>
+        </div>
+        <h3 id="modalTitleText" class="pbe-modal-title">System Message</h3>
+        <div id="modalBodyText" class="pbe-modal-body">
+            Notification alert content details.
+        </div>
+        <button id="modalActionBtn" class="pbe-modal-btn">Acknowledge</button>
+    </div>
+</div>
+
 <script type="module">
     import { db } from './js/firebase-config.js';
     import { doc, getDoc, updateDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
@@ -99,20 +206,65 @@
     document.getElementById('amountDisplay').innerText = `RM ${parseFloat(amount).toFixed(2)}`;
     document.getElementById('refDisplay').innerText = aptId ? `PBE-${aptId.substring(0,8).toUpperCase()}` : "N/A";
 
+    // --- REUSABLE PREMIUM PBe MODAL CONTROLLER ---
+    function triggerPbeModal(title, message, classification = 'info', actionCallback = null) {
+        const modal = document.getElementById('pbePopupModal');
+        const titleEl = document.getElementById('modalTitleText');
+        const bodyEl = document.getElementById('modalBodyText');
+        const iconBox = document.getElementById('modalIconContainer');
+        const actionBtn = document.getElementById('modalActionBtn');
+
+        titleEl.innerText = title;
+        bodyEl.innerHTML = message.replace(/\n/g, '<br>'); 
+        
+        // Reset classes
+        iconBox.className = `pbe-modal-icon-wrap ${classification}`;
+        actionBtn.className = "pbe-modal-btn";
+
+        if (classification === 'success') {
+            iconBox.innerHTML = '<i class="fas fa-check"></i>';
+            actionBtn.classList.add('btn-maroon'); 
+        } else if (classification === 'warning') {
+            iconBox.innerHTML = '<i class="fas fa-exclamation"></i>';
+            actionBtn.classList.add('btn-maroon');
+        } else {
+            iconBox.innerHTML = '<i class="fas fa-shield-alt"></i>';
+        }
+
+        modal.classList.add('active');
+
+        // Prevent duplicating event listeners on multiple clicks
+        const cleanBtn = actionBtn.cloneNode(true);
+        actionBtn.parentNode.replaceChild(cleanBtn, actionBtn);
+
+        cleanBtn.addEventListener('click', () => {
+            modal.classList.remove('active');
+            if (actionCallback) actionCallback();
+        });
+    }
+
     document.getElementById('getTacBtn').addEventListener('click', () => {
         document.getElementById('tacInput').value = "982140";
-        alert("Simulated Secure Message: Your Public Bank PAC is 982140 for this UTM transaction.");
+        triggerPbeModal(
+            "PAC Authentication Generated", 
+            "Simulated Secure Message:\nYour Public Bank PAC is 982140 for this UTM transaction.", 
+            "info"
+        );
     });
 
     document.getElementById('confirmBtn').addEventListener('click', async () => {
         if(!document.getElementById('tacInput').value) {
-            alert("Please request and input your valid PAC digits to finalize validation.");
+            triggerPbeModal(
+                "Verification Required", 
+                "Please request and input your valid PAC digits to finalize validation authorization.", 
+                "warning"
+            );
             return;
         }
 
         const confirmBtn = document.getElementById('confirmBtn');
         confirmBtn.disabled = true;
-        confirmBtn.innerText = "Transmitting to Clearing Database House...";
+        confirmBtn.innerText = "Transmitting to Clearing House...";
 
         try {
             const aptRef = doc(db, "appointments", aptId);
@@ -159,11 +311,21 @@
                 paymentStatus: "pending"
             });
 
-            alert("PBe FPX Authorization logged! Sent to clinic staff for verification review.");
-            window.location.href = "appointments.html";
+            triggerPbeModal(
+                "Transaction Logged", 
+                "PBe FPX Authorization logged successfully! Sent to clinic staff for verification review.", 
+                "success",
+                () => {
+                    window.location.href = "appointments.html";
+                }
+            );
         } catch (e) {
             console.error(e);
-            alert("Transaction Pipeline Disrupted.");
+            triggerPbeModal(
+                "Transaction Disrupted", 
+                "Database transmission core disruption occurred while handling clearing files. Please try again.", 
+                "warning"
+            );
             confirmBtn.disabled = false;
             confirmBtn.innerText = "Confirm & Transmit Payment";
         }

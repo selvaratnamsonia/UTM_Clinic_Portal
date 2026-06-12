@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - UTM Clinic</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <script>
@@ -47,7 +47,7 @@
 </head>
 <body class="flex min-h-screen font-sans">
 
-    <aside class="w-[80px] md:w-[280px] bg-white border-r border-borderCustom py-8 flex flex-col sticky top-0 h-screen transition-all duration-300">
+    <aside class="w-[80px] md:w-[280px] bg-white border-r border-borderCustom py-8 flex flex-col sticky top-0 h-screen transition-all duration-300 flex-shrink-0">
         <div class="flex items-center gap-3 px-4 md:px-6 pb-10 justify-center md:justify-start">
             <div class="w-[42px] h-[42px] bg-primary rounded-[12px] flex items-center justify-center flex-shrink-0">
                 <img src="images/Clinic-logo.png" alt="Logo" class="w-[80%] h-[80%] object-contain">
@@ -82,55 +82,55 @@
         </div>
     </aside>
 
-    <main class="flex-1 p-6 md:p-10 overflow-y-auto">
+    <main class="flex-1 p-6 md:p-10 overflow-x-hidden">
         <header class="mb-8">
             <h1 class="text-3xl font-bold text-text-dark">Admin Dashboard</h1>
             <p class="text-text-muted text-base">Clinic management and overview</p>
         </header>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <a href="admin-doctors.html" class="bg-white p-6 rounded-custom border border-borderCustom shadow-custom flex items-center gap-5 cursor-pointer hover:border-primary/30 hover:shadow-md transition-all duration-200 group">
-                <div class="w-14 h-14 rounded-[14px] flex items-center justify-center text-2xl bg-[#eff6ff] text-[#3b82f6] group-hover:scale-105 transition-transform duration-200">
+            <a href="admin-doctors.html" class="bg-white p-6 rounded-custom border border-borderCustom shadow-custom flex items-center gap-5 cursor-pointer hover:border-primary/30 hover:shadow-md transition-all duration-200 group w-full min-w-0">
+                <div class="w-14 h-14 rounded-[14px] flex items-center justify-center text-2xl bg-[#eff6ff] text-[#3b82f6] group-hover:scale-105 transition-transform duration-200 flex-shrink-0">
                     <i class="fas fa-user-md"></i>
                 </div>
-                <div class="stat-info">
+                <div class="stat-info min-w-0 truncate">
                     <h3 id="total-doctors" class="text-2xl font-bold text-text-dark">...</h3>
                     <p class="text-sm text-text-muted whitespace-nowrap">Total Doctors</p>
                 </div>
             </a>
 
-            <a href="admin-staff.html" class="bg-white p-6 rounded-custom border border-borderCustom shadow-custom flex items-center gap-5 cursor-pointer hover:border-primary/30 hover:shadow-md transition-all duration-200 group">
-                <div class="w-14 h-14 rounded-[14px] flex items-center justify-center text-2xl bg-[#faf5ff] text-[#a855f7] group-hover:scale-105 transition-transform duration-200">
+            <a href="admin-staff.html" class="bg-white p-6 rounded-custom border border-borderCustom shadow-custom flex items-center gap-5 cursor-pointer hover:border-primary/30 hover:shadow-md transition-all duration-200 group w-full min-w-0">
+                <div class="w-14 h-14 rounded-[14px] flex items-center justify-center text-2xl bg-[#faf5ff] text-[#a855f7] group-hover:scale-105 transition-transform duration-200 flex-shrink-0">
                     <i class="fas fa-users-cog"></i>
                 </div>
-                <div class="stat-info">
+                <div class="stat-info min-w-0 truncate">
                     <h3 id="total-staff" class="text-2xl font-bold text-text-dark">...</h3>
                     <p class="text-sm text-text-muted whitespace-nowrap">Total Staff</p>
                 </div>
             </a>
 
-            <div class="bg-white p-6 rounded-custom border border-borderCustom shadow-custom flex items-center gap-5">
-                <div class="w-14 h-14 rounded-[14px] flex items-center justify-center text-2xl bg-[#f0fdf4] text-[#22c55e]">
+            <div class="bg-white p-6 rounded-custom border border-borderCustom shadow-custom flex items-center gap-5 w-full min-w-0">
+                <div class="w-14 h-14 rounded-[14px] flex items-center justify-center text-2xl bg-[#f0fdf4] text-[#22c55e] flex-shrink-0">
                     <i class="fas fa-calendar-check"></i>
                 </div>
-                <div class="stat-info">
+                <div class="stat-info min-w-0 truncate">
                     <h3 id="today-appointments" class="text-2xl font-bold text-text-dark">...</h3>
                     <p class="text-sm text-text-muted whitespace-nowrap">Today's Appts</p>
                 </div>
             </div>
 
-            <div class="bg-white p-6 rounded-custom border border-borderCustom shadow-custom flex items-center gap-5">
-                <div class="w-14 h-14 rounded-[14px] flex items-center justify-center text-2xl bg-[#fdf2f2] text-primary">
+            <div class="bg-white p-6 rounded-custom border border-borderCustom shadow-custom flex items-center gap-5 w-full min-w-0">
+                <div class="w-14 h-14 rounded-[14px] flex items-center justify-center text-2xl bg-[#fdf2f2] text-primary flex-shrink-0">
                     <i class="fas fa-wallet"></i>
                 </div>
-                <div class="metric-info">
-                    <h3 class="text-xs font-semibold text-text-muted uppercase tracking-wider mb-0.5">Total Paid Amount</h3>
-                    <div class="text-2xl font-bold text-text-dark" id="totalPaidAmountDisplay">RM 0.00</div>
+                <div class="metric-info min-w-0 flex-1">
+                    <h3 class="text-xs font-semibold text-text-muted uppercase tracking-wider mb-0.5 truncate">Total Paid Amount</h3>
+                    <div class="text-2xl font-bold text-text-dark truncate" id="totalPaidAmountDisplay">Calculating...</div>
                 </div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <a href="admin-doctors.html" class="group relative overflow-hidden bg-gradient-to-br from-[#802c44] to-[#5a1e2f] text-white p-8 rounded-custom shadow-md hover:shadow-xl transition-all duration-300 flex flex-col items-center justify-center text-center gap-4">
                 <div class="w-16 h-16 bg-white/10 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
                     <i class="fas fa-user-plus text-3xl"></i>
@@ -178,16 +178,16 @@
     <script type="module">
         import { db, auth } from "./js/firebase-config.js";
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-        import { collection, query, orderBy, limit, onSnapshot, where } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+        import { collection, query, orderBy, limit, onSnapshot, where, getDocs } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
-        // Route Guard Session Validator
+        // Route Protection Access Interceptor 
         onAuthStateChanged(auth, (user) => {
             if (!user) {
                 window.location.href = "login.html";
             }
         });
 
-        // App-Level Sign-out Processor Link Dispatcher
+        // App Level Session Destruction Trigger
         const logoutLink = document.getElementById('logoutLink');
         if (logoutLink) {
             logoutLink.addEventListener('click', async (e) => {
@@ -197,42 +197,41 @@
             });
         }
 
-        // Dashboard Visual View Binding Nodes
+        // DOM View Reference Nodes mapping
         const totalDoctorsEl = document.getElementById("total-doctors");
         const totalStaffEl = document.getElementById("total-staff");
         const todayAppointmentsEl = document.getElementById("today-appointments");
         const totalPaidAmountEl = document.getElementById("totalPaidAmountDisplay");
 
-        // String Cleaner and Float Parser Strategy Utility
+        // Advanced String-to-Float Variable Processing Engine
         const safeParseAmount = (val) => {
             if (val === undefined || val === null) return 0;
             if (typeof val === 'number') return val;
-            
-            const match = String(val).match(/[-+]?[0-9]*\.?[0-9]+/);
+            const match = String(val).replace(/[^0-9.]/g, '');
             if (match) {
-                const parsed = parseFloat(match[0]);
+                const parsed = parseFloat(match);
                 return !isNaN(parsed) ? parsed : 0;
             }
             return 0;
         };
 
-        // 1. Live Counters: Doctor Registry
+        // 1. Live Context Streams: Doctors Counters
         onSnapshot(collection(db, "doctors"), (snapshot) => {
             if (totalDoctorsEl) totalDoctorsEl.innerText = snapshot.size;
-        }, (err) => console.error("Doctors counter error:", err));
+        }, (err) => console.error("Database tracking stream down for doctors:", err));
 
-        // 2. Live Counters: Staff Registry
+        // 2. Live Context Streams: Staff Counters
         const staffQuery = query(collection(db, "users"), where("role", "==", "staff"));
         onSnapshot(staffQuery, (snapshot) => {
             if (totalStaffEl) totalStaffEl.innerText = snapshot.size;
         }, (err) => {
-            console.error("Staff collection issue, querying fallback:", err);
+            console.warn("Primary path unreachable, running staff backup collection scan...", err);
             onSnapshot(collection(db, "staff"), (backupSnap) => {
                 if (totalStaffEl) totalStaffEl.innerText = backupSnap.size;
             });
         });
 
-        // ISO System Timestamp Normalizer Stringifier
+        // Normalized ISO Local Date Generator Node
         const getTodayDateString = () => {
             const today = new Date();
             const yyyy = today.getFullYear();
@@ -241,44 +240,54 @@
             return `${yyyy}-${mm}-${dd}`;
         };
 
-        // 3. Live Counters: Calendar Traffic
+        // 3. Live Context Streams: Today's Calendars Volume Tracking
         const todayQuery = query(collection(db, "appointments"), where("date", "==", getTodayDateString()));
         onSnapshot(todayQuery, (snapshot) => {
             if (todayAppointmentsEl) todayAppointmentsEl.innerText = snapshot.size;
-        }, (err) => console.error("Today's appts counter error:", err));
+        }, (err) => console.error("Calendar operational feed error:", err));
 
-        // 4. Live Aggregates: Mirror Calculations Pipeline with Analytics Dashboard Module [RM 90.00]
-        onSnapshot(collection(db, "appointments"), (snapshot) => {
-            let runningRevenueSum = 0;
 
-            snapshot.forEach((doc) => {
-                const data = doc.data();
-                
-                // Unified verification metrics lookup logic to compute valid collections
-                const rawValue = data.amountPaid ?? data.totalPaid ?? data.amount ?? data.feeCharged ?? data.totalAmount ?? 0;
-                const nestedValue = data.payment?.amount ?? data.billing?.total ?? 0;
-                
-                const finalValue = rawValue || nestedValue;
-                runningRevenueSum += safeParseAmount(finalValue);
-            });
+        // 4. FINANCIAL REVENUE ENGINE: TARGETING PAYMENTS COLLECTION
+        const aggregateClinicRevenue = async () => {
+            console.log("⚡ REVENUE ENGINE: Fetching calculations from 'payments' collection...");
+            let totalSuccessfulSum = 0;
 
-            if (totalPaidAmountEl) {
-                totalPaidAmountEl.innerText = `RM ${runningRevenueSum.toFixed(2)}`;
-            }
-        }, (err) => {
-            console.error("Billing metrics engine fallback sequence mapping...", err);
-            onSnapshot(collection(db, "billing_ledger"), (ledgerSnap) => {
-                let ledgerSum = 0;
-                ledgerSnap.forEach((doc) => {
+            try {
+                // Pointing directly to the validated 'payments' collection name seen in Firestore
+                const paymentsSnapshot = await getDocs(collection(db, "payments"));
+                console.log(`📋 REVENUE ENGINE: Fetched ${paymentsSnapshot.size} documents from 'payments'.`);
+
+                paymentsSnapshot.forEach((doc) => {
                     const data = doc.data();
-                    const value = data.amountPaid ?? data.totalAmount ?? data.amount ?? 0;
-                    ledgerSum += safeParseAmount(value);
-                });
-                if (totalPaidAmountEl) totalPaidAmountEl.innerText = `RM ${ledgerSum.toFixed(2)}`;
-            });
-        });
+                    
+                    // Filter rule validation: Exclude rejected, failed, or cancelled transaction models
+                    // Adjust string rules matching your alternative successful status strings if needed (e.g., "COMPLETED" or "success")
+                    if (data.paymentStatus === "REJECTED" || data.status === "rejected" || data.paymentStatus === "FAILED") {
+                        return; // Skips this loop iteration entirely
+                    }
 
-        // 5. Activity Monitors Streams Pipeline
+                    // Fallback variable targeting chain checking standard payment fields
+                    const transactionalAmount = data.amount ?? data.subtotal ?? data.totalPaid ?? data.amountPaid;
+                    totalSuccessfulSum += safeParseAmount(transactionalAmount);
+                });
+
+                console.log(`✅ REVENUE ENGINE CALCULATION SUCCESS: Summed total -> RM ${totalSuccessfulSum.toFixed(2)}`);
+
+            } catch (paymentFetchError) {
+                console.error("❌ REVENUE ENGINE ACCESS FAILURE: Can't view 'payments' collection:", paymentFetchError);
+            }
+
+            // Bind aggregated calculation to dashboard UI widget
+            if (totalPaidAmountEl) {
+                totalPaidAmountEl.innerText = `RM ${totalSuccessfulSum.toFixed(2)}`;
+            }
+        };
+
+        // Initialize financial processing rules
+        aggregateClinicRevenue();
+
+
+        // 5. Activity Event Streams Feed Monitoring Block
         const container = document.getElementById("activityContainer");
         const appointmentsQuery = query(
             collection(db, "appointments"),
@@ -348,7 +357,7 @@
                 container.appendChild(element);
             });
         }, (error) => {
-            console.error("Firestore real-time logger error:", error);
+            console.error("Firestore activities tracking layout failed:", error);
             if (container) {
                 container.innerHTML = `
                     <div class="text-center py-4 text-red-600 text-sm">
