@@ -112,9 +112,9 @@
 
         .actions { display: flex; gap: 10px; }
         .btn-sm { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; transition: 0.2s; }
-        .btn-outline { border: 1px solid var(--border-color); background: white; color: var(--text-muted); }
+        .btn-outline { border: 1px solid var(--border-color); background: white; color: var(--text-muted); line-height: 1.2; }
         .btn-outline:hover { background: #f8fafc; color: var(--text-dark); }
-        .btn-fill { border: none; background: var(--primary); color: white; }
+        .btn-fill { border: none; background: var(--primary); color: white; line-height: 1.2; }
         .btn-fill:hover { background: var(--primary-hover); }
 
         @media (max-width: 768px) {
@@ -149,7 +149,6 @@
     </div>
 
     <nav class="nav-links">
-        
         <a href="doctor_dashboard.html" class="nav-link active">
             <i class="fas fa-columns"></i>
             <span>Dashboard</span>
@@ -211,7 +210,7 @@
             </div>
             <div style="text-align: right;">
                 <p style="margin-bottom: 15px; opacity: 0.8;">Appt Time: <span id="appointmentTime">--:--</span></p>
-               <a id="historyLink" href="#" class="btn-white">View Full Records</a>
+                <a id="historyLink" href="past-patient.html" class="btn-white">View Full Records</a>
             </div>
         </div>
     </div>
@@ -381,7 +380,7 @@
                             </div>
                         </div>
                         <div class="actions">
-                            <a href="patient-records.html?id=${appt.userId || '#'}">
+                            <a href="past-patient.html?id=${appt.userId || '#'}">
                                 <button class="btn-sm btn-outline">Record</button>
                             </a>
                             <a href="write-diagnosis.html?id=${appt.id}">
@@ -407,7 +406,8 @@
         document.getElementById("patientAddress").innerText = appt.patientInfo.address;
         document.getElementById("appointmentReason").innerText = appt.reason || "General Checkup";
         document.getElementById("appointmentTime").innerText = appt.time || "--:--";
-        document.getElementById("historyLink").href = `patient-records.html?id=${appt.userId || '#'}`;
+        // Fixed: Points to past-patient.html instead of missing page template link
+        document.getElementById("historyLink").href = `past-patient.html?id=${appt.userId || '#'}`;
     }
 
     function resetCurrentPatientCard() {
@@ -417,7 +417,7 @@
         document.getElementById("patientAddress").innerText = "-";
         document.getElementById("appointmentReason").innerText = "-";
         document.getElementById("appointmentTime").innerText = "--:--";
-        document.getElementById("historyLink").href = "#";
+        document.getElementById("historyLink").href = "past-patient.html";
     }
 
     // ==========================================
