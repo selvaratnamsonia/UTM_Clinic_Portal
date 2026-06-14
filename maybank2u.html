@@ -7,141 +7,50 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
-        :root {
-            --m2u-yellow: #ffcc00;
-            --m2u-dark: #222222;
-            --m2u-text: #333333;
-            --border-color: #e2e8f0;
-            --radius-lg: 16px;
-            --radius-md: 8px;
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+        /* All existing styles remain unchanged – kept exactly as you provided */
+        :root { --m2u-yellow: #ffcc00; --m2u-dark: #222222; --m2u-text: #333333; --border-color: #e2e8f0; --radius-lg: 16px; --radius-md: 8px; --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
         body { background: #f4f4f6; color: var(--m2u-text); display: flex; flex-direction: column; min-height: 100vh; }
-        
         header { background: var(--m2u-dark); padding: 15px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--m2u-yellow); }
         .logo-text { color: #fff; font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
         .logo-text span { color: var(--m2u-yellow); }
         .fpx-logo { background: #fff; padding: 4px 8px; border-radius: 4px; font-weight: 800; font-style: italic; color: #004b93; font-size: 14px; }
-
         .container { flex: 1; display: flex; justify-content: center; align-items: center; padding: 40px 20px; }
         .bank-card { background: #fff; width: 100%; max-width: 480px; border-radius: var(--radius-lg); box-shadow: 0 10px 30px rgba(0,0,0,0.06); overflow: hidden; border: 1px solid rgba(0,0,0,0.03); }
         .card-header { background: #fafafa; padding: 20px 25px; border-bottom: 1px solid var(--border-color); }
         .card-header h2 { font-size: 16px; font-weight: 700; color: var(--m2u-dark); }
-        
         .invoice-summary { background: #fff9e6; border: 1px solid #ffe89c; margin: 20px 25px; padding: 15px; border-radius: var(--radius-md); }
         .summary-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; }
         .summary-row:last-child { margin-bottom: 0; padding-top: 8px; border-top: 1px dashed #ffe89c; }
-
         .card-body { padding: 0 25px 25px; }
         .form-group { margin-bottom: 18px; display: flex; flex-direction: column; gap: 6px; }
         .form-group label { font-size: 13px; font-weight: 600; color: #555; }
         .input-field { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 14px; outline: none; background: #fff; transition: var(--transition); }
         .input-field:focus { border-color: var(--m2u-yellow); box-shadow: 0 0 0 3px rgba(255, 204, 0, 0.15); }
         .input-field[readonly] { background: #f1f5f9; color: #64748b; cursor: not-allowed; }
-
         .tac-box { display: flex; gap: 10px; }
         .btn-tac { background: var(--m2u-dark); color: #fff; border: none; padding: 0 18px; border-radius: var(--radius-md); font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: var(--transition); }
         .btn-tac:hover { background: #111; transform: translateY(-1px); }
-
         .btn-submit { width: 100%; background: var(--m2u-yellow); color: var(--m2u-dark); border: none; padding: 14px; border-radius: var(--radius-md); font-size: 15px; font-weight: 700; cursor: pointer; transition: var(--transition); margin-top: 10px; box-shadow: 0 4px 12px rgba(255, 204, 0, 0.2); }
         .btn-submit:hover { background: #e6b800; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(255, 204, 0, 0.3); }
         .btn-submit:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; box-shadow: none; transform: none; }
         .btn-cancel { width: 100%; background: transparent; color: #888; border: none; padding: 10px; font-size: 13px; cursor: pointer; text-decoration: underline; margin-top: 10px; font-weight: 500; transition: var(--transition); }
         .btn-cancel:hover { color: var(--m2u-dark); }
-
         footer { background: var(--m2u-dark); color: #777; text-align: center; padding: 15px; font-size: 11px; border-top: 1px solid #333; }
-
-        /* --- Custom Premium Modal Box Framework --- */
-        .premium-modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(8px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            visibility: hidden;
-            transition: var(--transition);
-            z-index: 999999; /* Increased to guarantee it sits on top */
-            padding: 20px;
-        }
-        .premium-modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-        .premium-modal-card {
-            background: #ffffff;
-            border-radius: 24px;
-            padding: 35px 30px;
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            transform: scale(0.95) translateY(10px);
-            transition: var(--transition);
-            border: 1px solid #f1f5f9;
-        }
-        .premium-modal-overlay.active .premium-modal-card {
-            transform: scale(1) translateY(0);
-        }
-        .premium-modal-icon-wrap {
-            width: 64px;
-            height: 64px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 26px;
-            margin: 0 auto 20px auto;
-        }
-        
-        /* Modal Colors Configurations */
+        .premium-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: var(--transition); z-index: 999999; padding: 20px; }
+        .premium-modal-overlay.active { opacity: 1; visibility: visible; }
+        .premium-modal-card { background: #ffffff; border-radius: 24px; padding: 35px 30px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); transform: scale(0.95) translateY(10px); transition: var(--transition); border: 1px solid #f1f5f9; }
+        .premium-modal-overlay.active .premium-modal-card { transform: scale(1) translateY(0); }
+        .premium-modal-icon-wrap { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; margin: 0 auto 20px auto; }
         .mode-info { background: #fff9e6; color: #d9a300; }
         .mode-success { background: #f0fdf4; color: #16a34a; }
         .mode-error { background: #fef2f2; color: #ef4444; }
-
-        .premium-modal-title {
-            font-size: 19px;
-            font-weight: 700;
-            color: var(--m2u-dark);
-            margin-bottom: 12px;
-            line-height: 1.3;
-        }
-        .premium-modal-msg {
-            font-size: 14px;
-            color: #64748b;
-            line-height: 1.6;
-            margin-bottom: 26px;
-        }
-        .modal-action-btn {
-            width: 100%;
-            background: var(--m2u-dark);
-            color: #ffffff;
-            font-size: 14px;
-            font-weight: 600;
-            padding: 13px;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-        .modal-action-btn:hover {
-            background: #000;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-        .modal-action-btn.btn-success-color {
-            background: #16a34a;
-        }
-        .modal-action-btn.btn-success-color:hover {
-            background: #15803d;
-            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
-        }
+        .premium-modal-title { font-size: 19px; font-weight: 700; color: var(--m2u-dark); margin-bottom: 12px; line-height: 1.3; }
+        .premium-modal-msg { font-size: 14px; color: #64748b; line-height: 1.6; margin-bottom: 26px; }
+        .modal-action-btn { width: 100%; background: var(--m2u-dark); color: #ffffff; font-size: 14px; font-weight: 600; padding: 13px; border: none; border-radius: 10px; cursor: pointer; transition: var(--transition); }
+        .modal-action-btn:hover { background: #000; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .modal-action-btn.btn-success-color { background: #16a34a; }
+        .modal-action-btn.btn-success-color:hover { background: #15803d; box-shadow: 0 4px 12px rgba(22,163,74,0.2); }
     </style>
 </head>
 <body>
@@ -207,9 +116,11 @@
 
 <script type="module">
     import { db } from './js/firebase-config.js';
-    import { doc, getDoc, updateDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+    import { doc, getDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
-    // --- High-End Promisified Custom Alert Window logic ---
+    // ------------------------------------------------------------------
+    // 1. Custom Alert Modal (already present, unchanged but fully functional)
+    // ------------------------------------------------------------------
     function customAlert({ title, message, mode = "info" }) {
         return new Promise((resolve) => {
             const overlay = document.getElementById('premiumAlertOverlay');
@@ -222,11 +133,9 @@
             titleEl.innerText = title;
             msgEl.innerText = message;
 
-            // Reset standard configurations classes
             iconWrap.className = "premium-modal-icon-wrap";
             closeBtn.className = "modal-action-btn";
 
-            // Configure semantic UI rules
             if (mode === "success") {
                 iconWrap.classList.add('mode-success');
                 iconEl.className = "fas fa-check-circle";
@@ -239,20 +148,41 @@
                 iconEl.className = "fas fa-comment-alt";
             }
 
-            // Show modal
             overlay.classList.add('active');
 
-            // Handle Resolution
             const resolveTeardown = () => {
                 overlay.classList.remove('active');
                 closeBtn.removeEventListener('click', resolveTeardown);
-                resolve(); // Resolves the await promise allowing code to continue
+                resolve();
             };
-
             closeBtn.addEventListener('click', resolveTeardown);
         });
     }
 
+    // ------------------------------------------------------------------
+    // 2. Generate Sequential Payment ID (Pay_001, Pay_002, ...)
+    //    Uses a counter document inside "counters/payments".
+    // ------------------------------------------------------------------
+    async function getNextPaymentId() {
+        const counterRef = doc(db, "counters", "payments");
+        let counterSnap = await getDoc(counterRef);
+        let nextNum;
+        if (!counterSnap.exists()) {
+            // First payment ever – initialise counter
+            await setDoc(counterRef, { nextId: 1 });
+            nextNum = 1;
+        } else {
+            nextNum = counterSnap.data().nextId;
+            // Increment for the next payment
+            await updateDoc(counterRef, { nextId: nextNum + 1 });
+        }
+        const padded = nextNum.toString().padStart(3, '0');
+        return `Pay_${padded}`;
+    }
+
+    // ------------------------------------------------------------------
+    // 3. Parse URL parameters and update page display
+    // ------------------------------------------------------------------
     const urlParams = new URLSearchParams(window.location.search);
     const aptId = urlParams.get('aptId') || "";
     const amount = urlParams.get('amount') || "0.00";
@@ -260,10 +190,11 @@
     document.getElementById('amountDisplay').innerText = `RM ${parseFloat(amount).toFixed(2)}`;
     document.getElementById('refDisplay').innerText = aptId ? `M2U-${aptId.substring(0,8).toUpperCase()}` : "N/A";
 
+    // ------------------------------------------------------------------
+    // 4. Simulate TAC generation
+    // ------------------------------------------------------------------
     document.getElementById('getTacBtn').addEventListener('click', async () => {
         document.getElementById('tacInput').value = "128492";
-        
-        // Fully utilizing custom built-in Modal
         await customAlert({
             title: "Secure TAC Requested",
             message: "Simulated SMS Notification: Your Maybank2u TAC is 128492",
@@ -271,10 +202,11 @@
         });
     });
 
+    // ------------------------------------------------------------------
+    // 5. Main payment submission – creates a record with custom sequential ID
+    // ------------------------------------------------------------------
     document.getElementById('confirmBtn').addEventListener('click', async () => {
-        if(!document.getElementById('tacInput').value) {
-            
-            // Fully utilizing custom built-in Modal
+        if (!document.getElementById('tacInput').value) {
             await customAlert({
                 title: "Verification Failed",
                 message: "Please request and enter your secure TAC code first.",
@@ -288,10 +220,12 @@
         confirmBtn.innerText = "Processing Payment Verification...";
 
         try {
+            // Fetch appointment details
             const aptRef = doc(db, "appointments", aptId);
             const aptSnap = await getDoc(aptRef);
             let aptData = aptSnap.exists() ? aptSnap.data() : {};
 
+            // Build itemized list from prescriptions (or fallback)
             const itemizedItems = [];
             if (aptData.prescriptions && aptData.prescriptions.length > 0) {
                 aptData.prescriptions.forEach(med => {
@@ -313,7 +247,11 @@
                 });
             }
 
-            await addDoc(collection(db, "payments"), {
+            // 🔑 Generate a sequential payment ID (e.g., Pay_001)
+            const paymentId = await getNextPaymentId();
+
+            // Save payment document with the custom ID instead of using addDoc()
+            await setDoc(doc(db, "payments", paymentId), {
                 appointmentId: aptId,
                 studentName: aptData.patientName || "SIA JUN YU",
                 studentId: aptData.matricNo || aptData.matricNumber || "A24DW0420",
@@ -322,30 +260,29 @@
                 items: itemizedItems,
                 amount: parseFloat(amount),
                 paymentChannel: "FPX",
-                status: "pending", 
+                status: "pending",
                 transactionReference: `FPX-M2U-${Math.floor(100000 + Math.random() * 900000)}`,
                 createdAt: new Date()
             });
 
+            // Update appointment status to pending payment verification
             await updateDoc(aptRef, {
                 status: "pending-payment-verification",
                 paymentStatus: "pending"
             });
 
-            // Triggering the premium UI success popup 
+            // Success message via custom modal
             await customAlert({
                 title: "Authorization Logged",
                 message: "Maybank2u FPX Authorization logged! Sent to clinic staff for verification review.",
                 mode: "success"
             });
-            
-            // This redirect waits until the user clicks 'Acknowledge' on the modal
+
+            // Redirect to appointments page after user acknowledges the modal
             window.location.href = "appointments.html";
-            
+
         } catch (e) {
             console.error(e);
-            
-            // Triggering error pop up UI gracefully
             await customAlert({
                 title: "Pipeline Error",
                 message: "Transaction Pipeline Disrupted. Please try again.",
