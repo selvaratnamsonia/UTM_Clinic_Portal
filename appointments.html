@@ -489,6 +489,52 @@
             .table-card { overflow-x: auto; }
             table { min-width: 850px; }
         }
+
+        /* Extra small devices (phones, ≤640px) – further optimisations */
+@media (max-width: 640px) {
+    .main {
+        padding: 16px;
+    }
+    .table-controls {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 16px;
+    }
+    .search-wrapper {
+        max-width: 100%;
+    }
+    .filter-select {
+        width: 100%;
+    }
+    .history-tabs {
+        flex-wrap: wrap;
+    }
+    .tab-btn {
+        flex: 1;
+        text-align: center;
+        font-size: 13px;
+        padding: 8px 12px;
+    }
+    .badge {
+        font-size: 10px;
+        padding: 4px 8px;
+    }
+    .btn-pay-action, .btn-mc-action {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+    .action-container {
+        flex-direction: column;
+        gap: 6px;
+    }
+    .action-container .btn-pay-action,
+    .action-container .btn-mc-action,
+    .action-container .no-action {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+    }
+}
     </style>
 </head>
 <body>

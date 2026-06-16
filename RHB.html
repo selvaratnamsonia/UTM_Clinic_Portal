@@ -1,3 +1,5 @@
+<!-- RHB.html by Sonia Selvaratnam 15/6/2026 -->
+<!-- RHB Now FPX simulation – creates payment with sequential ID -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,333 +9,103 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
-        :root {
-            --rhb-blue: #0054a6;
-            --rhb-blue-hover: #003e7e;
-            --rhb-accent: #e5a700;
-            --rhb-accent-hover: #cc9500;
-            --surface-bg: #f4f7fb;
-            --card-bg: #ffffff;
-            --text-main: #0f172a;
-            --text-muted: #64748b;
-            --border-light: #e2e8f0;
-            --radius-lg: 16px;
-            --radius-md: 8px;
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
+        :root { --rhb-blue: #0054a6; --rhb-accent: #e5a700; --surface-bg: #f4f7fb; --card-bg: #ffffff; --text-main: #0f172a; --border-light: #e2e8f0; }
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
-        body { background: var(--surface-bg); color: var(--text-main); display: flex; flex-direction: column; min-height: 100vh; font-size: 14px; antialiased; }
-        
-        /* Header */
-        header { background: var(--rhb-blue); padding: 18px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--rhb-accent); box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-        .logo-text { color: #fff; font-size: 24px; font-weight: 800; letter-spacing: -0.2px; }
-        .logo-text span { font-weight: 400; font-size: 18px; margin-left: 4px; color: #93c5fd; }
-        .fpx-logo { background: #fff; padding: 6px 12px; border-radius: 6px; font-weight: 800; font-style: italic; color: var(--rhb-blue); font-size: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-
-        /* Main Container */
-        .container { flex: 1; display: flex; justify-content: center; align-items: center; padding: 40px 20px; }
-        .bank-card { background: var(--card-bg); width: 100%; max-width: 460px; border-radius: var(--radius-lg); border: 1px solid rgba(0,0,0,0.03); box-shadow: 0 20px 40px -10px rgba(0, 84, 166, 0.1); overflow: hidden; }
-        
+        body { background: var(--surface-bg); display: flex; flex-direction: column; min-height: 100vh; }
+        header { background: var(--rhb-blue); padding: 18px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--rhb-accent); }
+        .logo-text { color: #fff; font-size: 24px; font-weight: 800; }
+        .fpx-logo { background: #fff; padding: 6px 12px; border-radius: 6px; font-weight: 800; color: var(--rhb-blue); }
+        .container { flex:1; display: flex; justify-content: center; align-items: center; padding: 40px 20px; }
+        .bank-card { background: var(--card-bg); width: 100%; max-width: 460px; border-radius: 16px; box-shadow: 0 20px 40px -10px rgba(0,84,166,0.1); overflow: hidden; }
         .card-header { background: #fff; padding: 28px 30px 10px; text-align: center; }
-        .card-header h2 { font-size: 18px; font-weight: 700; color: var(--rhb-blue); letter-spacing: 0.5px; }
-        
-        /* Invoice Summary */
-        .invoice-summary { background: #f8fafc; border: 1px solid var(--border-light); margin: 24px 30px; padding: 20px; border-radius: var(--radius-md); }
-        .summary-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 12px; color: var(--text-muted); }
-        .summary-row strong { color: var(--text-main); font-weight: 600; }
-        .summary-row:last-child { margin-bottom: 0; padding-top: 12px; border-top: 1px dashed #cbd5e1; align-items: center; }
-
-        /* Form Area */
+        .invoice-summary { background: #f8fafc; margin: 24px 30px; padding: 20px; border-radius: 8px; }
+        .summary-row { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 12px; }
         .card-body { padding: 0 30px 30px; }
         .form-group { margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px; }
-        .form-group label { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
-        .input-field { width: 100%; padding: 14px 16px; border: 1.5px solid var(--border-light); border-radius: var(--radius-md); font-size: 14px; font-weight: 500; color: var(--text-main); outline: none; transition: var(--transition); background: #f8fafc; }
-        .input-field:focus { border-color: var(--rhb-blue); background: #fff; box-shadow: 0 0 0 4px rgba(0, 84, 166, 0.1); }
-        .input-field[readonly] { color: var(--text-muted); cursor: not-allowed; }
-
+        .input-field { width: 100%; padding: 14px 16px; border: 1.5px solid var(--border-light); border-radius: 8px; }
         .tac-box { display: flex; gap: 12px; }
-        .btn-tac { background: var(--rhb-blue); color: #fff; border: none; padding: 0 20px; border-radius: var(--radius-md); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: var(--transition); }
-        .btn-tac:hover { background: var(--rhb-blue-hover); transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0, 84, 166, 0.2); }
-
-        /* Actions */
-        .btn-submit { width: 100%; background: var(--rhb-accent); color: #fff; border: none; padding: 16px; border-radius: var(--radius-md); font-size: 15px; font-weight: 700; cursor: pointer; transition: var(--transition); margin-top: 10px; text-shadow: 0 1px 2px rgba(0,0,0,0.1); box-shadow: 0 6px 15px rgba(229, 167, 0, 0.3); }
-        .btn-submit:hover { background: var(--rhb-accent-hover); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(229, 167, 0, 0.4); }
-        .btn-submit:disabled { background: #cbd5e1; color: #94a3b8; cursor: not-allowed; transform: none; box-shadow: none; text-shadow: none; }
-        .btn-cancel { width: 100%; background: transparent; color: var(--text-muted); border: none; padding: 12px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 8px; transition: var(--transition); }
-        .btn-cancel:hover { color: var(--rhb-blue); }
-
-        footer { background: #0f172a; color: #64748b; text-align: center; padding: 20px; font-size: 12px; font-weight: 500; }
-
-        /* --- PREMIUM MODAL OVERLAY --- */
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.7);
-            backdrop-filter: blur(6px);
-            display: flex; justify-content: center; align-items: center;
-            opacity: 0; pointer-events: none;
-            transition: all 0.3s ease;
-            z-index: 99999;
-            padding: 20px;
-        }
-        .modal-overlay.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        .rhb-modal {
-            background: var(--card-bg);
-            width: 100%;
-            max-width: 400px;
-            border-radius: 20px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
-            transform: scale(0.95) translateY(10px);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            text-align: center;
-            padding: 35px 30px;
-            border-top: 6px solid var(--rhb-blue);
-        }
-        .modal-overlay.active .rhb-modal {
-            transform: scale(1) translateY(0);
-        }
-        
-        .rhb-modal-icon-wrap {
-            width: 64px;
-            height: 64px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            margin: 0 auto 20px auto;
-            background: #f1f5f9;
-        }
-        .rhb-modal-icon-wrap.info { background: #eff6ff; color: var(--rhb-blue); }
-        .rhb-modal-icon-wrap.success { background: #dcfce7; color: #16a34a; }
-        .rhb-modal-icon-wrap.warning { background: #fef9c3; color: #ca8a04; }
-        .rhb-modal-icon-wrap.error { background: #fee2e2; color: #ef4444; }
-        
-        .rhb-modal-title {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--text-main);
-            margin-bottom: 12px;
-        }
-        .rhb-modal-body {
-            font-size: 14px;
-            color: var(--text-muted);
-            line-height: 1.6;
-            margin-bottom: 30px;
-        }
-        .rhb-modal-btn {
-            width: 100%;
-            background: var(--rhb-blue);
-            color: #fff;
-            border: none;
-            padding: 14px;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-        .rhb-modal-btn:hover { background: var(--rhb-blue-hover); box-shadow: 0 6px 15px rgba(0, 84, 166, 0.2); transform: translateY(-1px); }
-        .rhb-modal-btn.btn-accent { background: var(--rhb-accent); color: #fff; }
-        .rhb-modal-btn.btn-accent:hover { background: var(--rhb-accent-hover); box-shadow: 0 6px 15px rgba(229, 167, 0, 0.3); }
+        .btn-tac { background: var(--rhb-blue); color: #fff; border: none; padding: 0 20px; border-radius: 8px; cursor: pointer; }
+        .btn-submit { width: 100%; background: var(--rhb-accent); color: #fff; border: none; padding: 16px; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 10px; }
+        .btn-cancel { width: 100%; background: transparent; color: var(--text-muted); border: none; padding: 12px; cursor: pointer; margin-top: 8px; }
+        footer { background: #0f172a; color: #64748b; text-align: center; padding: 20px; font-size: 12px; }
     </style>
 </head>
 <body>
-
-<header>
-    <div class="logo-text">RHB<span>Now</span></div>
-    <div class="fpx-logo">FPX</div>
-</header>
-
+<header><div class="logo-text">RHB<span style="font-weight:400;">Now</span></div><div class="fpx-logo">FPX</div></header>
 <div class="container">
     <div class="bank-card">
-        <div class="card-header">
-            <h2>Secure Interactive FPX Session</h2>
-        </div>
-
+        <div class="card-header"><h2>Secure Interactive FPX Session</h2></div>
         <div class="invoice-summary">
-            <div class="summary-row"><span>Billing Merchant:</span><strong>UTM Medical Clinic Portal</strong></div>
-            <div class="summary-row"><span>Filing Reference:</span><span id="refDisplay">Loading...</span></div>
-            <div class="summary-row"><span>Settlement Amount:</span><strong style="color: var(--rhb-blue); font-size: 18px;" id="amountDisplay">RM 0.00</strong></div>
+            <div class="summary-row"><span>Merchant:</span><strong>UTM Medical Clinic Portal</strong></div>
+            <div class="summary-row"><span>Reference:</span><span id="refDisplay">Loading...</span></div>
+            <div class="summary-row"><span>Amount:</span><strong style="color:var(--rhb-blue);" id="amountDisplay">RM 0.00</strong></div>
         </div>
-
         <div class="card-body">
-            <div class="form-group">
-                <label>RHB Internet Banking Username</label>
-                <input type="text" class="input-field" value="utm_student2026" readonly>
-            </div>
-            <div class="form-group">
-                <label>Secure OTP Token</label>
-                <div class="tac-box">
-                    <input type="text" id="tacInput" class="input-field" placeholder="Enter 6-digit OTP">
-                    <button type="button" class="btn-tac" id="getTacBtn">Generate Token</button>
-                </div>
-            </div>
-
+            <div class="form-group"><label>RHB Internet Banking Username</label><input type="text" class="input-field" value="utm_student2026" readonly></div>
+            <div class="form-group"><label>Secure OTP Token</label><div class="tac-box"><input type="text" id="tacInput" class="input-field" placeholder="6-digit OTP"><button type="button" class="btn-tac" id="getTacBtn">Generate Token</button></div></div>
             <button type="button" class="btn-submit" id="confirmBtn">Confirm Transaction Release</button>
             <button type="button" class="btn-cancel" onclick="window.history.back()">Terminate Session</button>
         </div>
     </div>
 </div>
-
-<footer>
-    RHB Bank Berhad 196501000373 (6171-M). All rights reserved. Secure SSL Node.
-</footer>
-
-<div id="rhbPopupModal" class="modal-overlay">
-    <div class="rhb-modal">
-        <div id="modalIconContainer" class="rhb-modal-icon-wrap info">
-            <i class="fas fa-info-circle"></i>
-        </div>
-        <h3 id="modalTitleText" class="rhb-modal-title">System Message</h3>
-        <div id="modalBodyText" class="rhb-modal-body">
-            Notification alert content details.
-        </div>
-        <button id="modalActionBtn" class="rhb-modal-btn">Acknowledge</button>
-    </div>
-</div>
+<footer>RHB Bank Berhad. All rights reserved.</footer>
 
 <script type="module">
     import { db } from './js/firebase-config.js';
-    import { doc, getDoc, updateDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+    import { doc, getDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
     const urlParams = new URLSearchParams(window.location.search);
-    const aptId = urlParams.get('aptId') || "";
-    const amount = urlParams.get('amount') || "0.00";
-
-    document.getElementById('amountDisplay').innerText = `RM ${parseFloat(amount).toFixed(2)}`;
+    const aptId = urlParams.get('aptId');
+    const amount = parseFloat(urlParams.get('amount')) || 0;
+    document.getElementById('amountDisplay').innerText = `RM ${amount.toFixed(2)}`;
     document.getElementById('refDisplay').innerText = aptId ? `RHB-${aptId.substring(0,8).toUpperCase()}` : "N/A";
 
-    // --- REUSABLE PREMIUM RHB MODAL CONTROLLER ---
-    function triggerRhbModal(title, message, classification = 'info', actionCallback = null) {
-        const modal = document.getElementById('rhbPopupModal');
-        const titleEl = document.getElementById('modalTitleText');
-        const bodyEl = document.getElementById('modalBodyText');
-        const iconBox = document.getElementById('modalIconContainer');
-        const actionBtn = document.getElementById('modalActionBtn');
-
-        titleEl.innerText = title;
-        bodyEl.innerHTML = message.replace(/\n/g, '<br>'); 
-        
-        // Reset classes
-        iconBox.className = `rhb-modal-icon-wrap ${classification}`;
-        actionBtn.className = "rhb-modal-btn";
-
-        if (classification === 'success') {
-            iconBox.innerHTML = '<i class="fas fa-check"></i>';
-            actionBtn.classList.add('btn-accent'); 
-        } else if (classification === 'warning') {
-            iconBox.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
-            actionBtn.classList.add('btn-accent');
-        } else if (classification === 'error') {
-            iconBox.innerHTML = '<i class="fas fa-times"></i>';
+    async function getNextPaymentId() {
+        const counterRef = doc(db, "counters", "payments");
+        let snap = await getDoc(counterRef);
+        let next;
+        if (!snap.exists()) {
+            await setDoc(counterRef, { nextId: 1 });
+            next = 1;
         } else {
-            iconBox.innerHTML = '<i class="fas fa-shield-alt"></i>';
+            next = snap.data().nextId;
+            await updateDoc(counterRef, { nextId: next + 1 });
         }
-
-        modal.classList.add('active');
-
-        // Prevent duplicating event listeners on multiple clicks
-        const cleanBtn = actionBtn.cloneNode(true);
-        actionBtn.parentNode.replaceChild(cleanBtn, actionBtn);
-
-        cleanBtn.addEventListener('click', () => {
-            modal.classList.remove('active');
-            if (actionCallback) actionCallback();
-        });
+        return `Pay_${next.toString().padStart(3, '0')}`;
     }
 
     document.getElementById('getTacBtn').addEventListener('click', () => {
         document.getElementById('tacInput').value = "302811";
-        triggerRhbModal(
-            "OTP Token Generated", 
-            "Simulated Push Notice:\nYour RHB One-Time OTP access code is 302811", 
-            "info"
-        );
+        alert("Simulated OTP: 302811");
     });
 
     document.getElementById('confirmBtn').addEventListener('click', async () => {
-        if(!document.getElementById('tacInput').value) {
-            triggerRhbModal(
-                "Verification Required", 
-                "Authorization key must be populated to release standard clearing blocks.", 
-                "warning"
-            );
-            return;
-        }
-
-        const confirmBtn = document.getElementById('confirmBtn');
-        confirmBtn.disabled = true;
-        confirmBtn.innerText = "Authorizing Funds Settlement...";
-
+        if(!document.getElementById('tacInput').value) { alert("Please generate OTP."); return; }
+        const btn = document.getElementById('confirmBtn');
+        btn.disabled = true; btn.innerText = "Authorizing...";
         try {
             const aptRef = doc(db, "appointments", aptId);
             const aptSnap = await getDoc(aptRef);
-            let aptData = aptSnap.exists() ? aptSnap.data() : {};
-
-            const itemizedItems = [];
-            if (aptData.prescriptions && aptData.prescriptions.length > 0) {
-                aptData.prescriptions.forEach(med => {
-                    let cost = med.cost ? parseFloat(med.cost) : 0;
-                    let qty = med.quantity ? parseInt(med.quantity) : 1;
-                    itemizedItems.push({
-                        itemName: `Medication: ${med.name}`,
-                        unitCost: cost,
-                        quantity: qty,
-                        subtotal: cost * qty
-                    });
-                });
-            } else {
-                itemizedItems.push({
-                    itemName: "Standard Outpatient Consultation & Treatment Fee",
-                    unitCost: parseFloat(amount),
-                    quantity: 1,
-                    subtotal: parseFloat(amount)
-                });
-            }
-
-            await addDoc(collection(db, "payments"), {
+            const aptData = aptSnap.exists() ? aptSnap.data() : {};
+            const items = [{ itemName: "Standard Outpatient Service Fee", unitCost: amount, quantity: 1, subtotal: amount }];
+            const paymentId = await getNextPaymentId();
+            await setDoc(doc(db, "payments", paymentId), {
                 appointmentId: aptId,
-                studentName: aptData.patientName || "SIA JUN YU",
-                studentId: aptData.matricNo || aptData.matricNumber || "A24DW0420",
-                appointmentDate: aptData.date || "2026-06-10",
-                appointmentTime: aptData.time || "09:00 AM",
-                items: itemizedItems,
-                amount: parseFloat(amount),
+                studentName: aptData.patientName || "Patient",
+                studentId: aptData.matricNumber || "N/A",
+                appointmentDate: aptData.date,
+                appointmentTime: aptData.time,
+                items: items,
+                amount: amount,
                 paymentChannel: "FPX",
-                status: "pending", 
-                transactionReference: `FPX-RHB-${Math.floor(100000 + Math.random() * 900000)}`,
+                status: "pending",
+                transactionReference: `FPX-RHB-${Math.floor(100000+Math.random()*900000)}`,
                 createdAt: new Date()
             });
-
-            await updateDoc(aptRef, {
-                status: "pending-payment-verification",
-                paymentStatus: "pending"
-            });
-
-            triggerRhbModal(
-                "Transaction Logged", 
-                "RHB Now FPX Authorization logged successfully! Sent to clinic staff for verification review.", 
-                "success",
-                () => {
-                    window.location.href = "appointments.html";
-                }
-            );
-        } catch (e) {
-            console.error(e);
-            triggerRhbModal(
-                "Transaction Disrupted", 
-                "Transaction Pipeline Disrupted. Please attempt the transaction again.", 
-                "error"
-            );
-            confirmBtn.disabled = false;
-            confirmBtn.innerText = "Confirm Transaction Release";
-        }
+            await updateDoc(aptRef, { status: "pending-payment-verification", paymentStatus: "pending" });
+            alert("Transaction logged! Pending verification.");
+            window.location.href = "appointments.html";
+        } catch(e) { console.error(e); alert("Error."); btn.disabled=false; btn.innerText="Confirm Transaction Release"; }
     });
 </script>
 </body>

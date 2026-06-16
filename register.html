@@ -1,20 +1,24 @@
-<!-- Register Page by Sonia Selvaratnam 14/5/2026 -->
-<!-- Updated: Replaced browser alerts with custom modal popups -->
+<!-- register.html by Sonia Selvaratnam 15/6/2026 -->
+<!-- This page handles patient registration. It creates a Firebase Auth user, sends verification email,
+     and stores user data in Firestore with a human‑readable sequential userNumber (User_001, User_002...). -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - UTM Clinic Portal</title>
+    <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
+        /* Custom primary color to match UTM clinic theme */
         .bg-primary { background-color: #802c44; }
         .text-primary { color: #802c44; }
         .hover\:bg-primary\/90:hover { background-color: #612134; }
         .focus\:ring-primary:focus { --tw-ring-color: #802c44; }
 
-        /* Custom modal overlay – same style as existing verification modal */
+        /* Custom modal overlay – replaces browser alert/confirm */
         .custom-modal-overlay {
             position: fixed;
             top: 0;
@@ -36,19 +40,9 @@
             text-align: center;
             box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
         }
-        .custom-modal i {
-            font-size: 48px;
-            margin-bottom: 16px;
-        }
-        .custom-modal h3 {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-        .custom-modal p {
-            color: #4b5563;
-            margin-bottom: 24px;
-        }
+        .custom-modal i { font-size: 48px; margin-bottom: 16px; }
+        .custom-modal h3 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+        .custom-modal p { color: #4b5563; margin-bottom: 24px; }
         .custom-modal button {
             background: #802c44;
             color: white;
@@ -58,9 +52,7 @@
             cursor: pointer;
             font-weight: 600;
         }
-        .custom-modal button:hover {
-            background: #612134;
-        }
+        .custom-modal button:hover { background: #612134; }
     </style>
 </head>
 <body class="bg-gray-50 font-sans">
@@ -72,7 +64,7 @@
                 <p class="text-gray-500">Register to book appointments at UTM Clinic</p>
             </div>
 
-            <!-- Info Box about email verification -->
+            <!-- Info box about required email verification -->
             <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <div class="flex items-center gap-2 text-blue-800">
                     <i class="fas fa-envelope"></i>
@@ -83,35 +75,42 @@
 
             <form id="registerForm" class="space-y-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Full name input -->
                     <div>
                         <label class="block mb-2 font-medium">Full Name</label>
                         <input type="text" id="name" name="name" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary">
                     </div>
+                    <!-- Email input (becomes login credential) -->
                     <div>
                         <label class="block mb-2 font-medium">Email Address</label>
                         <input type="email" id="email" name="email" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary">
                     </div>
+                    <!-- Matric / student ID number -->
                     <div>
                         <label class="block mb-2 font-medium">Matric Number</label>
                         <input type="text" id="matricNumber" name="matricNumber" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary">
                     </div>
+                    <!-- Phone number with Malaysian format hint -->
                     <div>
                         <label class="block mb-2 font-medium">Phone Number</label>
                         <input type="tel" id="phone" name="phone" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary">
                         <div class="text-xs text-gray-500 mt-1">Format: 012-3456789 or 0123456789</div>
                     </div>
                 </div>
+                <!-- Address (full address or UTM college short form) -->
                 <div>
                     <label class="block mb-2 font-medium">Address</label>
                     <textarea id="address" name="address" rows="3" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary"></textarea>
                     <div class="text-xs text-gray-500 mt-1">Full address OR UTM College (e.g., K9, UTM; KLG, UTM)</div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Password with minlength 8 -->
                     <div>
                         <label class="block mb-2 font-medium">Password</label>
                         <input type="password" id="password" name="password" required minlength="8" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary">
                         <div class="text-xs text-gray-500 mt-1">Minimum 8 characters</div>
                     </div>
+                    <!-- Confirm password -->
                     <div>
                         <label class="block mb-2 font-medium">Confirm Password</label>
                         <input type="password" id="confirmPassword" name="confirmPassword" required minlength="8" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary">
@@ -127,7 +126,7 @@
         </div>
     </div>
 
-    <!-- Modal for verification info (success after registration) -->
+    <!-- Modal shown after successful registration (email verification reminder) -->
     <div id="verificationModal" class="custom-modal-overlay hidden">
         <div class="custom-modal">
             <i class="fas fa-envelope text-5xl text-primary"></i>
@@ -138,7 +137,7 @@
         </div>
     </div>
 
-    <!-- Generic message modal for errors and info (replaces alert) -->
+    <!-- Generic modal for error messages (replaces browser alert) -->
     <div id="genericModal" class="custom-modal-overlay hidden">
         <div class="custom-modal">
             <i id="genericModalIcon" class="fas fa-info-circle text-5xl text-blue-500"></i>
@@ -149,10 +148,12 @@
     </div>
 
     <script type="module">
+        // Import Firebase services
         import { auth, db } from './js/firebase-config.js';
         import { createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-auth.js";
-        import { doc, setDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+        import { doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
+        // DOM references
         const form = document.getElementById('registerForm');
         const modal = document.getElementById('verificationModal');
         const modalEmail = document.getElementById('modalEmail');
@@ -162,8 +163,8 @@
         const genericModalIcon = document.getElementById('genericModalIcon');
         const genericModalBtn = document.getElementById('genericModalBtn');
 
-        // Helper: show a custom modal instead of alert
-        function showModal(title, message, icon = 'info', iconColor = '#3b82f6') {
+        // Show custom modal instead of alert
+        function showModal(title, message, icon = 'info') {
             genericModalTitle.textContent = title;
             genericModalMessage.textContent = message;
             if (icon === 'error') {
@@ -174,29 +175,45 @@
                 genericModalIcon.className = 'fas fa-info-circle text-5xl text-blue-500';
             }
             genericModal.classList.remove('hidden');
-            // Auto-hide after 4 seconds? But we keep until user clicks OK.
         }
 
-        // Close generic modal when OK clicked
-        genericModalBtn.addEventListener('click', () => {
-            genericModal.classList.add('hidden');
-        });
+        genericModalBtn.addEventListener('click', () => genericModal.classList.add('hidden'));
 
+        // Phone number validation (Malaysian format)
         function validatePhoneNumber(phone) {
             const phoneRegex = /^(01[0-9]-?[0-9]{7,8}$)|(01[0-9][0-9]{7,8}$)/;
             return phoneRegex.test(phone);
         }
 
+        // Address validation – full address (≥10 chars) or UTM college code
         function validateAddress(address) {
             const utmColleges = ['K9', 'K10', 'K11', 'K12', 'K13', 'K14', 'K15', 'K16', 'K17', 'KLG', 'KTF', 'KTHO', 'KRP', 'KTC', 'KPZ', 'KDO', 'KMP', 'KX'];
             const trimmedAddress = address.trim().toUpperCase();
             const utmPattern = new RegExp(`^(${utmColleges.join('|')})\\s*[,]?\\s*UTM$`, 'i');
-            
             if (utmPattern.test(trimmedAddress)) return true;
             if (trimmedAddress.length >= 10) return true;
             return false;
         }
 
+        // 🔑 Helper: generate next sequential user number (e.g., 1, 2, 3...)
+        // Uses a "counters/users" document to store the last used number.
+        async function getNextUserNumber() {
+            const counterRef = doc(db, "counters", "users");
+            let counterSnap = await getDoc(counterRef);
+            let nextNum;
+            if (!counterSnap.exists()) {
+                // First user ever – create counter
+                await setDoc(counterRef, { nextId: 1 });
+                nextNum = 1;
+            } else {
+                nextNum = counterSnap.data().nextId;
+                // Increment for next user
+                await updateDoc(counterRef, { nextId: nextNum + 1 });
+            }
+            return nextNum;   // plain number, e.g. 5
+        }
+
+        // Form submission event
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -208,36 +225,39 @@
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
 
-            // Validation
+            // === Client‑side validations ===
             if (password !== confirmPassword) {
                 showModal("Passwords Mismatch", "Passwords do not match. Please re-enter.", "error");
                 return;
             }
-
             if (password.length < 8) {
                 showModal("Password Too Short", "Password must be at least 8 characters.", "error");
                 return;
             }
-
             if (!validatePhoneNumber(phone)) {
                 showModal("Invalid Phone Number", "Please enter a valid Malaysian phone number (e.g., 012-3456789 or 0123456789)", "error");
                 return;
             }
-
             if (!validateAddress(address)) {
                 showModal("Invalid Address", "Please enter a valid address (full address or UTM College format like 'K9, UTM')", "error");
                 return;
             }
 
             try {
-                // Create user in Firebase Auth
+                // 1. Create user in Firebase Authentication (gets a unique Auth UID)
                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
-                
-                // Send verification email
+                const user = userCredential.user;   // user.uid = Auth UID
+
+                // 2. Send email verification link
                 await sendEmailVerification(user);
-                
-                // Store user data in Firestore
+
+                // 3. Generate a sequential human‑readable user number
+                const userNumber = await getNextUserNumber();
+                const userNumberFormatted = `User_${userNumber.toString().padStart(3, '0')}`;  // e.g. "User_001"
+
+                // 4. Store user profile in Firestore.
+                //    Document ID = Auth UID (for fast direct lookup during login)
+                //    We also store userNumber and userNumberFormatted for clarity in database console.
                 await setDoc(doc(db, "users", user.uid), {
                     name: name,
                     email: email,
@@ -246,16 +266,18 @@
                     address: address,
                     role: "patient",
                     emailVerified: false,
-                    createdAt: new Date().toISOString()
+                    createdAt: new Date().toISOString(),
+                    userNumber: userNumber,                     // plain integer
+                    userNumberFormatted: userNumberFormatted    // "User_001"
                 });
-                
-                // Show modal with verification info
+
+                // Show verification modal
                 modalEmail.textContent = email;
                 modal.classList.remove('hidden');
-                
-                // Sign out immediately (user must verify before logging in)
+
+                // Sign out immediately – user must verify email before first login
                 await auth.signOut();
-                
+
             } catch (error) {
                 if (error.code === 'auth/email-already-in-use') {
                     showModal("Email Already Registered", "This email is already registered. Please use a different email or login.", "error");
@@ -265,6 +287,7 @@
             }
         });
 
+        // Redirect to login after user acknowledges verification modal
         document.getElementById('modalOkBtn').addEventListener('click', () => {
             modal.classList.add('hidden');
             window.location.href = 'login.html';

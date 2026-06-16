@@ -60,6 +60,40 @@
         .alert-info { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
         .loading { text-align: center; padding: 20px; color: var(--text-muted); font-size: 13px; grid-column: 1 / -1; }
         @media (max-width: 1024px) { .sidebar { width: 80px; } .logo-text, .nav-link span, .sidebar-profile { display: none; } .nav-link { justify-content: center; padding: 15px; } .main { padding: 30px; } }
+
+        /* Mobile phone optimization */
+@media (max-width: 640px) {
+    .main {
+        padding: 20px;
+    }
+    .form-card {
+        padding: 20px;
+    }
+    .time-slots {
+        grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+        gap: 8px;
+    }
+    .time-slot {
+        padding: 8px 4px;
+        font-size: 11px;
+    }
+    .time-slot i {
+        font-size: 10px;
+    }
+    .action-buttons {
+        flex-direction: column;
+        gap: 12px;
+    }
+    .btn-primary, .btn-secondary {
+        width: 100%;
+    }
+    .info-card {
+        padding: 16px;
+    }
+    .guidelines-list li {
+        font-size: 12px;
+    }
+}
     </style>
 </head>
 <body>
