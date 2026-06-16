@@ -1,3 +1,5 @@
+<!-- Register Page by Sonia Selvaratnam 14/5/2026 -->
+<!-- Updated: Replaced browser alerts with custom modal popups -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,48 +14,56 @@
         .hover\:bg-primary\/90:hover { background-color: #612134; }
         .focus\:ring-primary:focus { --tw-ring-color: #802c44; }
 
-        /* Premium Modal Animations & Layout */
+        /* Custom modal overlay – same style as existing verification modal */
         .custom-modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(15, 23, 42, 0.6); /* Modern slate overlay tint */
-            backdrop-filter: blur(8px); /* Elegant background glass blur */
-            -webkit-backdrop-filter: blur(8px);
+            background: rgba(0,0,0,0.5);
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 100;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 60;
         }
-        
-        .custom-modal-overlay.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
         .custom-modal {
             background: white;
-            border-radius: 20px;
-            max-width: 440px;
+            border-radius: 12px;
+            max-width: 400px;
             width: 90%;
-            padding: 32px;
+            padding: 24px;
             text-align: center;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-            transform: scale(0.9);
-            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
         }
-
-        .custom-modal-overlay.active .custom-modal {
-            transform: scale(1);
+        .custom-modal i {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        .custom-modal h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .custom-modal p {
+            color: #4b5563;
+            margin-bottom: 24px;
+        }
+        .custom-modal button {
+            background: #802c44;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .custom-modal button:hover {
+            background: #612134;
         }
     </style>
 </head>
-<body class="bg-gray-50 font-sans text-gray-800">
+<body class="bg-gray-50 font-sans">
     <div class="min-h-screen flex items-center justify-center p-8">
         <div class="w-full max-w-2xl bg-white rounded-xl shadow-lg p-8">
             <div class="text-center mb-8">
@@ -62,6 +72,7 @@
                 <p class="text-gray-500">Register to book appointments at UTM Clinic</p>
             </div>
 
+            <!-- Info Box about email verification -->
             <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <div class="flex items-center gap-2 text-blue-800">
                     <i class="fas fa-envelope"></i>
@@ -74,72 +85,66 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="block mb-2 font-medium">Full Name</label>
-                        <input type="text" id="name" name="name" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none transition-all">
+                        <input type="text" id="name" name="name" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary">
                     </div>
                     <div>
                         <label class="block mb-2 font-medium">Email Address</label>
-                        <input type="email" id="email" name="email" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none transition-all">
+                        <input type="email" id="email" name="email" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary">
                     </div>
                     <div>
                         <label class="block mb-2 font-medium">Matric Number</label>
-                        <input type="text" id="matricNumber" name="matricNumber" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none transition-all">
+                        <input type="text" id="matricNumber" name="matricNumber" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary">
                     </div>
                     <div>
                         <label class="block mb-2 font-medium">Phone Number</label>
-                        <input type="tel" id="phone" name="phone" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none transition-all">
+                        <input type="tel" id="phone" name="phone" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary">
                         <div class="text-xs text-gray-500 mt-1">Format: 012-3456789 or 0123456789</div>
                     </div>
                 </div>
                 <div>
                     <label class="block mb-2 font-medium">Address</label>
-                    <textarea id="address" name="address" rows="3" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none transition-all"></textarea>
+                    <textarea id="address" name="address" rows="3" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary"></textarea>
                     <div class="text-xs text-gray-500 mt-1">Full address OR UTM College (e.g., K9, UTM; KLG, UTM)</div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="block mb-2 font-medium">Password</label>
-                        <input type="password" id="password" name="password" required minlength="8" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none transition-all">
+                        <input type="password" id="password" name="password" required minlength="8" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary">
                         <div class="text-xs text-gray-500 mt-1">Minimum 8 characters</div>
                     </div>
                     <div>
                         <label class="block mb-2 font-medium">Confirm Password</label>
-                        <input type="password" id="confirmPassword" name="confirmPassword" required minlength="8" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary outline-none transition-all">
+                        <input type="password" id="confirmPassword" name="confirmPassword" required minlength="8" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary">
                     </div>
                 </div>
-                <button type="submit" class="w-full bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/90 active:scale-[0.99] transition-all font-semibold shadow-md">
+                <button type="submit" class="w-full bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary/90 transition-colors">
                     Create Account
                 </button>
             </form>
             <p class="text-center mt-6 text-sm text-gray-500">
-                Already have an account? <a href="login.html" class="text-primary hover:underline font-medium">Sign in here</a>
+                Already have an account? <a href="login.html" class="text-primary hover:underline">Sign in here</a>
             </p>
         </div>
     </div>
 
-    <div id="verificationModal" class="custom-modal-overlay">
+    <!-- Modal for verification info (success after registration) -->
+    <div id="verificationModal" class="custom-modal-overlay hidden">
         <div class="custom-modal">
-            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-rose-50 mb-6 border border-rose-100">
-                <i class="fas fa-paper-plane text-2xl text-primary"></i>
-            </div>
-            <h2 class="text-2xl font-bold text-gray-900 mb-2">Verify Your Email</h2>
-            <p class="text-gray-600 text-sm mb-3">A verification email has been sent to:<br><span id="modalEmail" class="font-semibold text-primary break-all"></span></p>
-            <p class="text-gray-400 text-xs mb-8 leading-relaxed">Please inspect your inbox folder and execute the verification sequence prior to performing account access operations.</p>
-            <button id="modalOkBtn" class="w-full bg-primary text-white py-3 rounded-xl font-semibold shadow-md hover:bg-primary/90 active:scale-[0.98] transition-all">
-                OK, Got it
-            </button>
+            <i class="fas fa-envelope text-5xl text-primary"></i>
+            <h2 class="text-2xl font-bold mb-2">Verify Your Email</h2>
+            <p class="text-gray-600 mb-4">A verification email has been sent to <span id="modalEmail" class="font-semibold"></span></p>
+            <p class="text-gray-500 text-sm mb-6">Please check your inbox and click the verification link before logging in.</p>
+            <button id="modalOkBtn" class="bg-primary text-white px-6 py-2 rounded-lg">OK, Got it</button>
         </div>
     </div>
 
-    <div id="genericModal" class="custom-modal-overlay">
+    <!-- Generic message modal for errors and info (replaces alert) -->
+    <div id="genericModal" class="custom-modal-overlay hidden">
         <div class="custom-modal">
-            <div id="genericModalIconContainer" class="mx-auto flex items-center justify-center h-16 w-16 rounded-full mb-6 border transition-colors duration-300">
-                <i id="genericModalIcon" class="text-2xl"></i>
-            </div>
-            <h3 id="genericModalTitle" class="text-2xl font-bold text-gray-900 mb-2">Notification</h3>
-            <p id="genericModalMessage" class="text-gray-600 text-sm mb-8 leading-relaxed">Message goes here</p>
-            <button id="genericModalBtn" class="w-full bg-gray-900 text-white py-3 rounded-xl font-semibold shadow-md hover:bg-gray-800 active:scale-[0.98] transition-all">
-                OK
-            </button>
+            <i id="genericModalIcon" class="fas fa-info-circle text-5xl text-blue-500"></i>
+            <h3 id="genericModalTitle" class="text-xl font-bold">Notification</h3>
+            <p id="genericModalMessage">Message goes here</p>
+            <button id="genericModalBtn" class="bg-primary text-white px-6 py-2 rounded-lg">OK</button>
         </div>
     </div>
 
@@ -155,37 +160,26 @@
         const genericModalTitle = document.getElementById('genericModalTitle');
         const genericModalMessage = document.getElementById('genericModalMessage');
         const genericModalIcon = document.getElementById('genericModalIcon');
-        const genericModalIconContainer = document.getElementById('genericModalIconContainer');
         const genericModalBtn = document.getElementById('genericModalBtn');
 
-        // Helper: Premium Modal Trigger Core Implementation
-        function showModal(title, message, iconType = 'info') {
+        // Helper: show a custom modal instead of alert
+        function showModal(title, message, icon = 'info', iconColor = '#3b82f6') {
             genericModalTitle.textContent = title;
             genericModalMessage.textContent = message;
-            
-            // Clean dynamic interface styling profiles
-            genericModalIconContainer.className = "mx-auto flex items-center justify-center h-16 w-16 rounded-full mb-6 border";
-            
-            if (iconType === 'error') {
-                genericModalIcon.className = 'fas fa-exclamation-circle text-2xl text-red-600';
-                genericModalIconContainer.classList.add('bg-red-50', 'border-red-100');
-                genericModalBtn.className = "w-full bg-red-600 text-white py-3 rounded-xl font-semibold shadow-md hover:bg-red-700 active:scale-[0.98] transition-all";
-            } else if (iconType === 'warning') {
-                genericModalIcon.className = 'fas fa-exclamation-triangle text-2xl text-amber-600';
-                genericModalIconContainer.classList.add('bg-amber-50', 'border-amber-100');
-                genericModalBtn.className = "w-full bg-amber-600 text-white py-3 rounded-xl font-semibold shadow-md hover:bg-amber-700 active:scale-[0.98] transition-all";
+            if (icon === 'error') {
+                genericModalIcon.className = 'fas fa-exclamation-circle text-5xl text-red-500';
+            } else if (icon === 'warning') {
+                genericModalIcon.className = 'fas fa-exclamation-triangle text-5xl text-yellow-500';
             } else {
-                genericModalIcon.className = 'fas fa-info-circle text-2xl text-blue-600';
-                genericModalIconContainer.classList.add('bg-blue-50', 'border-blue-100');
-                genericModalBtn.className = "w-full bg-blue-600 text-white py-3 rounded-xl font-semibold shadow-md hover:bg-blue-700 active:scale-[0.98] transition-all";
+                genericModalIcon.className = 'fas fa-info-circle text-5xl text-blue-500';
             }
-            
-            genericModal.classList.add('active');
+            genericModal.classList.remove('hidden');
+            // Auto-hide after 4 seconds? But we keep until user clicks OK.
         }
 
-        // Close generic modal smoothly when UI button action triggers
+        // Close generic modal when OK clicked
         genericModalBtn.addEventListener('click', () => {
-            genericModal.classList.remove('active');
+            genericModal.classList.add('hidden');
         });
 
         function validatePhoneNumber(phone) {
@@ -214,7 +208,7 @@
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
 
-            // Strict Client-Side System Validations
+            // Validation
             if (password !== confirmPassword) {
                 showModal("Passwords Mismatch", "Passwords do not match. Please re-enter.", "error");
                 return;
@@ -255,11 +249,11 @@
                     createdAt: new Date().toISOString()
                 });
                 
-                // Present premium verification module window
+                // Show modal with verification info
                 modalEmail.textContent = email;
-                modal.classList.add('active');
+                modal.classList.remove('hidden');
                 
-                // Account quarantine (Force authentication separation phase)
+                // Sign out immediately (user must verify before logging in)
                 await auth.signOut();
                 
             } catch (error) {
@@ -272,7 +266,7 @@
         });
 
         document.getElementById('modalOkBtn').addEventListener('click', () => {
-            modal.classList.remove('active');
+            modal.classList.add('hidden');
             window.location.href = 'login.html';
         });
     </script>
